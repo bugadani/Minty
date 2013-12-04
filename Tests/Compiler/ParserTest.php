@@ -486,23 +486,6 @@ class ParserTest extends PHPUnit_Framework_TestCase
         }
     }
 
-    public function testComments()
-    {
-        $actual1 = $this->object->parse('{* this is a comment } with some bad stuff **}')->getTokens();
-        $actual2 = $this->object->parse('{* this is a comment *} with some text and {* nasty stuff **}')->getTokens();
-        $actual3 = $this->object->parse('{*nasty stuff \*} this is still the comment*}')->getTokens();
-
-        $empty     = array(new Token(Token::EOF, null, 1));
-        $non_empty = array(
-            new Token(Token::TEXT, ' with some text and ', 1),
-            new Token(Token::EOF, null, 1)
-        );
-
-        $this->assertEquals($empty, $actual1);
-        $this->assertEquals($non_empty, $actual2);
-        $this->assertEquals($empty, $actual3);
-    }
-
     public function syntaxExceptionProvider()
     {
         return array(
@@ -621,6 +604,8 @@ class ParserTest extends PHPUnit_Framework_TestCase
             array('{a()..b()}', false),
             array('{raw}{if true}{endraw}', false),
             array('{for i in []}{else}{endfor}', false),
+            array('{"{"}', false),
+            array('{\'{\'}', false),
         );
     }
 

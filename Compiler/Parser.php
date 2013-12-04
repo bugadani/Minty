@@ -98,9 +98,8 @@ class Parser
         $literal_pattern = implode('|', $this->literals);
 
         $this->patterns = array(
-            'comment'     => '/({\*.*?(?<!\\\)\*})/su',
             'assignment'  => '/(.*?)\s*:\s*(.*?)$/ADsu',
-            'tag'         => "/{\s*((?:(?>[^{}])|(?R))+)\s*}(?:\n?)/",
+            'tag'         => "/{\s*(#.*#|(?:'.*(?<!\\\)'|\".*(?<!\\\)\"|(?>[^{}])|(?R))+)\s*}(?:\n?)/",
             'closing_tag' => sprintf('/end(raw|%s)/Ai', $blocks_pattern),
             'operator'    => $this->getOperatorPattern(),
             'literal'     => sprintf('/(%s|\d+(?:\.\d+)?)/Ai', $literal_pattern)
@@ -149,8 +148,8 @@ class Parser
                 'value' => null
         ));
 
+
         $matches = array();
-        $code    = preg_replace($this->patterns['comment'], '', $code);
         preg_match_all($this->patterns['tag'], $code, $matches, PREG_OFFSET_CAPTURE);
 
         $cursor = 0;
@@ -167,6 +166,9 @@ class Parser
             $cursor += strlen($text);
             $cursor += strlen($tag);
 
+            if(strpos($tag, '{#') === 0 && strrpos($tag, '#}') === strlen($tag) - 2) {
+                continue;
+            }
             $tag_expr = $matches[1][$position][0];
 
             $is_tag_processed = $this->parseTag($tag_expr);
@@ -267,6 +269,8 @@ class Parser
                         ->also(Token::IDENTIFIER, null, 1, true)
                         ->also(Token::STRING, null, 1, true);
                 return;
+            } else {
+                $state_value['string'] = substr($state_value['string'], 0, -1);
             }
         }
         $state_value['string'] .= $token;
