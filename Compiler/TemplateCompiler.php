@@ -715,6 +715,15 @@ class TemplateCompiler
         $this->output('class %s extends BaseTemplate', $classname);
         $this->output('{');
         $this->indent();
+        if ($this->extendsTemplate()) {
+            $this->output('public function getParentTemplate()');
+            $this->output('{');
+            $this->indent();
+            $this->output('return \'%s\';', $extended_template);
+            $this->outdent();
+            $this->output('}');
+            $this->output('');
+        }
         if (!$this->extendsTemplate()) {
             $this->compileTemplate('render', $main);
         }

@@ -34,5 +34,10 @@ abstract class Tag
         return array();
     }
 
+    public function getParentTemplate()
+    {
+        return false;
+    }
+
     abstract public function compile(TemplateCompiler $compiler);
 }

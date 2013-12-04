@@ -179,6 +179,11 @@ abstract class Template
         return strpos($data, $str) === strlen($data) - strlen($str);
     }
 
+    public function getParentTemplate()
+    {
+        return false;
+    }
+
     public function __get($key)
     {
         if (isset($this->variables[$key])) {

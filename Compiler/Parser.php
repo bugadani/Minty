@@ -374,6 +374,8 @@ class Parser
                 $this->stream->expect(Token::EXPRESSION_START);
                 $this->stream->expect(Token::ARGUMENT_LIST_START, 'array');
                 $this->stream->expect(Token::STRING);
+                $this->stream->expect(Token::LITERAL, 'is_numeric')->then(Token::OPERATOR, '..');
+                $this->stream->expect(Token::LITERAL, 'is_numeric')->then(Token::OPERATOR, '...');
                 break;
             case 'set':
             case 'not set':

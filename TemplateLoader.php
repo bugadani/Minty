@@ -117,6 +117,12 @@ class TemplateLoader
             throw new RuntimeException('Template not found: ' . $template);
         }
         $object = new $classname($this->options, $this, $this->plugins);
+
+        $parent = $object->getParentTemplate();
+        if ($parent) {
+            $this->compileIfNeeded($parent);
+        }
+
         $object->set($this->options->global_variables);
         return $object;
     }
