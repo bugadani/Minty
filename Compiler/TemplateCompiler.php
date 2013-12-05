@@ -150,7 +150,7 @@ class TemplateCompiler
     {
         $value = $token->getValue();
         if ($token->test(Token::STRING)) {
-            $value = sprintf("'%s'", str_replace("'", "\'", $value));
+            $value = sprintf("'%s'", str_replace("'", "\'", strtr($value, array('%' => '%%'))));
         }
         return $value;
     }
@@ -486,8 +486,7 @@ class TemplateCompiler
                 break;
 
             case Token::ARGUMENT_LIST_START:
-                $retval[] = $this
-                        ->processArgumentList($token);
+                $retval[] = $this->processArgumentList($token);
                 break;
         } return false;
     }
@@ -504,8 +503,6 @@ class TemplateCompiler
 
         $string = implode('', $retval);
         if ($need_autoescape && $apply_autoescape && !$inhibit_autoescape) {
-
-
             $string = $this->functionCall('filter', $string);
         }
         return $string;
@@ -519,8 +516,7 @@ class TemplateCompiler
 
     private function compileBlock(Token $token)
     {
-        $this->tokens->
-                nextToken();
+        $this->tokens->nextToken();
         $tag = $token->getValue();
         $this->tags[$tag]->compile($this);
     }
@@ -529,7 +525,6 @@ class TemplateCompiler
     {
         $tag = $token->getValue();
         if ($this->tags[$tag] instanceof Block) {
-
             $this->tags[$tag]->compileEndingTag($this);
         }
         $this->popState();
@@ -537,15 +532,13 @@ class TemplateCompiler
 
     public function addOutputStack($output = '')
     {
-
         $this->output_stack[] = $this->output;
         $this->output         = $output;
     }
 
     public function popOutputStack()
     {
-        $output       = $this->
-                output;
+        $output       = $this->output;
         $this->output = array_pop($this->output_stack);
         return $output;
     }
@@ -558,16 +551,14 @@ class TemplateCompiler
                 $var    = $stream->nextToken()->getValue();
                 $stream->nextToken();
                 $expr   = $this->compileExpression($stream->nextToken());
-                $this->
-                        output(self::$patterns['assignment'], $var, $expr);
+                $this->output(self::$patterns['assignment'], $var, $expr);
                 break;
         }
     }
 
     private function processOutputExpressionState(Token $token)
     {
-        $retval = $this->
-                compileExpression($token, true);
+        $retval = $this->compileExpression($token, true);
         $this->output(self::$patterns['output'], $retval);
     }
 
@@ -596,9 +587,7 @@ class TemplateCompiler
                 $this->compileBlockEnd($token);
                 break;
 
-            case Token::
-
-            KEYWORD:
+            case Token::KEYWORD:
                 $this->processKeyword($token);
                 break;
         }
@@ -633,13 +622,9 @@ class TemplateCompiler
     {
         $args   = func_get_args();
         $string = array_shift($args);
-
-        $row = str_repeat(' ', $this->indentation * 4);
-
+        $row    = str_repeat(' ', $this->indentation * 4);
         $row .= vsprintf($string, $args);
-
-        $this->output .= rtrim($row) .
-                "\n";
+        $this->output .= rtrim($row) . "\n";
     }
 
     public function raw($string)
