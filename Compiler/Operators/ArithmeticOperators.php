@@ -13,12 +13,12 @@ use Modules\Templating\Compiler\Operator;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Token;
 
-class MinusOperator extends Operator
+class ArithmeticOperators extends Operator
 {
 
     public function operators()
     {
-        return '-';
+        return array('/', '*', '%', '+', '-', '^', '..', '...');
     }
 
     public function parseOperator(Parser $parser, $operator)
@@ -32,21 +32,12 @@ class MinusOperator extends Operator
             Token::LITERAL,
         );
         if ($stream->test($binary)) {
-            return false;
-        }
-
-        $unary = array(
-            Token::EXPRESSION_START,
-            Token::ARGUMENT_LIST_START,
-            array(Token::OPERATOR, array('^')),
-        );
-        if ($stream->test($unary)) {
             $parser->pushToken(Token::OPERATOR, $operator);
-            $stream->expect(Token::EXPRESSION_START)->then(Token::STRING, null, 1, true);
-            $stream->expect(Token::LITERAL, 'is_numeric');
-            $stream->expect(Token::IDENTIFIER);
+            $not_sign = function($operator) {
+                return !($operator == '+' || $operator == '-');
+            };
+            $stream->expect(Token::EXPRESSION_END, null, 1, true)->also(Token::OPERATOR, $not_sign, 1, true);
             return true;
         }
-        return false;
     }
 }

@@ -32,10 +32,7 @@ class PlusOperator extends Operator
             Token::LITERAL,
         );
         if ($stream->test($binary)) {
-            $parser->pushToken(Token::OPERATOR, $operator);
-            $stream->expect(Token::EXPRESSION_END, null, 1, true)
-                    ->also(Token::OPERATOR, null, 1, true);
-            return true;
+            return false;
         }
 
         $unary = array(

@@ -15,6 +15,7 @@ use InvalidArgumentException;
 use Modules\Templating\Compiler\Functions\MethodFunction;
 use Modules\Templating\Compiler\Functions\SimpleFunction;
 use Modules\Templating\Compiler\Operators\AndOperator;
+use Modules\Templating\Compiler\Operators\ArithmeticOperators;
 use Modules\Templating\Compiler\Operators\ArrowOperator;
 use Modules\Templating\Compiler\Operators\ColonOperator;
 use Modules\Templating\Compiler\Operators\CommaOperator;
@@ -30,7 +31,6 @@ use Modules\Templating\Compiler\Operators\EndsWithOperator;
 use Modules\Templating\Compiler\Operators\IsOperator;
 use Modules\Templating\Compiler\Operators\MatchesOperator;
 use Modules\Templating\Compiler\Operators\MinusOperator;
-use Modules\Templating\Compiler\Operators\MultiplicationOperator;
 use Modules\Templating\Compiler\Operators\OrOperator;
 use Modules\Templating\Compiler\Operators\ParenthesisOperators\BracketOperator;
 use Modules\Templating\Compiler\Operators\ParenthesisOperators\ParenthesisOperator;
@@ -88,13 +88,11 @@ class Core extends Extension
             new ColonOperator(),
             new ConcatenationOperator(),
             //arithmetic operators
-            new MultiplicationOperator(),
+            new ArithmeticOperators(),
             new IncrementOperator(),
             new DecrementOperator(),
             new PlusOperator(),
             new MinusOperator(),
-            new PowerOperator(),
-            new RangeOperator(),
             //logic operators
             new AndOperator(),
             new OrOperator(),
@@ -167,6 +165,7 @@ class Core extends Extension
             new MethodFunction('shuffle', 'filter_shuffle'),
             new MethodFunction('slice', 'filter_slice'),
             new MethodFunction('sort', 'filter_sort'),
+            new MethodFunction('spacify', 'filter_spacify'),
             new MethodFunction('split', 'filter_split'),
             new SimpleFunction('striptags', 'strip_tags', true),
             new SimpleFunction('title_case', 'ucwords'),
@@ -382,15 +381,21 @@ class Core extends Extension
         $return = array();
 
         foreach ($array as $element) {
-            if (is_array(
-                            element) || $element instanceof ArrayAccess
-            ) {
+            if (is_array(element) || $element instanceof ArrayAccess) {
                 if (isset($element[$key])) {
                     $return[] = $element[$key];
                 }
             }
         }
         return $return;
+    }
+
+    public function filter_spacify($string, $delimiter = ' ')
+    {
+        if(!is_string($string)) {
+            throw new InvalidArgumentException('Spacify expects a string.');
+        }
+        return implode($delimiter, str_split($string));
     }
 
     public function filter_truncate($string, $length, $ellipsis = '...')
