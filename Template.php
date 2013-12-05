@@ -11,6 +11,7 @@ namespace Modules\Templating;
 
 use ArrayAccess;
 use InvalidArgumentException;
+use Modules\Templating\Compiler\Environment;
 use OutOfBoundsException;
 use Traversable;
 use UnexpectedValueException;
@@ -28,21 +29,21 @@ abstract class Template
     private $loader;
 
     /**
-     * @var Plugins
+     * @var Environment
      */
-    private $plugins;
+    private $environment;
 
     /**
      * @var array
      */
     private $variables;
 
-    public function __construct(TemplatingOptions $options, TemplateLoader $loader, Plugins $plugins)
+    public function __construct(TemplateLoader $loader, Environment $environment)
     {
-        $this->options   = $options;
-        $this->plugins   = $plugins;
-        $this->loader    = $loader;
-        $this->variables = array();
+        $this->options     = $environment->getOptions();
+        $this->loader      = $loader;
+        $this->environment = $environment;
+        $this->variables   = array();
     }
 
     public function set($variables)
@@ -57,15 +58,34 @@ abstract class Template
         $this->variables = array_merge($this->variables, $variables);
     }
 
+    public function cycle(array &$array)
+    {
+        $element = each($array);
+        if ($element === false) {
+            reset($array);
+            $element = each($array);
+        }
+        return $element['value'];
+    }
+
+    public function callFilter($filter)
+    {
+        $args = func_get_args();
+        array_shift($args);
+        return $this->environment->getFunction($filter)->callFilter($args);
+    }
+
+    public function getExtension($name)
+    {
+        return $this->environment->getExtension($name);
+    }
+
     public function __call($function, $args)
     {
         if ($function === 'empty') {
             return $this->isEmpty(current($args));
         }
-        if (!in_array($function, $this->options->allowed_functions)) {
-            $function = array($this->plugins, $function);
-        }
-        return call_user_func_array($function, $args);
+        return $this->environment->getFunction($function)->callFunction($args);
     }
 
     public function filter($data, $for = 'html')
@@ -184,7 +204,7 @@ abstract class Template
         return false;
     }
 
-    public function __get($key)
+    public function &__get($key)
     {
         if (isset($this->variables[$key])) {
             return $this->variables[$key];

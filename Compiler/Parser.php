@@ -25,7 +25,7 @@ class Parser
         'unexpected'          => 'Unexpected %s found in line %d',
         'unexpected_operator' => 'Unexpected %s operator found in line %d',
         'unexpected_tag'      => 'Unexpected %s tag found in line %d',
-        'unterminated'        => 'Unterminated %s in line %d',
+        'unterminated'        => 'Unterminated %s found in line %d',
         'invalid_identifier'  => 'Invalid identifier %s found in line %d',
         'unexpected_eof'      => 'Unexpected end of file. Unterminated %s in line %d'
     );
@@ -78,7 +78,7 @@ class Parser
     private $state_stack;
     private $line;
 
-    public function __construct(TemplateDescriptor $descriptor)
+    public function __construct(Environment $descriptor)
     {
         $this->operator_parsers = $descriptor->operators();
 

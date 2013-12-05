@@ -20,8 +20,6 @@ class TemplatingOptions
     public $strict_mode       = true;
     public $autoescape        = true;
     public $short_array;
-    public $allowed_functions = array('wordwrap', 'count',
-        'range', 'is_int', 'is_numeric', 'is_string', 'abs', 'json_encode', 'number_format', 'trim', 'ltrim', 'rtrim');
     public $global_variables  = array();
 
     public function __construct(array $options = array())

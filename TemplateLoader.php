@@ -10,6 +10,7 @@
 namespace Modules\Templating;
 
 use Miny\Log;
+use Modules\Templating\Compiler\Environment;
 use Modules\Templating\Compiler\TemplateCompiler;
 use RuntimeException;
 
@@ -24,12 +25,11 @@ class TemplateLoader
      * @var TemplateCompiler
      */
     private $compiler;
-    private $loaded;
 
     /**
-     * @var Plugins
+     * @var Environment
      */
-    private $plugins;
+    private $environment;
 
     /**
      * @var Log
@@ -37,20 +37,16 @@ class TemplateLoader
     private $log;
 
     /**
-     *
-     * @param TemplatingOptions $options
+     * @param Environment $environment
      * @param TemplateCompiler $compiler
-     * @param Plugins $plugins
      * @param Log|null $log
      */
-    public function __construct(TemplatingOptions $options, TemplateCompiler $compiler, Plugins $plugins,
-                                Log $log = null)
+    public function __construct(Environment $environment, TemplateCompiler $compiler, Log $log = null)
     {
-        $this->options  = $options;
-        $this->compiler = $compiler;
-        $this->plugins  = $plugins;
-        $this->log      = $log;
-        $this->loaded   = array();
+        $this->compiler    = $compiler;
+        $this->options     = $environment->getOptions();
+        $this->environment = $environment;
+        $this->log         = $log;
     }
 
     protected function log($message)
@@ -105,18 +101,17 @@ class TemplateLoader
 
     public function load($template)
     {
-        $class     = $this->compiler->getClassForTemplate($template);
-        $classname = '\\' . $class;
+        $class     = '\\' . $this->compiler->getClassForTemplate($template);
 
         $this->compileIfNeeded($template);
 
         $this->log('Loading %s', $template);
-        if (!class_exists($classname)) {
+        if (!class_exists($class)) {
             $file = $this->getCachedPath($template);
-            $this->log('Template %s was not found in file %s', $classname, $file);
+            $this->log('Template %s was not found in file %s', $class, $file);
             throw new RuntimeException('Template not found: ' . $template);
         }
-        $object = new $classname($this->options, $this, $this->plugins);
+        $object = new $class($this, $this->environment);
 
         $parent = $object->getParentTemplate();
         if ($parent) {

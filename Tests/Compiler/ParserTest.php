@@ -9,16 +9,18 @@
 
 namespace Modules\Templating;
 
+use Modules\Templating\Compiler\Environment;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\SyntaxException;
-use Modules\Templating\Compiler\TemplateDescriptor;
 use Modules\Templating\Compiler\Token;
 use PHPUnit_Framework_TestCase;
 
+require_once __DIR__ . '/../../TemplatingOptions.php';
 require_once __DIR__ . '/../../Compiler/Token.php';
 require_once __DIR__ . '/../../Compiler/TokenStream.php';
-require_once __DIR__ . '/../../Compiler/TemplateDescriptor.php';
+require_once __DIR__ . '/../../Compiler/Environment.php';
 require_once __DIR__ . '/../../Compiler/Parser.php';
+require_once __DIR__ . '/../../Compiler/CompileException.php';
 require_once __DIR__ . '/../../Compiler/SyntaxException.php';
 require_once __DIR__ . '/../../Compiler/Tag.php';
 require_once __DIR__ . '/../../Compiler/Tags/Block.php';
@@ -33,6 +35,14 @@ require_once __DIR__ . '/../../Compiler/Tags/Blocks/ForBlock.php';
 require_once __DIR__ . '/../../Compiler/Tags/Blocks/BlockBlock.php';
 require_once __DIR__ . '/../../Compiler/Tags/Blocks/TemplateBlock.php';
 require_once __DIR__ . '/../../Compiler/Tags/Blocks/SwitchBlock.php';
+
+require_once __DIR__ . '/../../Extension.php';
+require_once __DIR__ . '/../../Compiler/Extensions/Core.php';
+
+require_once __DIR__ . '/../../Compiler/TemplateFunction.php';
+require_once __DIR__ . '/../../Compiler/Functions/SimpleFunction.php';
+require_once __DIR__ . '/../../Compiler/Functions/MethodFunction.php';
+require_once __DIR__ . '/../../Compiler/Functions/CallbackFunction.php';
 
 require_once __DIR__ . '/../../Compiler/Operator.php';
 require_once __DIR__ . '/../../Compiler/Operators/ComparisonOperators/EqualOperator.php';
@@ -87,7 +97,7 @@ class ParserTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->object = new Parser(new TemplateDescriptor());
+        $this->object = new Parser(new Environment(new TemplatingOptions()));
     }
 
     public function testParseEmpty()

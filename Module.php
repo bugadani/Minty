@@ -24,12 +24,16 @@ class Module extends \Miny\Application\Module
         $app->templating_options = $options;
         $app->autoloader->register('\\' . $options->cache_namespace, dirname($options->cache_path));
 
-        $app->add('template_descriptor', __NAMESPACE__ . '\\Compiler\\TemplateDescriptor');
+        $app->add('miny_extensions', __NAMESPACE__ . '\\Compiler\\Extensions\\Miny')
+                ->setArguments('&app');
+        $app->add('template_environment', __NAMESPACE__ . '\\Compiler\\Environment')
+                ->setArguments('&templating_options')
+                ->addMethodCall('addExtension', '&miny_extensions');
         $app->add('template_plugins', __NAMESPACE__ . '\\Plugins')
                 ->setArguments('&app');
         $app->add('template_compiler', __NAMESPACE__ . '\\Compiler\\TemplateCompiler')
-                ->setArguments($options, '&template_descriptor');
+                ->setArguments('&template_environment');
         $app->add('template_loader', __NAMESPACE__ . '\\TemplateLoader')
-                ->setArguments($options, '&template_compiler', '&template_plugins', '&log');
+                ->setArguments('&template_environment', '&template_compiler', '&log');
     }
 }
