@@ -144,6 +144,7 @@ class Core extends Extension
             new SimpleFunction('capitalize', 'ucfirst'),
             new SimpleFunction('count'),
             new MethodFunction('cycle', 'filter_cycle'),
+            new MethodFunction('date_format', 'filter_date_format'),
             new MethodFunction('first', 'filter_first'),
             new SimpleFunction('format', 'sprintf'),
             new MethodFunction('join', 'filter_join'),
@@ -210,6 +211,11 @@ class Core extends Extension
             $element = each($array);
         }
         return $element['value'];
+    }
+
+    public function filter_date_format($date, $format)
+    {
+        return date($format, strtotime($date));
     }
 
     public function filter_first($data, $number = 1)
