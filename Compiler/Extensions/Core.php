@@ -37,8 +37,6 @@ use Modules\Templating\Compiler\Operators\ParenthesisOperators\ParenthesisOperat
 use Modules\Templating\Compiler\Operators\PeriodOperator;
 use Modules\Templating\Compiler\Operators\PipeOperator;
 use Modules\Templating\Compiler\Operators\PlusOperator;
-use Modules\Templating\Compiler\Operators\PowerOperator;
-use Modules\Templating\Compiler\Operators\RangeOperator;
 use Modules\Templating\Compiler\Operators\StartsWithOperator;
 use Modules\Templating\Compiler\Operators\StringOperator;
 use Modules\Templating\Compiler\Operators\TestOperators\DivisibleByOperator;
@@ -50,6 +48,7 @@ use Modules\Templating\Compiler\Operators\TestOperators\SameAsOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\DecrementOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\IncrementOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\NotOperator;
+use Modules\Templating\Compiler\Tags\AssignTag;
 use Modules\Templating\Compiler\Tags\Blocks\BlockBlock;
 use Modules\Templating\Compiler\Tags\Blocks\ForBlock;
 use Modules\Templating\Compiler\Tags\Blocks\IfBlock;
@@ -131,6 +130,7 @@ class Core extends Extension
             new ElseTag(),
             new ElseIfTag(),
             new ExtendsTag(),
+            new AssignTag(),
         );
         return $tags;
     }
@@ -323,7 +323,7 @@ class Core extends Extension
             $data = iterator_to_array($data);
         }
         if (is_array($data)) {
-            usort($data, function() {
+            usort($data, function () {
                 return rand() > rand();
             });
             return $data;

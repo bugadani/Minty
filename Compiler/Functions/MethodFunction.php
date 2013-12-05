@@ -15,7 +15,7 @@ class MethodFunction extends TemplateFunction
 {
     private $method_name;
 
-    function __construct($name, $method, $is_safe = false)
+    public function __construct($name, $method, $is_safe = false)
     {
         parent::__construct($name, $is_safe);
         $this->method_name = $method;

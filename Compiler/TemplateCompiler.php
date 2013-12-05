@@ -27,10 +27,6 @@ class TemplateCompiler
     const STATE_BLOCK_TEMPLATE        = 6;
 
     private static $main_template = 'Template';
-    private static $patterns      = array(
-        'output'     => 'echo %s;',
-        'assignment' => '$this->%s = %s;',
-    );
     private static $operators     = array(
         '^'                   => 'compilePowerOperator',
         '->'                  => 'compileArrowOperator',
@@ -90,6 +86,7 @@ class TemplateCompiler
     private $extended_template;
     private $indentation = 0;
     private $filters;
+    private $last_filter_safe;
 
     public function __construct(Environment $environment)
     {
@@ -155,11 +152,10 @@ class TemplateCompiler
         return $value;
     }
 
-    public function compileExclusiveRangeOperator(array &$retval, &$need_autoescape)
+    public function compileExclusiveRangeOperator(array &$retval)
     {
-        $need_autoescape = false;
-        $min             = array_pop($retval);
-        $max_token       = $this->tokens->nextToken();
+        $min       = array_pop($retval);
+        $max_token = $this->tokens->nextToken();
         if ($max_token->test(Token::LITERAL)) {
             $max = $max_token->getValue();
             if (is_numeric($max)) {
@@ -180,11 +176,10 @@ class TemplateCompiler
         return false;
     }
 
-    public function compileRangeOperator(array &$retval, &$need_autoescape)
+    public function compileRangeOperator(array &$retval)
     {
-        $need_autoescape = false;
-        $min             = array_pop($retval);
-        $max_token       = $this->tokens->nextToken();
+        $min       = array_pop($retval);
+        $max_token = $this->tokens->nextToken();
         if ($max_token->test(Token::LITERAL)) {
             $max = $max_token->getValue();
         } elseif ($max_token->test(Token::STRING)) {
@@ -204,12 +199,9 @@ class TemplateCompiler
         return false;
     }
 
-    public function compilePowerOperator(array &$retval, &$need_autoescape)
+    public function compilePowerOperator(array &$retval)
     {
-        $base = array_pop($retval);
-        if (empty($retval)) {
-            $need_autoescape = false;
-        }
+        $base      = array_pop($retval);
         $arg_token = $this->tokens->nextToken();
         if ($arg_token->test(Token::LITERAL)) {
             $exponent = $arg_token->getValue();
@@ -229,7 +221,6 @@ class TemplateCompiler
     public function compileArrowOperator(array &$retval)
     {
         $retval[] = '->' . $this->tokens->nextToken()->getValue();
-        return false;
     }
 
     public function compileTildeOperator(array &$retval)
@@ -239,14 +230,14 @@ class TemplateCompiler
         } else {
             $retval[] = '~';
         }
-        return false;
     }
 
     public function compileFilterOperator(array &$retval)
     {
         $filter = $this->tokens->nextToken()->getValue();
         if ($filter == 'raw') {
-            return true;
+            $this->last_filter_safe = true;
+            return false;
         }
 
         $last_expr = array_pop($retval);
@@ -255,25 +246,7 @@ class TemplateCompiler
             $last_expr .= ', ';
             $last_expr .= $this->processArgumentList($token, 'none');
         }
-
-        $filter_obj = $this->environment->getFunction($filter);
-
-        if ($filter_obj instanceof MethodFunction) {
-            $extension_name = $filter_obj->getExtensionName();
-            $filter         = $filter_obj->getMethod();
-            $pattern        = '$this->getExtension(\'%s\')->%s(%s)';
-            $retval[]       = sprintf($pattern, $extension_name, $filter, $last_expr);
-        } elseif ($filter_obj instanceof SimpleFunction) {
-
-            $filter   = $filter_obj->getFunction();
-            $pattern  = '%s(%s)';
-            $retval[] = sprintf($pattern, $filter, $last_expr);
-        } else {
-
-            $retval[] = $this->functionCall($filter, $last_expr);
-        }
-
-        return $filter_obj->isSafe();
+        $retval[] = $this->compileFunctionCall($filter, $last_expr);
     }
 
     public function compilePeriodOperator(array &$retval)
@@ -282,11 +255,11 @@ class TemplateCompiler
         $previous = array_pop($retval);
 
         if (is_numeric($key)) {
+            //objects can't have numeric properties
             $retval[] = sprintf('%s[%s]', $previous, $key);
         } else {
             $retval[] = sprintf('$this->getByKey(%s, \'%s\')', $previous, $key);
         }
-        return false;
     }
 
     public function compileOpeningBracketOperator(array &$retval)
@@ -294,18 +267,14 @@ class TemplateCompiler
         $retval[] = array_pop($retval) . '[';
 
         $this->compileToken($this->tokens->nextToken(), $retval);
-        return false;
     }
 
-    public function
-
-    compileClosingBracketOperator(array &$retval)
+    public function compileClosingBracketOperator(array &$retval)
     {
         $retval[] = ']';
-        return false;
     }
 
-    public function compileIsOperator(array&$retval)
+    public function compileIsOperator(array &$retval)
     {
         if ($this->tokens->nextTokenIf(Token::OPERATOR, '!')) {
             $ret = '!';
@@ -324,69 +293,90 @@ class TemplateCompiler
         $retval[] = $ret . $this->functionCall($test, $arguments);
     }
 
+    private function compileStringTest(&$retval, $function)
+    {
+        $last    = array_pop($retval);
+        $this->compileToken($this->tokens->nextToken(), $retval);
+        $pattern = array_pop($retval);
+        return sprintf('$this->%s(%s, %s)', $function, $last, $pattern);
+    }
+
     public function compileStartsWithOperator(array &$retval)
     {
-        $last     = array_pop($retval);
-        $this->compileToken($this->tokens->nextToken(), $retval);
-        $pattern  = array_pop(
-                $retval);
-        $retval[] = sprintf('$this->startsWith(%s, %s)', $last, $pattern);
+        $retval[] = $this->compileStringTest($retval, 'startsWith');
     }
 
     public function compileEndsWithOperator(array &$retval)
     {
-        $last     = array_pop($retval);
-        $this->compileToken($this->tokens->nextToken(), $retval);
-        $pattern  = array_pop($retval);
-        $retval[] = sprintf('$this->endsWith(%s, %s)', $last, $pattern);
+        $retval[] = $this->compileStringTest($retval, 'endsWith');
     }
 
     public function compileMatchesOperator(array &$retval)
     {
-        $last     = array_pop($retval);
-        $this->compileToken($this->tokens->nextToken(), $retval);
-        $pattern  = array_pop($retval);
-        $retval[] = sprintf('$this->isLike(%s, %s)', $last, $pattern);
+        $retval[] = $this->compileStringTest($retval, 'isLike');
     }
 
     public function compileNotStartsWithOperator(array &$retval)
     {
-
         $this->compileStartsWithOperator($retval);
         $retval[] = '!' . array_pop($retval);
     }
 
     public function compileNotEndsWithOperator(array &$retval)
     {
-
         $this->compileEndsWithOperator($retval);
         $retval[] = '!' . array_pop($retval);
     }
 
     public function compileNotMatchesOperator(array &$retval)
     {
-
         $this->compileMatchesOperator($retval);
         $retval[] = '!' . array_pop($retval);
     }
 
-    private function compileOperator(Token $token, &$retval, &$need_autoescape)
+    private function compileOperator(Token $token, &$retval)
     {
         $operator = $token->getValue();
 
         if (!isset(self::$operators [$operator])) {
             $left_op  = array_pop($retval);
             $retval[] = $left_op . $operator;
-            return false;
+            return;
         }
-
         $compiler = self::$operators[$operator];
         if (is_callable(array($this, $compiler))) {
-            return $this->$compiler($retval, $need_autoescape);
+            if ($this->$compiler($retval) === false) {
+                return false;
+            }
+        } else {
+            $left_op  = array_pop($retval);
+            $retval[] = $left_op . $compiler;
         }
-        $left_op  = array_pop($retval);
-        $retval[] = $left_op . $compiler;
-        return false;
+        return true;
+    }
+
+    public function compileFunctionCall($function_name, $args = '')
+    {
+        if ($args instanceof Token) {
+            $args = $this->processArgumentList($args, 'none');
+        }
+        $function = $this->environment->getFunction($function_name);
+
+        $this->last_filter_safe = $function->isSafe();
+
+        if ($function instanceof MethodFunction) {
+            $extension_name = $function->getExtensionName();
+            $function_name  = $function->getMethod();
+            $pattern        = '$this->getExtension(\'%s\')->%s(%s)';
+
+            return sprintf($pattern, $extension_name, $function_name, $args);
+        } elseif ($function instanceof SimpleFunction) {
+            $function_name = $function->getFunction();
+            $pattern       = '%s(%s)';
+            return sprintf($pattern, $function_name, $args);
+        } else {
+            return $this->functionCall($function_name, $args);
+        }
     }
 
     private function compileKeyword($keyword, array &$retval)
@@ -413,25 +403,24 @@ class TemplateCompiler
         }
         if ($token && $token->test(Token::ARGUMENT_LIST_START)) {
             $where .= $this->processArgumentList($token);
-        } $what     = array_pop($retval);
+        }
+        $what     = array_pop($retval);
         $retval[] = sprintf('$this->isIn(%s, %s)', $what, $where);
     }
 
     public function compileNotInKeyword(array &$retval)
     {
-
         $this->compileInKeyword($retval);
         $retval[] = '!' . array_pop($retval);
     }
 
     public function compileSetKeyword(array & $retval)
     {
-        $token    = $this->tokens->
-                nextToken();
+        $token    = $this->tokens->nextToken();
         $retval[] = sprintf('isset(%s)', $this->variable($token->getValue()));
     }
 
-    private function compileToken(Token $token, array &$retval, &$need_autoescape = false)
+    private function compileToken(Token $token, array &$retval)
     {
         switch ($token->getType()) {
             case Token::KEYWORD:
@@ -439,11 +428,8 @@ class TemplateCompiler
                 break;
 
             case Token:: EXPRESSION_START:
-                $expr = $this->compileExpression($this->tokens->nextToken(), false, $need_autoescape);
-                if ($token->getValue() !== 'implicit') {
-                    $expr = sprintf('(%s)', $expr);
-                }
-                $retval[] = $expr;
+                $compiled_expr = $this->compileExpression($this->tokens->nextToken());
+                $retval[]      = '(' . $compiled_expr . ')';
                 break;
 
             case Token::IDENTIFIER:
@@ -452,33 +438,18 @@ class TemplateCompiler
                 $next = $this->tokens->nextTokenIf(Token::ARGUMENT_LIST_START, 'args');
                 if ($next) {
                     if ($this->environment->hasFunction($name)) {
-                        $filter_obj = $this->environment->getFunction($name);
-                        if ($filter_obj instanceof MethodFunction) {
-                            $extension_name = $filter_obj->getExtensionName();
-                            $filter         = $filter_obj->getMethod();
-                            $pattern        = '$this->getExtension(\'%s\')->%s(%s)';
-                            $args           = $this->processArgumentList($next, 'none');
-                            $retval[]       = sprintf($pattern, $extension_name, $filter, $args);
-                        } elseif ($filter_obj instanceof SimpleFunction) {
-
-                            $filter   = $filter_obj->getFunction();
-                            $args     = $this->processArgumentList($next);
-                            $pattern  = '%s%s';
-                            $retval[] = sprintf($pattern, $filter, $args);
-                        } else {
-                            $retval[] = $this->functionCall($name, $next);
-                        }
+                        $retval[] = $this->compileFunctionCall($name, $next);
                     } else {
                         $retval[] = $this->functionCall($name, $next);
                     }
                 } else {
-                    $need_autoescape = true;
-                    $retval[]        = $this->variable($name);
+                    $retval[] = $this->variable($name);
+                    return true;
                 }
                 break;
 
             case Token::OPERATOR:
-                return $this->compileOperator($token, $retval, $need_autoescape);
+                return $this->compileOperator($token, $retval);
 
             case Token::LITERAL:
             case Token::STRING:
@@ -488,21 +459,22 @@ class TemplateCompiler
             case Token::ARGUMENT_LIST_START:
                 $retval[] = $this->processArgumentList($token);
                 break;
-        } return false;
+        }
+        return true;
     }
 
-    public function compileExpression(Token $token, $apply_autoescape = false, &$need_autoescape = false)
+    public function compileExpression(Token $token, $apply_autoescape = false)
     {
-        $retval             = array();
-        $inhibit_autoescape = false;
+        $retval = array();
         while (!$token->test(Token::EXPRESSION_END)) {
-            $inhibit_autoescape = $this->compileToken($token, $retval, $need_autoescape);
+            $this->last_filter_safe = false;
+            $apply_autoescape &= $this->compileToken($token, $retval);
 
             $token = $this->tokens->nextToken();
         }
 
         $string = implode('', $retval);
-        if ($need_autoescape && $apply_autoescape && !$inhibit_autoescape) {
+        if ($apply_autoescape && !$this->last_filter_safe) {
             $string = $this->functionCall('filter', $string);
         }
         return $string;
@@ -543,36 +515,17 @@ class TemplateCompiler
         return $output;
     }
 
-    private function processKeyword(Token $token)
-    {
-        switch ($token->getValue()) {
-            case 'assign':
-                $stream = $this->getTokenStream();
-                $var    = $stream->nextToken()->getValue();
-                $stream->nextToken();
-                $expr   = $this->compileExpression($stream->nextToken());
-                $this->output(self::$patterns['assignment'], $var, $expr);
-                break;
-        }
-    }
-
-    private function processOutputExpressionState(Token $token)
-    {
-        $retval = $this->compileExpression($token, true);
-        $this->output(self::$patterns['output'], $retval);
-    }
-
     private function processState(Token $token)
     {
-        switch (
-        $token->getType()) {
+        switch ($token->getType()) {
             case Token::TEXT:
                 $string = strtr($token->getValue(), array("'" => "\'", '\\' => '\\\\'));
                 $this->output("echo '%s';", $string);
                 break;
 
             case Token::EXPRESSION_START:
-                $this->processOutputExpressionState($this->tokens->nextToken());
+                $retval = $this->compileExpression($this->tokens->nextToken(), true);
+                $this->output("echo %s;", $retval);
                 break;
 
             case Token::TAG:
@@ -586,10 +539,6 @@ class TemplateCompiler
             case Token::BLOCK_END:
                 $this->compileBlockEnd($token);
                 break;
-
-            case Token::KEYWORD:
-                $this->processKeyword($token);
-                break;
         }
     }
 
@@ -600,7 +549,6 @@ class TemplateCompiler
 
     public function startTemplate($template)
     {
-
         $this->template_stack[] = $template . 'Template';
         $this->addOutputStack();
     }
@@ -629,9 +577,7 @@ class TemplateCompiler
 
     public function raw($string)
     {
-        $this->output
-
-                .= $string;
+        $this->output .= $string;
     }
 
     public function indent()
@@ -642,9 +588,7 @@ class TemplateCompiler
     public function outdent()
     {
         if ($this->indentation == 0) {
-            throw new
-
-            BadMethodCallException('Cannot outdent more.');
+            throw new BadMethodCallException('Cannot outdent more.');
         }
         $this->indentation--;
     }
@@ -658,8 +602,7 @@ class TemplateCompiler
     public function popState()
     {
         array_pop($this->state_data);
-        return array_pop($this->
-                states);
+        return array_pop($this->states);
     }
 
     public function getState()
@@ -708,27 +651,22 @@ class TemplateCompiler
         $this->output($template);
         $this->indent();
         $this->output('}');
-        $this->
-                output('');
-//return sprintf(self::$patterns['template'], $name, $template);
+        $this->output('');
     }
 
-    public function setExtendedTemplate(
-    $template)
+    public function setExtendedTemplate($template)
     {
         $this->extended_template = $template;
     }
 
-    public
-            function extendsTemplate()
+    public function extendsTemplate()
     {
         return $this->extended_template !== self::$main_template;
     }
 
     public function getExtendedTemplate()
     {
-        if (!$this->
-                        extendsTemplate()) {
+        if (!$this->extendsTemplate()) {
             return false;
         }
         return $this->extended_template;
@@ -743,12 +681,10 @@ class TemplateCompiler
     {
         if (!$template) {
             return 'Modules\Templating\Template';
-        } $namespace = $this->options->cache_namespace;
-
-
+        }
+        $namespace = $this->options->cache_namespace;
         $namespace .= '\\' . strtr($template, '/', '\\');
-        return $namespace .
-                'Template';
+        return $namespace . 'Template';
     }
 
     public function getTokenStream()

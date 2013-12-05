@@ -11,6 +11,7 @@ namespace Modules\Templating\Compiler\Operators;
 
 use Modules\Templating\Compiler\Operator;
 use Modules\Templating\Compiler\Parser;
+use Modules\Templating\Compiler\TemplateCompiler;
 use Modules\Templating\Compiler\Token;
 
 class ArithmeticOperators extends Operator
@@ -33,7 +34,7 @@ class ArithmeticOperators extends Operator
         );
         if ($stream->test($binary)) {
             $parser->pushToken(Token::OPERATOR, $operator);
-            $not_sign = function($operator) {
+            $not_sign = function ($operator) {
                 return !($operator == '+' || $operator == '-');
             };
             $stream->expect(Token::EXPRESSION_END, null, 1, true)->also(Token::OPERATOR, $not_sign, 1, true);

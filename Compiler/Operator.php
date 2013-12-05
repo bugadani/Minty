@@ -37,4 +37,5 @@ abstract class Operator
         }
         return $this->parseOperator($parser, $operator);
     }
+
 }

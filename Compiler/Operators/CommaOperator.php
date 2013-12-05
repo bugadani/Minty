@@ -30,9 +30,6 @@ class CommaOperator extends Operator
         if ($stream->test(Token::ARGUMENT_LIST_START)) {
             return false;
         }
-        /* if ($parser->isState(Parser::STATE_EXPRESSION, 'implicit', true)) {
-          $parser->pushToken(Token::EXPRESSION_END, 'implicit');
-          } */
         if ($parser->isState(Parser::STATE_ARGUMENT_LIST)) {
             $parser->pushToken(Token::OPERATOR, $operator);
             return true;

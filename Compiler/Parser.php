@@ -166,7 +166,7 @@ class Parser
             $cursor += strlen($text);
             $cursor += strlen($tag);
 
-            if(strpos($tag, '{#') === 0 && strrpos($tag, '#}') === strlen($tag) - 2) {
+            if (strpos($tag, '{#') === 0 && strrpos($tag, '#}') === strlen($tag) - 2) {
                 continue;
             }
             $tag_expr = $matches[1][$position][0];
@@ -294,10 +294,10 @@ class Parser
             return false;
         }
 
-        $this->pushToken(Token::KEYWORD, 'assign');
+        $this->pushToken(Token::TAG, 'set');
         $this->pushToken(Token::IDENTIFIER, $identifier);
         $this->pushState(self::STATE_ASSIGNMENT);
-        $this->parseExpression($expression, '{', '}');
+        $this->parseExpression($expression);
         $this->popState();
         return true;
     }
