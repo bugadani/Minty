@@ -143,6 +143,7 @@ class Core extends Extension
             new MethodFunction('batch', 'filter_batch'),
             new SimpleFunction('capitalize', 'ucfirst'),
             new SimpleFunction('count'),
+            new MethodFunction('cycle', 'filter_cycle'),
             new MethodFunction('first', 'filter_first'),
             new SimpleFunction('format', 'sprintf'),
             new MethodFunction('join', 'filter_join'),
@@ -150,11 +151,11 @@ class Core extends Extension
             new SimpleFunction('keys', 'array_keys'),
             new MethodFunction('last', 'filter_last'),
             new MethodFunction('length', 'filter_length', true),
-            new MethodFunction('link_to', 'function_link_to', true),
+            new MethodFunction('link_to', 'filter_link_to', true),
             new SimpleFunction('lower', 'strtolower'),
             new SimpleFunction('ltrim'),
             new SimpleFunction('merge', 'array_merge'),
-            new MethodFunction('nl2br', 'filter_nl2br', true),
+            new SimpleFunction('nl2br', 'nl2br', true),
             new SimpleFunction('number_format'),
             new MethodFunction('pluck', 'filter_pluck'),
             new MethodFunction('random', 'filter_random'),
@@ -175,18 +176,16 @@ class Core extends Extension
             new MethodFunction('url_encode', 'filter_url_encode'),
             new MethodFunction('without', 'filter_without'),
             new SimpleFunction('wordwrap'),
-            new MethodFunction('cycle', 'filter_cycle')
         );
     }
 
-    public function filter_cycle(&$array)
+    public function filter_arguments(array $args)
     {
-        $element = each($array);
-        if ($element === false) {
-            reset($array);
-            $element = each($array);
+        $arglist = '';
+        foreach ($args as $name => $value) {
+            $arglist .= ' ' . $name . '="' . $value . '"';
         }
-        return $element['value'];
+        return $arglist;
     }
 
     public function filter_batch($data, $size, $no_item = null)
@@ -203,9 +202,27 @@ class Core extends Extension
         return $result;
     }
 
+    public function filter_cycle(&$array)
+    {
+        $element = each($array);
+        if ($element === false) {
+            reset($array);
+            $element = each($array);
+        }
+        return $element['value'];
+    }
+
     public function filter_first($data, $number = 1)
     {
         return $this->filter_slice($data, 0, $number);
+    }
+
+    public function filter_join($data, $glue = '')
+    {
+        if ($data instanceof Traversable) {
+            $data = iterator_to_array($data);
+        }
+        return implode($glue, $data);
     }
 
     public function filter_last($data, $number = 1)
@@ -221,33 +238,30 @@ class Core extends Extension
         if (is_array($data) || $data instanceof Countable) {
             return count($data);
         }
-
         throw new InvalidArgumentException('Reverse expects an array, a string or a Countable instance');
     }
 
-    public function
-
-    filter_nl2br($string)
+    public function filter_link_to($label, $url, array $args = array())
     {
-        //$string = $this->filter($string);
-        return nl2br($string);
+        $args['href'] = $url;
+        return sprintf('<a%s>%s</a>', $this->filter_arguments($args), $label);
     }
 
-    public function filter_reverse($data, $preserve_keys = false)
+    public function filter_pluck($array, $key)
     {
-        if (is_string($data)) {
-            return strrev($data);
+        if (!is_array($array) && !$array instanceof Traversable) {
+            throw new InvalidArgumentException('Pluck expects a two-dimensional array as the first argument.');
         }
-        if ($data instanceof Traversable) {
-            $data = iterator_to_array(
-                    $data);
-        }
-        if (is_array($data)) {
-            return array_reverse($data, $preserve_keys);
-        }
-        throw
+        $return = array();
 
-        new InvalidArgumentException('Reverse expects an array or a string');
+        foreach ($array as $element) {
+            if (is_array($element) || $element instanceof ArrayAccess) {
+                if (isset($element[$key])) {
+                    $return[] = $element[$key];
+                }
+            }
+        }
+        return $return;
     }
 
     public function filter_random($data = null)
@@ -262,13 +276,53 @@ class Core extends Extension
             $data = str_split($data);
         }
         if ($data instanceof Traversable) {
-            $data = iterator_to_array(
-                    $data);
+            $data = iterator_to_array($data);
         }
         if (is_array($data)) {
-            return $data [array_rand($data)];
+            return $data[array_rand($data)];
         }
         throw new InvalidArgumentException('Random expects an array, a number or a string');
+    }
+
+    public function filter_regexp_replace($string, $pattern, $replace)
+    {
+        return preg_replace($pattern, $replace, $string);
+    }
+
+    public function filter_replace($string, $search, $replace)
+    {
+        return str_replace($search, $replace, $string);
+    }
+
+    public function filter_reverse($data, $preserve_keys = false)
+    {
+        if (is_string($data)) {
+            return strrev($data);
+        }
+        if ($data instanceof Traversable) {
+            $data = iterator_to_array($data);
+        }
+        if (is_array($data)) {
+            return array_reverse($data, $preserve_keys);
+        }
+        throw new InvalidArgumentException('Reverse expects an array or a string');
+    }
+
+    public function filter_shuffle($data)
+    {
+        if (is_string($data)) {
+            return str_shuffle($data);
+        }
+        if ($data instanceof Traversable) {
+            $data = iterator_to_array($data);
+        }
+        if (is_array($data)) {
+            usort($data, function() {
+                return rand() > rand();
+            });
+            return $data;
+        }
+        throw new InvalidArgumentException('Shuffle expects an array or a string');
     }
 
     public function filter_slice($data, $start, $length, $preserve_keys = false)
@@ -281,66 +335,11 @@ class Core extends Extension
             }
         }
         if ($data instanceof Traversable) {
-
             $data = iterator_to_array($data);
         } if (is_array($data)) {
             return array_slice($data, $start, $length, $preserve_keys);
         }
         throw new InvalidArgumentException('Slice expects an array or a string');
-    }
-
-    public function filter_join($data, $glue = '')
-    {
-        if ($data instanceof Traversable) {
-            $data = iterator_to_array($data);
-        }
-        return implode($glue, $data);
-    }
-
-    public function filter_arguments(array $args)
-    {
-        $arglist = array();
-        foreach ($args as $name => $value) {
-            $arglist[] = sprintf(' %s="%s"', $name, $value);
-        }
-        return implode('', $arglist);
-    }
-
-    public function filter_split($string, $delimiter = '', $limit = null)
-    {
-        if (!is_string($string)) {
-
-            throw new InvalidArgumentException('Split expects a string');
-        }
-        if ($delimiter === '') {
-            return str_split($string, $limit ? : 1);
-        } elseif ($limit === null) {
-            return explode($delimiter, $string);
-        }
-        return explode($delimiter, $string, $limit);
-    }
-
-    public function filter_replace($string, $search, $replace)
-    {
-        return str_replace($search, $replace, $string);
-    }
-
-    public function filter_shuffle($data)
-    {
-        if (is_string($data)) {
-            return str_shuffle($data);
-        }
-
-        if ($data instanceof Traversable) {
-            $data = iterator_to_array($data);
-        }
-        if (is_array($data)) {
-            usort($data, function() {
-                return rand() > rand();
-            });
-            return $data;
-        }
-        throw new InvalidArgumentException('Shuffle expects an array or a string');
     }
 
     public function filter_sort($data, $reverse = false)
@@ -359,6 +358,36 @@ class Core extends Extension
         throw new InvalidArgumentException('Sort expects an array');
     }
 
+    public function filter_spacify($string, $delimiter = ' ')
+    {
+        if (!is_string($string)) {
+            throw new InvalidArgumentException('Spacify expects a string.');
+        }
+        return implode($delimiter, str_split($string));
+    }
+
+    public function filter_split($string, $delimiter = '', $limit = null)
+    {
+        if (!is_string($string)) {
+            throw new InvalidArgumentException('Split expects a string');
+        }
+        if ($delimiter === '') {
+            return str_split($string, $limit ? : 1);
+        } elseif ($limit === null) {
+            return explode($delimiter, $string);
+        }
+        return explode($delimiter, $string, $limit);
+    }
+
+    public function filter_truncate($string, $length, $ellipsis = '...')
+    {
+        if (strlen($string) > $length) {
+            $string = $this->first($string, $length);
+            $string .= $ellipsis;
+        }
+        return $string;
+    }
+
     public function filter_url_encode($data, $raw)
     {
         if ($data instanceof Traversable) {
@@ -373,51 +402,14 @@ class Core extends Extension
         return urlencode($data);
     }
 
-    public function filter_pluck($array, $key)
-    {
-        if (!is_array($array) && !$array instanceof Traversable) {
-            throw new InvalidArgumentException('Pluck expects a two-dimensional array as the first argument.');
-        }
-        $return = array();
-
-        foreach ($array as $element) {
-            if (is_array(element) || $element instanceof ArrayAccess) {
-                if (isset($element[$key])) {
-                    $return[] = $element[$key];
-                }
-            }
-        }
-        return $return;
-    }
-
-    public function filter_spacify($string, $delimiter = ' ')
-    {
-        if(!is_string($string)) {
-            throw new InvalidArgumentException('Spacify expects a string.');
-        }
-        return implode($delimiter, str_split($string));
-    }
-
-    public function filter_truncate($string, $length, $ellipsis = '...')
-    {
-        if (strlen($string
-                ) > $length) {
-            $string = $this->first($string, $length);
-            $string .= $ellipsis;
-        }
-        return $string;
-    }
-
     public function filter_without($data, $without)
     {
         if (is_string($data)) {
-            if (!is_string($without)) {
-                if (!is_array($without)) {
-                    if ($without instanceof Traversable) {
-                        $without = iterator_to_array($without);
-                    } else {
-                        throw new InvalidArgumentException('Without expects string or array arguments.');
-                    }
+            if (!is_string($without) && !is_array($without)) {
+                if ($without instanceof Traversable) {
+                    $without = iterator_to_array($without);
+                } else {
+                    throw new InvalidArgumentException('Without expects string or array arguments.');
                 }
             }
             return str_replace($without, '', $data);
@@ -435,11 +427,5 @@ class Core extends Extension
             }
             return array_diff($data, $without);
         }
-    }
-
-    public function function_link_to($label, $url, array $args = array())
-    {
-        $args['href'] = $url;
-        return sprintf('<a%s>%s</a>', $this->filter_arguments($args), $label);
     }
 }
