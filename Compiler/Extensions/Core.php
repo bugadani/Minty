@@ -14,52 +14,35 @@ use Countable;
 use InvalidArgumentException;
 use Modules\Templating\Compiler\Functions\MethodFunction;
 use Modules\Templating\Compiler\Functions\SimpleFunction;
-use Modules\Templating\Compiler\Operators\AndOperator;
-use Modules\Templating\Compiler\Operators\ArithmeticOperators;
+use Modules\Templating\Compiler\Operator;
+use Modules\Templating\Compiler\Operators\ArithmeticOperators\AdditionOperator;
+use Modules\Templating\Compiler\Operators\ArithmeticOperators\DivisionOperator;
+use Modules\Templating\Compiler\Operators\ArithmeticOperators\ExponentialOperator;
+use Modules\Templating\Compiler\Operators\ArithmeticOperators\MultiplicationOperator;
+use Modules\Templating\Compiler\Operators\ArithmeticOperators\RemainderOperator;
+use Modules\Templating\Compiler\Operators\ArithmeticOperators\SubtractionOperator;
 use Modules\Templating\Compiler\Operators\ArrowOperator;
-use Modules\Templating\Compiler\Operators\ColonOperator;
-use Modules\Templating\Compiler\Operators\CommaOperator;
-use Modules\Templating\Compiler\Operators\ComparisonOperators\EqualOperator;
-use Modules\Templating\Compiler\Operators\ComparisonOperators\GreaterOperator;
-use Modules\Templating\Compiler\Operators\ComparisonOperators\GreaterOrEqualOperator;
-use Modules\Templating\Compiler\Operators\ComparisonOperators\LessOperator;
-use Modules\Templating\Compiler\Operators\ComparisonOperators\LessOrEqualOperator;
-use Modules\Templating\Compiler\Operators\ComparisonOperators\NotEqualOperator;
-use Modules\Templating\Compiler\Operators\ConcatenationOperator;
-use Modules\Templating\Compiler\Operators\DoubleArrowOperator;
-use Modules\Templating\Compiler\Operators\EndsWithOperator;
-use Modules\Templating\Compiler\Operators\IsOperator;
-use Modules\Templating\Compiler\Operators\MatchesOperator;
+use Modules\Templating\Compiler\Operators\ComparisonOperators\EqualsOperator;
+use Modules\Templating\Compiler\Operators\ComparisonOperators\GreaterThanOperator;
+use Modules\Templating\Compiler\Operators\ComparisonOperators\GreaterThanOrEqualsOperator;
+use Modules\Templating\Compiler\Operators\ComparisonOperators\LessThanOperator;
+use Modules\Templating\Compiler\Operators\ComparisonOperators\LessThanOrEqualsOperator;
+use Modules\Templating\Compiler\Operators\ComparisonOperators\NotEqualsOperator;
+use Modules\Templating\Compiler\Operators\ExclusiveRangeOperator;
+use Modules\Templating\Compiler\Operators\ExistenceOperators\IsNotSetOperator;
+use Modules\Templating\Compiler\Operators\ExistenceOperators\IsSetOperator;
+use Modules\Templating\Compiler\Operators\FilterOperator;
 use Modules\Templating\Compiler\Operators\MinusOperator;
-use Modules\Templating\Compiler\Operators\OrOperator;
-use Modules\Templating\Compiler\Operators\ParenthesisOperators\BracketOperator;
-use Modules\Templating\Compiler\Operators\ParenthesisOperators\ParenthesisOperator;
-use Modules\Templating\Compiler\Operators\PeriodOperator;
-use Modules\Templating\Compiler\Operators\PipeOperator;
-use Modules\Templating\Compiler\Operators\PlusOperator;
-use Modules\Templating\Compiler\Operators\StartsWithOperator;
-use Modules\Templating\Compiler\Operators\StringOperator;
-use Modules\Templating\Compiler\Operators\TestOperators\DivisibleByOperator;
-use Modules\Templating\Compiler\Operators\TestOperators\EmptyOperator;
-use Modules\Templating\Compiler\Operators\TestOperators\EvenOperator;
-use Modules\Templating\Compiler\Operators\TestOperators\LikeOperator;
-use Modules\Templating\Compiler\Operators\TestOperators\OddOperator;
-use Modules\Templating\Compiler\Operators\TestOperators\SameAsOperator;
-use Modules\Templating\Compiler\Operators\UnaryOperators\DecrementOperator;
-use Modules\Templating\Compiler\Operators\UnaryOperators\IncrementOperator;
-use Modules\Templating\Compiler\Operators\UnaryOperators\NotOperator;
+use Modules\Templating\Compiler\Operators\RangeOperator;
 use Modules\Templating\Compiler\Tags\AssignTag;
-use Modules\Templating\Compiler\Tags\Blocks\BlockBlock;
-use Modules\Templating\Compiler\Tags\Blocks\ForBlock;
-use Modules\Templating\Compiler\Tags\Blocks\IfBlock;
-use Modules\Templating\Compiler\Tags\Blocks\SwitchBlock;
-use Modules\Templating\Compiler\Tags\Blocks\TemplateBlock;
-use Modules\Templating\Compiler\Tags\CaseTag;
-use Modules\Templating\Compiler\Tags\ElseIfTag;
-use Modules\Templating\Compiler\Tags\ElseTag;
-use Modules\Templating\Compiler\Tags\ExtendsTag;
+use Modules\Templating\Compiler\Tags\ForTag;
+use Modules\Templating\Compiler\Tags\IfTag;
 use Modules\Templating\Compiler\Tags\ListTag;
-use Modules\Templating\Compiler\Tags\ParentTag;
+use Modules\Templating\Compiler\Tags\OutputTag;
+use Modules\Templating\Compiler\Tags\SwitchTag;
+use Modules\Templating\Compiler\Tags\TemplateExtension\BlockTag;
+use Modules\Templating\Compiler\Tags\TemplateExtension\ExtendsTag;
+use Modules\Templating\Compiler\Tags\TemplateExtension\ParentTag;
 use Modules\Templating\Extension;
 use Traversable;
 
@@ -71,47 +54,45 @@ class Core extends Extension
         return 'core';
     }
 
-    public function getOperators()
+    public function getBinaryOperators()
+    {
+        $binary_operators = array(
+            //arithmetic operators
+            new AdditionOperator(2),
+            new SubtractionOperator(2),
+            new MultiplicationOperator(3),
+            new DivisionOperator(3),
+            new RemainderOperator(3),
+            new ExponentialOperator(3, Operator::RIGHT),
+            //comparison
+            new EqualsOperator(1),
+            new NotEqualsOperator(1),
+            new LessThanOperator(1),
+            new LessThanOrEqualsOperator(1),
+            new GreaterThanOperator(1),
+            new GreaterThanOrEqualsOperator(1),
+            //other
+            new FilterOperator(1),
+            new RangeOperator(1),
+            new ExclusiveRangeOperator(1),
+            new ArrowOperator(1),
+        );
+        return $binary_operators;
+    }
+
+    public function getPrefixUnaryOperators()
     {
         $operators = array(
-            new ArrowOperator(),
-            new IsOperator(),
-            new StringOperator(),
-            new BracketOperator(),
-            new ParenthesisOperator(),
-            new CommaOperator(),
-            new PeriodOperator(),
-            new PipeOperator(),
-            new NotOperator(),
-            new DoubleArrowOperator(),
-            new ColonOperator(),
-            new ConcatenationOperator(),
-            //arithmetic operators
-            new ArithmeticOperators(),
-            new IncrementOperator(),
-            new DecrementOperator(),
-            new PlusOperator(),
-            new MinusOperator(),
-            //logic operators
-            new AndOperator(),
-            new OrOperator(),
-            //comparison operators
-            new EqualOperator(),
-            new GreaterOperator(),
-            new GreaterOrEqualOperator(),
-            new LessOperator(),
-            new LessOrEqualOperator(),
-            new NotEqualOperator(),
-            //test operators
-            new EmptyOperator(),
-            new EvenOperator(),
-            new OddOperator(),
-            new LikeOperator(),
-            new DivisibleByOperator(),
-            new SameAsOperator(),
-            new StartsWithOperator(),
-            new EndsWithOperator(),
-            new MatchesOperator(),
+            new MinusOperator(4),
+        );
+        return $operators;
+    }
+
+    public function getPostfixUnaryOperators()
+    {
+        $operators = array(
+            new IsSetOperator(4, Operator::RIGHT),
+            new IsNotSetOperator(4, Operator::RIGHT),
         );
         return $operators;
     }
@@ -119,18 +100,15 @@ class Core extends Extension
     public function getTags()
     {
         $tags = array(
-            new IfBlock(),
-            new ForBlock(),
-            new TemplateBlock(),
-            new BlockBlock(),
-            new SwitchBlock(),
-            new ParentTag(),
             new ListTag(),
-            new CaseTag(),
-            new ElseTag(),
-            new ElseIfTag(),
+            new ForTag(),
+            new SwitchTag(),
+            new BlockTag(),
+            new ParentTag(),
             new ExtendsTag(),
+            new IfTag(),
             new AssignTag(),
+            new OutputTag(),
         );
         return $tags;
     }
@@ -172,7 +150,7 @@ class Core extends Extension
             new SimpleFunction('striptags', 'strip_tags', true),
             new SimpleFunction('title_case', 'ucwords'),
             new SimpleFunction('trim'),
-            new MethodFunction('truncare', 'filter_truncare'),
+            new MethodFunction('truncate', 'filter_truncate'),
             new SimpleFunction('upper', 'strtoupper'),
             new MethodFunction('url_encode', 'filter_url_encode'),
             new MethodFunction('without', 'filter_without'),
@@ -388,7 +366,7 @@ class Core extends Extension
     public function filter_truncate($string, $length, $ellipsis = '...')
     {
         if (strlen($string) > $length) {
-            $string = $this->first($string, $length);
+            $string = $this->filter_first($string, $length);
             $string .= $ellipsis;
         }
         return $string;

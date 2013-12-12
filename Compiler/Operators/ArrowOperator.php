@@ -9,9 +9,11 @@
 
 namespace Modules\Templating\Compiler\Operators;
 
+use Modules\Templating\Compiler\Compiler;
+use Modules\Templating\Compiler\Nodes\FunctionNode;
+use Modules\Templating\Compiler\Nodes\IdentifierNode;
+use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Operator;
-use Modules\Templating\Compiler\Parser;
-use Modules\Templating\Compiler\Token;
 
 class ArrowOperator extends Operator
 {
@@ -21,19 +23,18 @@ class ArrowOperator extends Operator
         return '->';
     }
 
-    public function parseOperator(Parser $parser, $operator)
+    public function compile(Compiler $compiler, OperatorNode $node)
     {
-        $stream = $parser->getTokenStream();
-
-        $excluded = array(
-            Token::LITERAL,
-            Token::STRING
-        );
-        if ($stream->test($excluded)) {
-            return false;
+        $right = $node->getOperand(OperatorNode::OPERAND_RIGHT);
+        if ($right instanceof IdentifierNode) {
+            $node->getOperand(OperatorNode::OPERAND_LEFT)->compile($compiler);
+            $compiler->add('->');
+            $compiler->add($right->getName());
+        } elseif ($right instanceof FunctionNode) {
+            $right->setObject($node->getOperand(OperatorNode::OPERAND_LEFT));
+            $right->compile($compiler);
+        } else {
+            $right->compile($compiler);
         }
-        $parser->pushToken(Token::OPERATOR, $operator);
-        $stream->expect(Token::IDENTIFIER);
-        return true;
     }
 }

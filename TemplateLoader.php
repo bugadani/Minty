@@ -11,7 +11,7 @@ namespace Modules\Templating;
 
 use Miny\Log;
 use Modules\Templating\Compiler\Environment;
-use Modules\Templating\Compiler\TemplateCompiler;
+use Modules\Templating\Compiler\Compiler;
 use RuntimeException;
 
 class TemplateLoader
@@ -22,7 +22,7 @@ class TemplateLoader
     private $options;
 
     /**
-     * @var TemplateCompiler
+     * @var Compiler
      */
     private $compiler;
 
@@ -38,10 +38,10 @@ class TemplateLoader
 
     /**
      * @param Environment $environment
-     * @param TemplateCompiler $compiler
+     * @param Compiler $compiler
      * @param Log|null $log
      */
-    public function __construct(Environment $environment, TemplateCompiler $compiler, Log $log = null)
+    public function __construct(Environment $environment, Compiler $compiler, Log $log = null)
     {
         $this->compiler    = $compiler;
         $this->options     = $environment->getOptions();

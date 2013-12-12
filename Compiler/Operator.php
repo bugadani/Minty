@@ -9,12 +9,23 @@
 
 namespace Modules\Templating\Compiler;
 
+use Modules\Templating\Compiler\Nodes\OperatorNode;
+
 abstract class Operator
 {
+    const LEFT  = 0;
+    const RIGHT = 1;
+    const NONE  = 2;
+
+    private $precedence;
+    private $associativity;
     protected $operators;
 
-    public function __construct()
+    public function __construct($precedence, $associativity = self::LEFT)
     {
+        $this->precedence    = $precedence;
+        $this->associativity = $associativity;
+
         $operators = $this->operators();
         if (!is_array($operators)) {
             $operators = array($operators);
@@ -24,18 +35,15 @@ abstract class Operator
 
     abstract public function operators();
 
-    public function parseOperator(Parser $parser, $operator)
+    public function getPrecedence()
     {
-        $parser->pushToken(Token::OPERATOR, $operator);
-        return true;
+        return $this->precedence;
     }
 
-    public function parse(Parser $parser, $operator)
+    public function isAssociativity($associativity)
     {
-        if (!in_array($operator, $this->operators)) {
-            return false;
-        }
-        return $this->parseOperator($parser, $operator);
+        return $this->associativity === $associativity;
     }
 
+    abstract public function compile(Compiler $compiler, OperatorNode $node);
 }

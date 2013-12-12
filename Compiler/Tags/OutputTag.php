@@ -13,32 +13,27 @@ use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Tag;
 use Modules\Templating\Compiler\Nodes\TagNode;
-use Modules\Templating\Compiler\Token;
 use Modules\Templating\Compiler\Stream;
 
-class AssignTag extends Tag
+class OutputTag extends Tag
 {
 
     public function getTag()
     {
-        return 'assign';
+        return 'output';
     }
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $data                  = array();
-        $data['variable_name'] = $stream->current()->getValue();
-        $stream->expect(Token::EXPRESSION_START);
-        $data['value_node']    = $parser->parseExpression($stream);
+        $data               = array();
+        $data['expression'] = $parser->parseExpression($stream);
         return new TagNode($this, $data);
     }
 
     public function compile(Compiler $compiler, array $data)
     {
-        $var        = $data['variable_name'];
-        $value_node = $data['value_node'];
-        $compiler->indented('$this->%s = ', $var);
-        $value_node->compile($compiler);
+        $compiler->indented('echo ');
+        $compiler->add($compiler->compileNode($data['expression']));
         $compiler->add(';');
     }
 }

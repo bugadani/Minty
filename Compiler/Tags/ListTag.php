@@ -9,11 +9,14 @@
 
 namespace Modules\Templating\Compiler\Tags;
 
+use Modules\Templating\Compiler\Compiler;
+use Modules\Templating\Compiler\Exceptions\SyntaxException;
+use Modules\Templating\Compiler\Nodes\TagNode;
 use Modules\Templating\Compiler\Parser;
+use Modules\Templating\Compiler\Stream;
 use Modules\Templating\Compiler\Tag;
-use Modules\Templating\Compiler\TemplateCompiler;
 use Modules\Templating\Compiler\Token;
-use Modules\Templating\Compiler\TokenStream;
+use Modules\Templating\Compiler\Tokenizer;
 
 class ListTag extends Tag
 {
@@ -23,37 +26,35 @@ class ListTag extends Tag
         return 'list';
     }
 
-    public function requiresState()
+    public function tokenizeExpression(Tokenizer $tokenizer, $expression)
     {
-        return array(
-            array(Parser::STATE_TEXT),
-            array(Parser::STATE_BLOCK)
-        );
+        $tokenizer->pushToken(Token::EXPRESSION_START, $this->getTag());
+
+        if (!strpos($expression, 'using')) {
+            throw new SyntaxException('A template must be specified by the using keyword.');
+        }
+        list($expression, $template) = explode('using', $expression);
+
+        //$tokenizer->pushToken(Token::STRING, $template);
+        $tokenizer->tokenizeExpression($template);
+        $tokenizer->tokenizeExpression($expression);
+        $tokenizer->pushToken(Token::EXPRESSION_END);
     }
 
-    public function setExpectations(TokenStream $stream)
+    public function parse(Parser $parser, Stream $stream)
     {
-        $stream->expect(Token::EXPRESSION_START, '(')->then(Token::IDENTIFIER)
-                ->then(Token::KEYWORD, 'using')->then(Token::STRING)->then(Token::EXPRESSION_END, ')');
-        $stream->expect(Token::EXPRESSION_START, '(')->then(Token::ARGUMENT_LIST_START, 'array');
+        $data               = array();
+        $data['template']   = $stream->next()->getValue();
+        $data['expression'] = $parser->parseExpression($stream);
+        return new TagNode($this, $data);
     }
 
-    public function compile(TemplateCompiler $compiler)
+    public function compile(Compiler $compiler, array $data)
     {
-        $stream = $compiler->getTokenStream();
-        $stream->nextToken();
-        $list   = $stream->nextToken();
-        if ($list->test(Token::ARGUMENT_LIST_START, 'array')) {
-            $arguments = $compiler->processArgumentList($list);
-        } else {
-            $list      = $list->getValue();
-            $arguments = '$this->' . $list;
-        }
-
-        if ($stream->nextTokenIf(Token::KEYWORD, 'using')) {
-            $template = $stream->nextToken();
-            $arguments .= ', ' . $compiler->addStringDelimiters($template);
-        }
-        $compiler->output('echo $this->listArrayElements(' . $arguments . ');');
+        $compiler->indented('echo $this->listArrayElements(');
+        $data['expression']->compile($compiler);
+        $compiler->add(', ');
+        $compiler->add($compiler->string($data['template']));
+        $compiler->add(');');
     }
 }

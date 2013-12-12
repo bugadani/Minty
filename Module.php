@@ -31,7 +31,7 @@ class Module extends \Miny\Application\Module
                 ->addMethodCall('addExtension', '&miny_extensions');
         $app->add('template_plugins', __NAMESPACE__ . '\\Plugins')
                 ->setArguments('&app');
-        $app->add('template_compiler', __NAMESPACE__ . '\\Compiler\\TemplateCompiler')
+        $app->add('template_compiler', __NAMESPACE__ . '\\Compiler\\Compiler')
                 ->setArguments('&template_environment');
         $app->add('template_loader', __NAMESPACE__ . '\\TemplateLoader')
                 ->setArguments('&template_environment', '&template_compiler', '&log');

@@ -13,18 +13,20 @@ use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Operator;
 
-class MinusOperator extends Operator
+class RangeOperator extends Operator
 {
 
     public function operators()
     {
-        return '-';
+        return '..';
     }
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
-        $compiler->add('(-');
+        $compiler->add('range(');
         $node->getOperand(OperatorNode::OPERAND_LEFT)->compile($compiler);
+        $compiler->add(', ');
+        $node->getOperand(OperatorNode::OPERAND_RIGHT)->compile($compiler);
         $compiler->add(')');
     }
 }

@@ -19,14 +19,11 @@ abstract class Tag
         return false;
     }
 
-    public function setExpectations(TokenStream $stream)
+    public function tokenizeExpression(Tokenizer $tokenizer, $expression)
     {
-
-    }
-
-    public function parseExpression(Parser $parser, $expression)
-    {
-        $parser->parseExpression($expression, '(', ')');
+        $tokenizer->pushToken(Token::EXPRESSION_START, $this->getTag());
+        $tokenizer->tokenizeExpression($expression);
+        $tokenizer->pushToken(Token::EXPRESSION_END);
     }
 
     public function requiresState()
@@ -34,10 +31,7 @@ abstract class Tag
         return array();
     }
 
-    public function getParentTemplate()
-    {
-        return false;
-    }
+    abstract public function parse(Parser $parser, Stream $stream);
 
-    abstract public function compile(TemplateCompiler $compiler);
+    abstract public function compile(Compiler $compiler, array $data);
 }

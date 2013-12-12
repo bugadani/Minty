@@ -7,13 +7,13 @@
  * For licensing information see the LICENSE file.
  */
 
-namespace Modules\Templating\Compiler\Operators;
+namespace Modules\Templating\Compiler\Operators\ArithmeticOperators;
 
 use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Operator;
 
-class MinusOperator extends Operator
+class SubtractionOperator extends Operator
 {
 
     public function operators()
@@ -23,8 +23,10 @@ class MinusOperator extends Operator
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
-        $compiler->add('(-');
+        $compiler->add('(');
         $node->getOperand(OperatorNode::OPERAND_LEFT)->compile($compiler);
+        $compiler->add(' - ');
+        $node->getOperand(OperatorNode::OPERAND_RIGHT)->compile($compiler);
         $compiler->add(')');
     }
 }

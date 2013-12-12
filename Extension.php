@@ -31,8 +31,14 @@ abstract class Extension
             $function->setExtensionName($this->extension_name);
             $descriptor->addFunction($function);
         }
-        foreach ($this->getOperators() as $operator) {
-            $descriptor->addOperator($operator);
+        foreach ($this->getBinaryOperators() as $operator) {
+            $descriptor->addBinaryOperator($operator);
+        }
+        foreach ($this->getPrefixUnaryOperators() as $operator) {
+            $descriptor->addPrefixUnaryOperator($operator);
+        }
+        foreach ($this->getPostfixUnaryOperators() as $operator) {
+            $descriptor->addPostfixUnaryOperator($operator);
         }
         foreach ($this->getTags() as $tag) {
             $descriptor->addTag($tag);
@@ -50,7 +56,23 @@ abstract class Extension
     /**
      * @return Operator[]
      */
-    public function getOperators()
+    public function getBinaryOperators()
+    {
+        return array();
+    }
+
+    /**
+     * @return Operator[]
+     */
+    public function getPrefixUnaryOperators()
+    {
+        return array();
+    }
+
+    /**
+     * @return Operator[]
+     */
+    public function getPostfixUnaryOperators()
     {
         return array();
     }

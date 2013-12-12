@@ -19,14 +19,10 @@ class TemplatingOptions
     public $reload            = false;
     public $strict_mode       = true;
     public $autoescape        = true;
-    public $short_array;
     public $global_variables  = array();
 
     public function __construct(array $options = array())
     {
-        if (!isset($options['short_array'])) {
-            $options['short_array'] = (PHP_MAJOR_VERSION >= 5 && PHP_MINOR_VERSION >= 4);
-        }
         foreach ($options as $key => $option) {
             $this->$key = $option;
         }

@@ -7,24 +7,24 @@
  * For licensing information see the LICENSE file.
  */
 
-namespace Modules\Templating\Compiler\Operators;
+namespace Modules\Templating\Compiler\Operators\ExistenceOperators;
 
 use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Operator;
 
-class MinusOperator extends Operator
+class IsSetOperator extends Operator
 {
 
     public function operators()
     {
-        return '-';
+        return 'is set';
     }
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
-        $compiler->add('(-');
-        $node->getOperand(OperatorNode::OPERAND_LEFT)->compile($compiler);
+        $compiler->add('isset(');
+        $node->getOperand(OperatorNode::OPERAND_RIGHT)->compile($compiler);
         $compiler->add(')');
     }
 }
