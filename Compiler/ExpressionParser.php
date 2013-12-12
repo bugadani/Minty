@@ -19,6 +19,7 @@ use Modules\Templating\Compiler\Nodes\OperatorNode;
 
 /**
  * Expression parser is based on the Shunting Yard algorithm by Edsger W. Dijkstra
+ * @link http://www.engr.mun.ca/~theo/Misc/exp_parsing.htm
  */
 class ExpressionParser
 {
