@@ -204,6 +204,16 @@ abstract class Template
         return false;
     }
 
+    public function __set($key, $value)
+    {
+        $this->variables[$key] = $value;
+    }
+
+    public function __unset($key)
+    {
+        unset($this->variables[$key]);
+    }
+
     public function &__get($key)
     {
         if (isset($this->variables[$key])) {
