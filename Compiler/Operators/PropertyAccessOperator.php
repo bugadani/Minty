@@ -10,7 +10,7 @@
 namespace Modules\Templating\Compiler\Operators;
 
 use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Nodes\DataNode;
+use Modules\Templating\Compiler\Nodes\FunctionNode;
 use Modules\Templating\Compiler\Nodes\IdentifierNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Operator;
@@ -25,15 +25,22 @@ class PropertyAccessOperator extends Operator
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
-        $compiler->add('$this->getProperty(');
-        $node->getOperand(OperatorNode::OPERAND_LEFT)->compile($compiler);
-        $compiler->add(', ');
-        $right = $node->getOperand(OperatorNode::OPERAND_RIGHT);
-        if ($right instanceof IdentifierNode) {
-            $compiler->add($compiler->string($right->getName()));
-        } else {
+        $object = $node->getOperand(OperatorNode::OPERAND_LEFT);
+        $right  = $node->getOperand(OperatorNode::OPERAND_RIGHT);
+
+        if ($right instanceof FunctionNode) {
+            $right->setObject($object);
             $right->compile($compiler);
+        } else {
+            $compiler->add('$this->getProperty(');
+            $object->compile($compiler);
+            $compiler->add(', ');
+            if ($right instanceof IdentifierNode) {
+                $compiler->add($compiler->string($right->getName()));
+            } else {
+                $right->compile($compiler);
+            }
+            $compiler->add(')');
         }
-        $compiler->add(')');
     }
 }

@@ -7,7 +7,7 @@
  * For licensing information see the LICENSE file.
  */
 
-namespace Modules\Templating\Compiler\Operators\TestOperators;
+namespace Modules\Templating\Compiler\Operators\UnaryOperators;
 
 use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
