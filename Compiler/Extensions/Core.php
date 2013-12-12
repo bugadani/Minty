@@ -31,9 +31,11 @@ use Modules\Templating\Compiler\Operators\BitwiseOperators\ShiftRightOperator;
 use Modules\Templating\Compiler\Operators\ComparisonOperators\EqualsOperator;
 use Modules\Templating\Compiler\Operators\ComparisonOperators\GreaterThanOperator;
 use Modules\Templating\Compiler\Operators\ComparisonOperators\GreaterThanOrEqualsOperator;
+use Modules\Templating\Compiler\Operators\ComparisonOperators\IdenticalOperator;
 use Modules\Templating\Compiler\Operators\ComparisonOperators\LessThanOperator;
 use Modules\Templating\Compiler\Operators\ComparisonOperators\LessThanOrEqualsOperator;
 use Modules\Templating\Compiler\Operators\ComparisonOperators\NotEqualsOperator;
+use Modules\Templating\Compiler\Operators\ComparisonOperators\NotIdenticalOperator;
 use Modules\Templating\Compiler\Operators\ConcatenationOperator;
 use Modules\Templating\Compiler\Operators\ExclusiveRangeOperator;
 use Modules\Templating\Compiler\Operators\ExistenceOperators\IsNotSetOperator;
@@ -93,6 +95,8 @@ class Core extends Extension
             new ExponentialOperator(14, Operator::RIGHT),
             //comparison
             new EqualsOperator(7),
+            new IdenticalOperator(7),
+            new NotIdenticalOperator(7),
             new NotEqualsOperator(7),
             new LessThanOperator(8),
             new LessThanOrEqualsOperator(8),
