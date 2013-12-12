@@ -27,8 +27,7 @@ class ExtendsTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $stream->next();
-        if (!$stream->current()->test(Token::STRING)) {
+        if (!$stream->expect(Token::STRING)) {
             throw new ParseException('Extends tag requires a string parameter');
         }
         $data = array(

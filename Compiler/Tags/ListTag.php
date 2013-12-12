@@ -35,7 +35,6 @@ class ListTag extends Tag
         }
         list($expression, $template) = explode('using', $expression);
 
-        //$tokenizer->pushToken(Token::STRING, $template);
         $tokenizer->tokenizeExpression($template);
         $tokenizer->tokenizeExpression($expression);
         $tokenizer->pushToken(Token::EXPRESSION_END);
@@ -44,7 +43,8 @@ class ListTag extends Tag
     public function parse(Parser $parser, Stream $stream)
     {
         $data               = array();
-        $data['template']   = $stream->next()->getValue();
+        $stream->expect(Token::STRING);
+        $data['template']   = $stream->current()->getValue();
         $data['expression'] = $parser->parseExpression($stream);
         return new TagNode($this, $data);
     }
