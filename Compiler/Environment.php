@@ -16,40 +16,78 @@ use Modules\Templating\TemplatingOptions;
 
 class Environment
 {
+    /**
+     * @var Tag[]
+     */
     private $tags;
+
+    /**
+     * @var OperatorCollection
+     */
     private $binary_operators;
-    private $prefix_unary_operators;
-    private $postfix_unary_operators;
+
+    /**
+     * @var OperatorCollection
+     */
+    private $unary_prefix_operators;
+
+    /**
+     * @var OperatorCollection
+     */
+    private $unary_postfix_operators;
+
+    /**
+     * @var TemplateFunction[]
+     */
     private $functions;
+
+    /**
+     * @var TemplatingOptions
+     */
     private $options;
+
+    /**
+     * @var Extension[]
+     */
     private $extensions;
 
+    /**
+     * @param TemplatingOptions $options
+     */
     public function __construct(TemplatingOptions $options)
     {
         $this->extensions              = array();
         $this->functions               = array();
         $this->binary_operators        = new OperatorCollection();
-        $this->prefix_unary_operators  = new OperatorCollection();
-        $this->postfix_unary_operators = new OperatorCollection();
+        $this->unary_prefix_operators  = new OperatorCollection();
+        $this->unary_postfix_operators = new OperatorCollection();
         $this->options                 = $options;
         $this->addExtension(new Core());
     }
 
+    /**
+     * @return TemplatingOptions
+     */
     public function getOptions()
     {
         return $this->options;
     }
 
+    /**
+     * @param Extension $extension
+     */
     public function addExtension(Extension $extension)
     {
         $this->extensions[$extension->getExtensionName()] = $extension;
         $extension->registerExtension($this);
     }
 
+    /**
+     * @param TemplateFunction $function
+     */
     public function addFunction(TemplateFunction $function)
     {
-        $name                   = $function->getFunctionName();
-        $this->functions[$name] = $function;
+        $this->functions[$function->getFunctionName()] = $function;
     }
 
     /**
@@ -78,48 +116,72 @@ class Environment
         return $this->functions[$name];
     }
 
+    /**
+     * @return TemplateFunction[]
+     */
     public function getFunctions()
     {
         return $this->functions;
     }
 
+    /**
+     * @param string $name
+     * @return bool
+     */
     public function hasFunction($name)
     {
         return isset($this->functions[$name]);
     }
 
+    /**
+     * @param Tag $tag
+     */
     public function addTag(Tag $tag)
     {
-        $name              = $tag->getTag();
-        $this->tags[$name] = $tag;
+        $this->tags[$tag->getTag()] = $tag;
     }
 
-    public function getBinaryOperators()
-    {
-        return $this->binary_operators;
-    }
-
-    public function getUnaryPrefixOperators()
-    {
-        return $this->prefix_unary_operators;
-    }
-
-    public function getUnaryPostfixOperators()
-    {
-        return $this->postfix_unary_operators;
-    }
-
+    /**
+     * @return Tag[]
+     */
     public function getTags()
     {
         return $this->tags;
     }
 
+    /**
+     * @return OperatorCollection
+     */
+    public function getBinaryOperators()
+    {
+        return $this->binary_operators;
+    }
+
+    /**
+     * @return OperatorCollection
+     */
+    public function getUnaryPrefixOperators()
+    {
+        return $this->unary_prefix_operators;
+    }
+
+    /**
+     * @return OperatorCollection
+     */
+    public function getUnaryPostfixOperators()
+    {
+        return $this->unary_postfix_operators;
+    }
+
+    /**
+     * @return string[]
+     */
     public function getOperatorSymbols()
     {
         return array_merge(
                 $this->binary_operators->getSymbols(),
-                $this->prefix_unary_operators->getSymbols(),
-                $this->postfix_unary_operators->getSymbols()
+                $this->unary_prefix_operators->getSymbols(),
+                $this->unary_postfix_operators->getSymbols()
         );
     }
 }
