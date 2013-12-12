@@ -33,7 +33,6 @@ class IfTag extends Tag
     public function compile(Compiler $compiler, array $data)
     {
         $first = true;
-        //print_r($data);exit;
         $else  = null;
         foreach ($data as $branch) {
             if ($first) {

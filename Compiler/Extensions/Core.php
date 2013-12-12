@@ -45,6 +45,16 @@ use Modules\Templating\Compiler\Operators\LogicOperators\OrOperator;
 use Modules\Templating\Compiler\Operators\LogicOperators\XorOperator;
 use Modules\Templating\Compiler\Operators\PropertyAccessOperator;
 use Modules\Templating\Compiler\Operators\RangeOperator;
+use Modules\Templating\Compiler\Operators\TestOperators\ContainsOperator;
+use Modules\Templating\Compiler\Operators\TestOperators\EmptyOperator;
+use Modules\Templating\Compiler\Operators\TestOperators\EndsOperator;
+use Modules\Templating\Compiler\Operators\TestOperators\MatchesOperator;
+use Modules\Templating\Compiler\Operators\TestOperators\NotContainsOperator;
+use Modules\Templating\Compiler\Operators\TestOperators\NotEmptyOperator;
+use Modules\Templating\Compiler\Operators\TestOperators\NotEndsOperator;
+use Modules\Templating\Compiler\Operators\TestOperators\NotMatchesOperator;
+use Modules\Templating\Compiler\Operators\TestOperators\NotStartsOperator;
+use Modules\Templating\Compiler\Operators\TestOperators\StartsOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\MinusOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PlusOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PostDecrementOperator;
@@ -98,6 +108,18 @@ class Core extends Extension
             new AndOperator(3),
             new OrOperator(2),
             new XorOperator(1),
+            //test
+            new ContainsOperator(8, Operator::NONE),
+            new EmptyOperator(8, Operator::NONE),
+            new EndsOperator(8, Operator::NONE),
+            new MatchesOperator(8, Operator::NONE),
+            new NotContainsOperator(8, Operator::NONE),
+            new NotEmptyOperator(8, Operator::NONE),
+            new NotEmptyOperator(8, Operator::NONE),
+            new NotEndsOperator(8, Operator::NONE),
+            new NotMatchesOperator(8, Operator::NONE),
+            new NotStartsOperator(8, Operator::NONE),
+            new StartsOperator(8, Operator::NONE),
             //other
             new ConcatenationOperator(10),
             new PropertyAccessOperator(16),
