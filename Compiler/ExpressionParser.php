@@ -9,6 +9,7 @@
 
 namespace Modules\Templating\Compiler;
 
+use Modules\Templating\Compiler\Exceptions\ParseException;
 use Modules\Templating\Compiler\Exceptions\SyntaxException;
 use Modules\Templating\Compiler\Nodes\ArrayIndexNode;
 use Modules\Templating\Compiler\Nodes\ArrayNode;
@@ -34,30 +35,25 @@ class ExpressionParser
     private $operand_stack;
 
     /**
-     * @var string[]
-     */
-    private $binary_operators;
-
-    /**
-     * @var string[]
-     */
-    private $unary_prefix_operators;
-
-    /**
-     * @var string[]
-     */
-    private $unary_postfix_operators;
-
-    /**
      * @var Stream
      */
     private $stream;
+    private $binary_test;
+    private $unary_postfix_test;
+    private $unary_prefix_test;
+    private $binary_operators;
+    private $unary_prefix_operators;
+    private $unary_postfix_operators;
 
     public function __construct(Environment $environment)
     {
-        $this->binary_operators        = $environment->getBinaryOperatorSigns();
-        $this->unary_prefix_operators  = $environment->getPrefixUnaryOperatorSigns();
-        $this->unary_postfix_operators = $environment->getPostfixUnaryOperatorSigns();
+        $this->binary_operators        = $environment->getBinaryOperators();
+        $this->unary_prefix_operators  = $environment->getUnaryPrefixOperators();
+        $this->unary_postfix_operators = $environment->getUnaryPostfixOperators();
+
+        $this->binary_test        = array($this->binary_operators, 'isOperator');
+        $this->unary_prefix_test  = array($this->unary_prefix_operators, 'isOperator');
+        $this->unary_postfix_test = array($this->unary_postfix_operators, 'isOperator');
     }
 
     public function parse(Stream $stream)
@@ -66,9 +62,7 @@ class ExpressionParser
         $this->operand_stack  = array();
         $this->stream         = $stream;
 
-        $this->parseExpression();
-
-        return end($this->operand_stack);
+        return $this->parseExpression(true);
     }
 
     public function parseArgumentList()
@@ -84,37 +78,32 @@ class ExpressionParser
                     $this->stream->step(-1);
                     $this->stream->expect(Token::PUNCTUATION, ',');
                 }
-                $this->parseExpression();
-                $arguments[] = array_pop($this->operand_stack);
+                $arguments[] = $this->parseExpression(true);
             }
         }
-        $this->operand_stack[] = $arguments;
+        return $arguments;
     }
 
     public function parsePostfixExpression()
     {
-        $node = array_pop($this->operand_stack);
+        $operand = array_pop($this->operand_stack);
+
         if ($this->stream->nextTokenIf(Token::PUNCTUATION, '(')) {
             //fn call
-            $this->parseArgumentList();
-            $arguments = array_pop($this->operand_stack);
-            $node      = new FunctionNode($node);
+            $arguments = $this->parseArgumentList();
+            $node      = new FunctionNode($operand);
             $node->addArguments($arguments);
         } elseif ($this->stream->nextTokenIf(Token::PUNCTUATION, '[')) {
             //array indexing
-            $this->parseExpression();
-            $index = array_pop($this->operand_stack);
-            $node  = new ArrayIndexNode($node, $index);
-        } elseif ($this->stream->nextTokenIf(Token::OPERATOR)) {
-            $token = $this->stream->current();
-            if ($this->isUnaryPostfix($token)) {
-                $operator = $this->getUnaryPostfixOperator($token);
-                $operand  = $node;
-                $node     = new OperatorNode($operator);
-                $node->addOperand(OperatorNode::OPERAND_RIGHT, $operand);
-            } else {
-                $this->stream->step(-1);
-            }
+            $index = $this->parseExpression(true);
+            $node  = new ArrayIndexNode($operand, $index);
+        } elseif ($this->stream->nextTokenIf(Token::OPERATOR, $this->unary_postfix_test)) {
+            $token    = $this->stream->current();
+            $operator = $this->unary_postfix_operators->getOperator($token->getValue());
+            $node     = new OperatorNode($operator);
+            $node->addOperand(OperatorNode::OPERAND_RIGHT, $operand);
+        } else {
+            $node = $operand;
         }
         $this->operand_stack[] = $node;
     }
@@ -180,7 +169,7 @@ class ExpressionParser
             $this->parseExpression();
         } elseif ($token->test(Token::PUNCTUATION, '[')) {
             $this->parseArray();
-        } elseif ($this->isUnaryPrefix($token)) {
+        } elseif ($token->test(Token::OPERATOR, $this->unary_prefix_test)) {
             $this->pushUnaryPrefixOperator($token);
             $this->stream->next();
             $this->parseToken();
@@ -191,7 +180,7 @@ class ExpressionParser
         }
     }
 
-    public function parseExpression()
+    public function parseExpression($return = false)
     {
         //push sentinel
         $this->operator_stack[] = null;
@@ -200,7 +189,7 @@ class ExpressionParser
 
         $this->parseToken();
         $next = $this->stream->next();
-        while ($this->isBinary($next)) {
+        while ($next->test(Token::OPERATOR, $this->binary_test)) {
             //?: can be handled here?
             $this->pushBinaryOperator($next);
             $this->stream->next();
@@ -212,40 +201,25 @@ class ExpressionParser
         }
         //pop sentinel
         array_pop($this->operator_stack);
+        if ($return) {
+            return array_pop($this->operand_stack);
+        }
     }
 
     public function popOperator()
     {
         $operator = array_pop($this->operator_stack);
-        if ($this->isOperatorBinary($operator)) {
-            $right = array_pop($this->operand_stack);
-            $left  = array_pop($this->operand_stack);
-            $node  = $this->makeBinaryNode($operator, $left, $right);
-        } else {
-            $operand = array_pop($this->operand_stack);
-            $node    = $this->makeUnaryNode($operator, $operand);
+        $node     = new OperatorNode($operator);
+        if ($this->binary_operators->exists($operator)) {
+            $node->addOperand(OperatorNode::OPERAND_RIGHT, array_pop($this->operand_stack));
         }
+        $node->addOperand(OperatorNode::OPERAND_LEFT, array_pop($this->operand_stack));
         array_push($this->operand_stack, $node);
-    }
-
-    private function getBinaryOperator(Token $token)
-    {
-        return $this->binary_operators[$token->getValue()];
-    }
-
-    private function getUnaryPrefixOperator(Token $token)
-    {
-        return $this->unary_prefix_operators[$token->getValue()];
-    }
-
-    private function getUnaryPostfixOperator(Token $token)
-    {
-        return $this->unary_postfix_operators[$token->getValue()];
     }
 
     public function pushBinaryOperator(Token $token)
     {
-        $operator = $this->getBinaryOperator($token);
+        $operator = $this->binary_operators->getOperator($token->getValue());
         while ($this->compareToStackTop($operator)) {
             $this->popOperator();
         }
@@ -254,36 +228,24 @@ class ExpressionParser
 
     public function pushUnaryPrefixOperator(Token $token)
     {
-        $operator = $this->getUnaryPrefixOperator($token);
+        $operator = $this->unary_prefix_operators->getOperator($token->getValue());
         while ($this->compareToStackTop($operator)) {
             $this->popOperator();
         }
         $this->operator_stack[] = $operator;
     }
 
-    public function makeUnaryNode(Operator $operator, $operand)
-    {
-        $node = new OperatorNode($operator);
-        $node->addOperand(OperatorNode::OPERAND_LEFT, $operand);
-        return $node;
-    }
-
-    public function makeBinaryNode(Operator $operator, $operand_left, $operand_right)
-    {
-        $node = new OperatorNode($operator);
-        $node->addOperand(OperatorNode::OPERAND_LEFT, $operand_left);
-        $node->addOperand(OperatorNode::OPERAND_RIGHT, $operand_right);
-        return $node;
-    }
-
     public function compareToStackTop(Operator $operator)
     {
         $top = end($this->operator_stack);
-        if ($this->isOperatorBinary($operator) && $operator === $top) {
+        if ($top === null) {
+            return false;
+        }
+        if ($this->binary_operators->exists($operator) && $operator === $top) {
             if ($operator->isAssociativity(Operator::LEFT)) {
-                return 1;
+                return true;
             } elseif ($operator->isAssociativity(Operator::RIGHT)) {
-                return 0;
+                return false;
             } else {
                 $symbols = $operator->operators();
                 if (is_array($symbols)) {
@@ -293,34 +255,6 @@ class ExpressionParser
                 throw new ParseException($message);
             }
         }
-        return $this->precedence($top) >= $this->precedence($operator);
-    }
-
-    public function precedence(Operator $operator = null)
-    {
-        if ($operator === null) {
-            return -1;
-        }
-        return $operator->getPrecedence();
-    }
-
-    private function isOperatorBinary(Operator $operator)
-    {
-        return in_array($operator, $this->binary_operators, true);
-    }
-
-    private function isBinary(Token $token)
-    {
-        return $token->test(Token::OPERATOR) && isset($this->binary_operators[$token->getValue()]);
-    }
-
-    private function isUnaryPrefix(Token $token)
-    {
-        return $token->test(Token::OPERATOR) && isset($this->unary_prefix_operators[$token->getValue()]);
-    }
-
-    private function isUnaryPostfix(Token $token)
-    {
-        return $token->test(Token::OPERATOR) && isset($this->unary_postfix_operators[$token->getValue()]);
+        return $top->getPrecedence() >= $operator->getPrecedence();
     }
 }

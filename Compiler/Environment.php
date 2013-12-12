@@ -17,23 +17,21 @@ use Modules\Templating\TemplatingOptions;
 class Environment
 {
     private $tags;
-    private $operators;
-    private $binary_operator_signs;
-    private $prefix_unary_operator_signs;
-    private $postfix_unary_operator_signs;
+    private $binary_operators;
+    private $prefix_unary_operators;
+    private $postfix_unary_operators;
     private $functions;
     private $options;
     private $extensions;
 
     public function __construct(TemplatingOptions $options)
     {
-        $this->extensions                   = array();
-        $this->functions                    = array();
-        $this->operators                    = array();
-        $this->binary_operator_signs        = array();
-        $this->prefix_unary_operator_signs  = array();
-        $this->postfix_unary_operator_signs = array();
-        $this->options                      = $options;
+        $this->extensions              = array();
+        $this->functions               = array();
+        $this->binary_operators        = new OperatorCollection();
+        $this->prefix_unary_operators  = new OperatorCollection();
+        $this->postfix_unary_operators = new OperatorCollection();
+        $this->options                 = $options;
         $this->addExtension(new Core());
     }
 
@@ -96,58 +94,19 @@ class Environment
         $this->tags[$name] = $tag;
     }
 
-    public function addBinaryOperator(Operator $operator)
+    public function getBinaryOperators()
     {
-        $symbol = $operator->operators();
-        if (is_array($symbol)) {
-            foreach ($symbol as $op_symbol) {
-                $this->binary_operator_signs[$op_symbol] = $operator;
-            }
-        } else {
-            $this->binary_operator_signs[$symbol] = $operator;
-        }
-        $this->operators[] = $operator;
+        return $this->binary_operators;
     }
 
-    public function addPrefixUnaryOperator(Operator $operator)
+    public function getUnaryPrefixOperators()
     {
-        $symbol = $operator->operators();
-        if (is_array($symbol)) {
-            foreach ($symbol as $op_symbol) {
-                $this->prefix_unary_operator_signs[$op_symbol] = $operator;
-            }
-        } else {
-            $this->prefix_unary_operator_signs[$symbol] = $operator;
-        }
-        $this->operators[] = $operator;
+        return $this->prefix_unary_operators;
     }
 
-    public function addPostfixUnaryOperator(Operator $operator)
+    public function getUnaryPostfixOperators()
     {
-        $symbol = $operator->operators();
-        if (is_array($symbol)) {
-            foreach ($symbol as $op_symbol) {
-                $this->postfix_unary_operator_signs[$op_symbol] = $operator;
-            }
-        } else {
-            $this->postfix_unary_operator_signs[$symbol] = $operator;
-        }
-        $this->operators[] = $operator;
-    }
-
-    public function getBinaryOperatorSigns()
-    {
-        return $this->binary_operator_signs;
-    }
-
-    public function getPrefixUnaryOperatorSigns()
-    {
-        return $this->prefix_unary_operator_signs;
-    }
-
-    public function getPostfixUnaryOperatorSigns()
-    {
-        return $this->postfix_unary_operator_signs;
+        return $this->postfix_unary_operators;
     }
 
     public function getTags()
@@ -155,8 +114,12 @@ class Environment
         return $this->tags;
     }
 
-    public function getOperators()
+    public function getOperatorSymbols()
     {
-        return $this->operators;
+        return array_merge(
+                $this->binary_operators->getSymbols(),
+                $this->prefix_unary_operators->getSymbols(),
+                $this->postfix_unary_operators->getSymbols()
+        );
     }
 }

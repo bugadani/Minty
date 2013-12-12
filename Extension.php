@@ -25,23 +25,26 @@ abstract class Extension
 
     abstract public function getExtensionName();
 
-    public function registerExtension(Environment $descriptor)
+    public function registerExtension(Environment $environment)
     {
         foreach ($this->getFunctions() as $function) {
             $function->setExtensionName($this->extension_name);
-            $descriptor->addFunction($function);
+            $environment->addFunction($function);
         }
+        $binary        = $environment->getBinaryOperators();
+        $unary_prefix  = $environment->getUnaryPrefixOperators();
+        $unary_postfix = $environment->getUnaryPostfixOperators();
         foreach ($this->getBinaryOperators() as $operator) {
-            $descriptor->addBinaryOperator($operator);
+            $binary->addOperator($operator);
         }
         foreach ($this->getPrefixUnaryOperators() as $operator) {
-            $descriptor->addPrefixUnaryOperator($operator);
+            $unary_prefix->addOperator($operator);
         }
         foreach ($this->getPostfixUnaryOperators() as $operator) {
-            $descriptor->addPostfixUnaryOperator($operator);
+            $unary_postfix->addOperator($operator);
         }
         foreach ($this->getTags() as $tag) {
-            $descriptor->addTag($tag);
+            $environment->addTag($tag);
         }
     }
 

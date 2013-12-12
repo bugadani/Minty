@@ -75,13 +75,12 @@ class Tokenizer
             }
         };
 
-        foreach ($environment->getOperators() as $operator) {
-            $parsed = $operator->operators();
-            if (!is_array($parsed)) {
-                $parsed = array($parsed);
+        foreach ($environment->getOperatorSymbols() as $operator) {
+            if (!is_array($operator)) {
+                $operator = array($operator);
             }
 
-            foreach ($parsed as $symbol) {
+            foreach ($operator as $symbol) {
                 $this->operators[]  = $symbol;
                 $symbol             = $quote($symbol);
                 $operators[$symbol] = strlen($symbol);
@@ -154,10 +153,9 @@ class Tokenizer
         if (preg_match($this->patterns['closing_tag'], $tag, $match)) {
 
             $type = $match[1];
-            if ($this->isState(self::STATE_RAW, ($type == 'raw'))) {
-                return true;
+            if (!$this->isState(self::STATE_RAW, ($type == 'raw'))) {
+                $this->pushToken(Token::TAG, 'end' . $type);
             }
-            $this->pushToken(Token::TAG, 'end' . $type);
             return true;
         }
 
@@ -172,8 +170,7 @@ class Tokenizer
                 $tag_name   = $parts[0];
                 $expression = null;
                 break;
-            case 2:
-                break;
+
             case 3:
                 $tag_name   = $parts[0];
                 $expression = $parts[1] . $parts[2];
@@ -183,6 +180,7 @@ class Tokenizer
             $this->pushState(self::STATE_RAW);
             return true;
         }
+
         if (isset($this->tags[$tag_name])) {
             $tag = $this->tags[$tag_name];
             $this->pushToken(Token::TAG, $tag_name);
@@ -190,9 +188,7 @@ class Tokenizer
         } else {
             $this->pushToken(Token::EXPRESSION_START);
             $this->tokenizeExpression($tag_name);
-            if ($expression !== null && $expression !== '') {
-                $this->tokenizeExpression($expression);
-            }
+            $this->tokenizeExpression($expression);
             $this->pushToken(Token::EXPRESSION_END);
         }
         return true;
@@ -297,7 +293,7 @@ class Tokenizer
 
     public function tokenizeExpression($expr)
     {
-        if ($expr === null) {
+        if ($expr === null || $expr === '') {
             return;
         }
 

@@ -104,6 +104,7 @@ class Compiler
                 $this->compileData($value);
             }
             $this->add(')');
+            
         } elseif (is_numeric($data) || is_float($data)) {
             $old = setlocale(LC_NUMERIC, 0);
             if ($old) {
@@ -113,12 +114,16 @@ class Compiler
             if ($old) {
                 setlocale(LC_NUMERIC, $old);
             }
+
         } elseif (is_bool($data)) {
             $this->add($data ? 'true' : 'false');
+
         } elseif ($data === null) {
             $this->add('null');
+
         } elseif ($data instanceof Node) {
             $data->compile($this);
+
         } else {
             $this->add($this->string($data));
         }

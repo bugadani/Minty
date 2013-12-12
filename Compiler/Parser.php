@@ -31,7 +31,7 @@ class Parser
         $this->tags              = $environment->getTags();
     }
 
-    public function parseToken(Stream $stream, $tag_parser = null)
+    public function parseToken(Stream $stream)
     {
         $token = $stream->current();
         switch ($token->getType()) {
@@ -42,12 +42,7 @@ class Parser
             case Token::TAG:
                 $tag = $token->getValue();
                 if (!isset($this->tags[$tag])) {
-                    if (is_callable($tag_parser)) {
-                        $return = call_user_func($tag_parser, $stream);
-                        if ($return) {
-                            return;
-                        }
-                    }
+                    throw new Exceptions\ParseException('Tag not found: ' . $tag);
                 } else {
                     $stream->next();
                 }
@@ -55,13 +50,6 @@ class Parser
                 return $parser->parse($this, $stream);
 
             case Token::EXPRESSION_START:
-                if (is_callable($tag_parser)) {
-                    $return = call_user_func($tag_parser, $stream);
-                    if ($return) {
-                        return;
-                    }
-                }
-
                 $parser = $this->tags['output'];
                 return $parser->parse($this, $stream);
 
