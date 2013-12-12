@@ -70,40 +70,18 @@ class IfTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $test     = $parser->parseExpression($stream);
-        $branches = array();
-        $body     = new RootNode();
-        while (!$stream->next()->test(Token::TAG, 'endif')) {
-            $token = $stream->current();
-            if ($token->test(Token::EXPRESSION_START)) {
-                if ($stream->nextTokenIf(Token::IDENTIFIER, 'else')) {
-                    $branches[] = array(
-                        'condition' => $test,
-                        'body'      => $body
-                    );
-                    $body       = new RootNode();
-                    $test       = null;
-                    $stream->expect(Token::EXPRESSION_END);
-                } elseif ($stream->nextTokenIf(Token::IDENTIFIER, 'elseif')) {
-                    $stream->expect(Token::EXPRESSION_END);
-                    $stream->expect(Token::EXPRESSION_START);
-                    $branches[] = array(
-                        'condition' => $test,
-                        'body'      => $body
-                    );
-                    $body       = new RootNode();
-                    $test       = $parser->parseExpression($stream);
-                } else {
-                    $body->addChild($parser->parseToken($stream));
-                }
-            } else {
-                $body->addChild($parser->parseToken($stream));
+        $condition = $parser->parseExpression($stream);
+        $branches  = array();
+        do {
+            $branches[] = array(
+                'condition' => $condition,
+                'body'      => $parser->parse($stream, Token::TAG, array('endif', 'else', 'elseif'))
+            );
+            if (!$stream->current()->test(Token::TAG, array('else', 'endif'))) {
+                $stream->next();
+                $condition = $parser->parseExpression($stream);
             }
-        }
-        $branches[] = array(
-            'condition' => $test,
-            'body'      => $body
-        );
+        } while (!$stream->current()->test(Token::TAG, 'endif'));
         return new TagNode($this, $branches);
     }
 }

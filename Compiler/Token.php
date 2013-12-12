@@ -62,12 +62,20 @@ class Token
         if (is_callable($value) || $value instanceof Closure) {
             return $value($this->value);
         }
+        if (is_array($value)) {
+            foreach ($value as $val) {
+                if ($this->value === $val) {
+                    return true;
+                }
+            }
+        }
         return $this->value === $value;
     }
 
     public function test($type, $value = null, $line = 0)
     {
-        if ($this->type !== $type) {
+        /* HACK: this is needed to enable shortening switch's parser */
+        if ($type !== null && $this->type !== $type) {
             return false;
         }
 

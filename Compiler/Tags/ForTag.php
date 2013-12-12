@@ -93,31 +93,16 @@ class ForTag extends Tag
             $key = null;
         }
         $stream->expect(Token::IDENTIFIER, 'in');
-        $source = $parser->parseExpression($stream);
-        $data   = array(
+        $source       = $parser->parseExpression($stream);
+        $data         = array(
             'loop_variable' => $loop_var,
             'loop_key'      => $key,
             'source'        => $source,
         );
-        $body   = new RootNode();
-        while (!$stream->next()->test(Token::TAG, 'endfor')) {
-            $token = $stream->current();
-            if ($token->test(Token::EXPRESSION_START)) {
-                if ($stream->nextTokenIf(Token::IDENTIFIER, 'else')) {
-                    $data['loop'] = $body;
-                    $body         = new RootNode();
-                    $stream->expect(Token::EXPRESSION_END);
-                } else {
-                    $body->addChild($parser->parseToken($stream));
-                }
-            } else {
-                $body->addChild($parser->parseToken($stream));
-            }
-        }
-        if (isset($data['loop'])) {
-            $data['else'] = $body;
-        } else {
-            $data['loop'] = $body;
+        $data['loop'] = $parser->parse($stream, Token::TAG, array('endfor', 'else'));
+        if ($stream->current()->test(Token::TAG, 'else')) {
+            $stream->expect(Token::EXPRESSION_END);
+            $data['else'] = $parser->parse($stream, Token::TAG, 'endfor');
         }
         return new TagNode($this, $data);
     }

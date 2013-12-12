@@ -60,14 +60,12 @@ class Parser
         }
     }
 
-    public function parse(Stream $stream)
+    public function parse(Stream $stream, $end_type = Token::EOF, $end_value = null)
     {
         $root = new RootNode();
-        $next = $stream->next();
-        while (!$next->test(Token::EOF)) {
+        while (!$stream->next()->test($end_type, $end_value)) {
             $node = $this->parseToken($stream);
             $root->addChild($node);
-            $next = $stream->next();
         }
         return $root;
     }

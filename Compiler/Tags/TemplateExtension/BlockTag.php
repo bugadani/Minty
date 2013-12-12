@@ -44,16 +44,10 @@ class BlockTag extends Tag
         $name = $stream->current()->getValue();
         $stream->expect(Token::EXPRESSION_END);
 
-        $body = new RootNode();
-
         $data = array(
             'template' => $name,
-            'body'     => $body
+            'body'     => $parser->parse($stream, Token::TAG, 'endblock')
         );
-
-        while (!$stream->next()->test(Token::TAG, 'endblock')) {
-            $body->addChild($parser->parseToken($stream));
-        }
         return new TagNode($this, $data);
     }
 }
