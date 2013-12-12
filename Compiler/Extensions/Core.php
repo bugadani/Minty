@@ -21,7 +21,6 @@ use Modules\Templating\Compiler\Operators\ArithmeticOperators\ExponentialOperato
 use Modules\Templating\Compiler\Operators\ArithmeticOperators\MultiplicationOperator;
 use Modules\Templating\Compiler\Operators\ArithmeticOperators\RemainderOperator;
 use Modules\Templating\Compiler\Operators\ArithmeticOperators\SubtractionOperator;
-use Modules\Templating\Compiler\Operators\ArrowOperator;
 use Modules\Templating\Compiler\Operators\BitwiseOperators\BitwiseAndOperator;
 use Modules\Templating\Compiler\Operators\BitwiseOperators\BitwiseNotOperator;
 use Modules\Templating\Compiler\Operators\BitwiseOperators\BitwiseOrOperator;
@@ -130,7 +129,6 @@ class Core extends Extension
             new FilterOperator(1),
             new RangeOperator(1),
             new ExclusiveRangeOperator(1),
-            new ArrowOperator(1),
         );
         return $binary_operators;
     }
