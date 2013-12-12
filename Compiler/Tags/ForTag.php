@@ -10,7 +10,6 @@
 namespace Modules\Templating\Compiler\Tags;
 
 use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Nodes\RootNode;
 use Modules\Templating\Compiler\Nodes\TagNode;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
@@ -85,6 +84,17 @@ class ForTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
+        $else = function(Stream $stream) {
+            $token = $stream->next();
+            if ($token->test(Token::EXPRESSION_START)) {
+                return $stream->nextTokenIf(Token::IDENTIFIER, 'else');
+            }
+            return $token->test(Token::TAG, 'endfor');
+        };
+        $end = function(Stream $stream) {
+            return $stream->next()->test(Token::TAG, 'endfor');
+        };
+
         $loop_var = $stream->next()->getValue();
         if ($stream->nextTokenIf(Token::PUNCTUATION, ':')) {
             $key      = $loop_var;
@@ -93,16 +103,18 @@ class ForTag extends Tag
             $key = null;
         }
         $stream->expect(Token::IDENTIFIER, 'in');
-        $source       = $parser->parseExpression($stream);
-        $data         = array(
+        $data = array(
             'loop_variable' => $loop_var,
             'loop_key'      => $key,
-            'source'        => $source,
+            'source'        => $parser->parseExpression($stream),
         );
-        $data['loop'] = $parser->parse($stream, Token::TAG, array('endfor', 'else'));
-        if ($stream->current()->test(Token::TAG, 'else')) {
+
+        $data['loop'] = $parser->parse($stream, $else);
+
+        if ($stream->current()->test(Token::IDENTIFIER, 'else')) {
             $stream->expect(Token::EXPRESSION_END);
-            $data['else'] = $parser->parse($stream, Token::TAG, 'endfor');
+
+            $data['else'] = $parser->parse($stream, $end);
         }
         return new TagNode($this, $data);
     }

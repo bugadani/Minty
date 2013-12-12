@@ -70,18 +70,30 @@ class IfTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $condition = $parser->parseExpression($stream);
+        $fork = function(Stream $stream) {
+            $token = $stream->next();
+            if ($token->test(Token::EXPRESSION_START)) {
+                return $stream->nextTokenIf(Token::IDENTIFIER, array('else', 'elseif'));
+            }
+            return $token->test(Token::TAG, 'endif');
+        };
+
         $branches  = array();
+        $condition = $parser->parseExpression($stream);
         do {
             $branches[] = array(
                 'condition' => $condition,
-                'body'      => $parser->parse($stream, Token::TAG, array('endif', 'else', 'elseif'))
+                'body'      => $parser->parse($stream, $fork)
             );
-            if (!$stream->current()->test(Token::TAG, array('else', 'endif'))) {
-                $stream->next();
+            if ($stream->current()->test(Token::IDENTIFIER, 'else')) {
+                $stream->expect(Token::EXPRESSION_END);
+                $condition = null;
+            } elseif ($stream->current()->test(Token::IDENTIFIER, 'elseif')) {
                 $condition = $parser->parseExpression($stream);
+                $stream->next();
             }
         } while (!$stream->current()->test(Token::TAG, 'endif'));
+
         return new TagNode($this, $branches);
     }
 }

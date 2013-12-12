@@ -111,7 +111,7 @@ class Tokenizer
             $text = substr($template, $cursor, $length);
 
             $this->line += substr_count($text, "\n");
-
+            
             $cursor += strlen($text);
             $cursor += strlen($tag);
 
@@ -180,7 +180,6 @@ class Tokenizer
             $this->pushState(self::STATE_RAW);
             return true;
         }
-
         if (isset($this->tags[$tag_name])) {
             $tag = $this->tags[$tag_name];
             $this->pushToken(Token::TAG, $tag_name);
@@ -363,7 +362,7 @@ class Tokenizer
             }
             $end = end($this->tokens);
             if ($end && $end->test($type)) {
-                $old   = array_pop($this->tokens);
+                $old   = array_pop($this->tokens)->getValue();
                 $value = $old . $value;
             }
         }

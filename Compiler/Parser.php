@@ -9,6 +9,8 @@
 
 namespace Modules\Templating\Compiler;
 
+use Closure;
+use Modules\Templating\Compiler\Exceptions\ParseException;
 use Modules\Templating\Compiler\Exceptions\SyntaxException;
 use Modules\Templating\Compiler\Nodes\RootNode;
 use Modules\Templating\Compiler\Nodes\TextNode;
@@ -42,7 +44,8 @@ class Parser
             case Token::TAG:
                 $tag = $token->getValue();
                 if (!isset($this->tags[$tag])) {
-                    throw new Exceptions\ParseException('Tag not found: ' . $tag);
+                    $message = sprintf('Unknown %s tag found in line %s', $tag, $token->getLine());
+                    throw new ParseException($message);
                 } else {
                     $stream->next();
                 }
@@ -60,10 +63,15 @@ class Parser
         }
     }
 
-    public function parse(Stream $stream, $end_type = Token::EOF, $end_value = null)
+    public function parse(Stream $stream, Closure $end_condition = null)
     {
         $root = new RootNode();
-        while (!$stream->next()->test($end_type, $end_value)) {
+        if ($end_condition === null) {
+            $end_condition = function(Stream $stream) {
+                return $stream->next()->test(Token::EOF);
+            };
+        }
+        while (!$end_condition($stream)) {
             $node = $this->parseToken($stream);
             $root->addChild($node);
         }

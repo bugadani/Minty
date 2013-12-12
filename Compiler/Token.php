@@ -72,10 +72,20 @@ class Token
         return $this->value === $value;
     }
 
-    public function test($type, $value = null, $line = 0)
+    public function test($type, $value = null)
     {
-        /* HACK: this is needed to enable shortening switch's parser */
-        if ($type !== null && $this->type !== $type) {
+        if (is_array($type)) {
+            foreach ($type as $args) {
+                $token = array_shift($args);
+                $value = array_shift($args);
+                if ($this->test($token, $value)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        if ($this->type !== $type) {
             return false;
         }
 
@@ -83,27 +93,17 @@ class Token
             return false;
         }
 
-        if ($this->line !== 0 && $line !== 0) {
-            if ($this->line != $line) {
-                return false;
-            }
-        }
-
         return true;
     }
 
     public function isDataType()
     {
-        if ($this->test(Token::LITERAL)) {
-            return true;
-        }
-        if ($this->test(Token::STRING)) {
-            return true;
-        }
-        if ($this->test(Token::IDENTIFIER)) {
-            return true;
-        }
-        return false;
+        $data_types = array(
+            Token::LITERAL,
+            Token::STRING,
+            Token::IDENTIFIER
+        );
+        return in_array($this->type, $data_types);
     }
 
     public function getType()

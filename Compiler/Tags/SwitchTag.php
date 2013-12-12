@@ -10,6 +10,7 @@
 namespace Modules\Templating\Compiler\Tags;
 
 use Modules\Templating\Compiler\Compiler;
+use Modules\Templating\Compiler\Exceptions\SyntaxException;
 use Modules\Templating\Compiler\Nodes\TagNode;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
@@ -54,7 +55,17 @@ class SwitchTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
+        $branch = function(Stream $stream) {
+            $token = $stream->next();
+            if ($token->test(Token::EXPRESSION_START)) {
+                return $stream->nextTokenIf(Token::IDENTIFIER, array('else', 'case'));
+            }
+            return $token->test(Token::TAG, 'endswitch');
+        };
+
         $tested = $parser->parseExpression($stream);
+        $stream->expect(Token::TEXT);
+        $stream->expect(Token::EXPRESSION_START);
         $stream->next();
 
         $branches = array();
@@ -62,13 +73,16 @@ class SwitchTag extends Tag
 
             if ($stream->current()->test(Token::IDENTIFIER, 'case')) {
                 $condition = $parser->parseExpression($stream);
-            } else {
+            } elseif ($stream->current()->test(Token::IDENTIFIER, 'else')) {
+                $stream->expect(Token::EXPRESSION_END);
                 $condition = null;
+            } else {
+                throw new SyntaxException('Switch expects a case or else tag first.');
             }
 
             $branches[] = array(
                 'condition' => $condition,
-                'body'      => $parser->parse($stream, null, array('endswitch', 'else', 'case'))
+                'body'      => $parser->parse($stream, $branch)
             );
         }
         $data = array(

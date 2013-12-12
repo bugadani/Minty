@@ -15,6 +15,7 @@ use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
 use Modules\Templating\Compiler\Tag;
 use Modules\Templating\Compiler\Token;
+use Modules\Templating\Compiler\Tokenizer;
 
 class ParentTag extends Tag
 {
@@ -24,9 +25,13 @@ class ParentTag extends Tag
         return 'parent';
     }
 
+    public function tokenizeExpression(Tokenizer $tokenizer, $expression)
+    {
+
+    }
+
     public function parse(Parser $parser, Stream $stream)
     {
-        $stream->expect(Token::EXPRESSION_END);
         return new TagNode($this);
     }
 
