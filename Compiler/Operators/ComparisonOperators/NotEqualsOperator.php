@@ -16,7 +16,7 @@ class NotEqualsOperator extends ComparisonOperator
 
     public function operators()
     {
-        return array('!=', 'is not', 'does not equal');
+        return array('!=', '<>', 'is not', 'does not equal');
     }
 
     public function compileSymbol()

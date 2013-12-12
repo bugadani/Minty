@@ -224,7 +224,7 @@ class ExpressionParser
             $this->stream->expectCurrent(Token::PUNCTUATION, ':');
             $expression_three = $this->parseExpression(true);
 
-            $node->addOperand(2, $expression_two); //middle expression
+            $node->addOperand(OperatorNode::OPERAND_MIDDLE, $expression_two);
             $node->addOperand(OperatorNode::OPERAND_RIGHT, $expression_three);
         }
         $this->operand_stack[] = $node;
@@ -234,10 +234,10 @@ class ExpressionParser
     {
         $operator = array_pop($this->operator_stack);
         $node     = new OperatorNode($operator);
+        $node->addOperand(OperatorNode::OPERAND_RIGHT, array_pop($this->operand_stack));
         if ($this->binary_operators->exists($operator)) {
-            $node->addOperand(OperatorNode::OPERAND_RIGHT, array_pop($this->operand_stack));
+            $node->addOperand(OperatorNode::OPERAND_LEFT, array_pop($this->operand_stack));
         }
-        $node->addOperand(OperatorNode::OPERAND_LEFT, array_pop($this->operand_stack));
         array_push($this->operand_stack, $node);
     }
 

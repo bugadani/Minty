@@ -16,8 +16,9 @@ use Modules\Templating\Compiler\Operator;
 
 class OperatorNode extends Node
 {
-    const OPERAND_LEFT  = 0;
-    const OPERAND_RIGHT = 1;
+    const OPERAND_LEFT   = 0;
+    const OPERAND_RIGHT  = 1;
+    const OPERAND_MIDDLE = 1;
 
     /**
      * @var Operator
@@ -31,9 +32,14 @@ class OperatorNode extends Node
         $this->operands = array();
     }
 
-    public function addOperand($type, Node $value)
+    public function addOperand($type, Node $value = null)
     {
         $this->operands[$type] = $value;
+    }
+
+    public function hasOperand($type)
+    {
+        return isset($this->operands[$type]);
     }
 
     public function getOperand($type)

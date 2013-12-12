@@ -7,38 +7,26 @@
  * For licensing information see the LICENSE file.
  */
 
-namespace Modules\Templating\Compiler\Operators;
+namespace Modules\Templating\Compiler\Operators\BitwiseOperators;
 
-use BadMethodCallException;
 use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Operator;
 
-class ConditionalOperator extends Operator
+class BitwiseOrOperator extends Operator
 {
-
-    public function __construct()
-    {
-
-    }
 
     public function operators()
     {
-        throw new BadMethodCallException('Conditional operator is handled differently.');
+        return 'b-or';
     }
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
-        $compiler->add('((');
+        $compiler->add('(');
         $node->getOperand(OperatorNode::OPERAND_LEFT)->compile($compiler);
-        $compiler->add(') ?');
-        if ($node->hasOperand(2)) {
-            $compiler->add(' (');
-            $node->getOperand(2)->compile($compiler);
-            $compiler->add(') ');
-        }
-        $compiler->add(': (');
+        $compiler->add(' | ');
         $node->getOperand(OperatorNode::OPERAND_RIGHT)->compile($compiler);
-        $compiler->add('))');
+        $compiler->add(')');
     }
 }

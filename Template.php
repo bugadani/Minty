@@ -104,7 +104,7 @@ abstract class Template
         }
     }
 
-    public function getByKey($structure, $key)
+    public function getProperty($structure, $key)
     {
         if (is_array($structure) || $structure instanceof ArrayAccess) {
             return $structure[$key];

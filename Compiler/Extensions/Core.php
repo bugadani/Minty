@@ -22,18 +22,35 @@ use Modules\Templating\Compiler\Operators\ArithmeticOperators\MultiplicationOper
 use Modules\Templating\Compiler\Operators\ArithmeticOperators\RemainderOperator;
 use Modules\Templating\Compiler\Operators\ArithmeticOperators\SubtractionOperator;
 use Modules\Templating\Compiler\Operators\ArrowOperator;
+use Modules\Templating\Compiler\Operators\BitwiseOperators\BitwiseAndOperator;
+use Modules\Templating\Compiler\Operators\BitwiseOperators\BitwiseNotOperator;
+use Modules\Templating\Compiler\Operators\BitwiseOperators\BitwiseOrOperator;
+use Modules\Templating\Compiler\Operators\BitwiseOperators\BitwiseXorOperator;
+use Modules\Templating\Compiler\Operators\BitwiseOperators\ShiftLeftOperator;
+use Modules\Templating\Compiler\Operators\BitwiseOperators\ShiftRightOperator;
 use Modules\Templating\Compiler\Operators\ComparisonOperators\EqualsOperator;
 use Modules\Templating\Compiler\Operators\ComparisonOperators\GreaterThanOperator;
 use Modules\Templating\Compiler\Operators\ComparisonOperators\GreaterThanOrEqualsOperator;
 use Modules\Templating\Compiler\Operators\ComparisonOperators\LessThanOperator;
 use Modules\Templating\Compiler\Operators\ComparisonOperators\LessThanOrEqualsOperator;
 use Modules\Templating\Compiler\Operators\ComparisonOperators\NotEqualsOperator;
+use Modules\Templating\Compiler\Operators\ConcatenationOperator;
 use Modules\Templating\Compiler\Operators\ExclusiveRangeOperator;
 use Modules\Templating\Compiler\Operators\ExistenceOperators\IsNotSetOperator;
 use Modules\Templating\Compiler\Operators\ExistenceOperators\IsSetOperator;
 use Modules\Templating\Compiler\Operators\FilterOperator;
-use Modules\Templating\Compiler\Operators\MinusOperator;
+use Modules\Templating\Compiler\Operators\LogicOperators\AndOperator;
+use Modules\Templating\Compiler\Operators\LogicOperators\NotOperator;
+use Modules\Templating\Compiler\Operators\LogicOperators\OrOperator;
+use Modules\Templating\Compiler\Operators\LogicOperators\XorOperator;
+use Modules\Templating\Compiler\Operators\PropertyAccessOperator;
 use Modules\Templating\Compiler\Operators\RangeOperator;
+use Modules\Templating\Compiler\Operators\UnaryOperators\MinusOperator;
+use Modules\Templating\Compiler\Operators\UnaryOperators\PlusOperator;
+use Modules\Templating\Compiler\Operators\UnaryOperators\PostDecrementOperator;
+use Modules\Templating\Compiler\Operators\UnaryOperators\PostIncrementOperator;
+use Modules\Templating\Compiler\Operators\UnaryOperators\PreDecrementOperator;
+use Modules\Templating\Compiler\Operators\UnaryOperators\PreIncrementOperator;
 use Modules\Templating\Compiler\Tags\AssignTag;
 use Modules\Templating\Compiler\Tags\ForTag;
 use Modules\Templating\Compiler\Tags\IfTag;
@@ -58,20 +75,32 @@ class Core extends Extension
     {
         $binary_operators = array(
             //arithmetic operators
-            new AdditionOperator(2),
-            new SubtractionOperator(2),
-            new MultiplicationOperator(3),
-            new DivisionOperator(3),
-            new RemainderOperator(3),
-            new ExponentialOperator(3, Operator::RIGHT),
+            new AdditionOperator(10),
+            new SubtractionOperator(10),
+            new MultiplicationOperator(11),
+            new DivisionOperator(11),
+            new RemainderOperator(11),
+            new ExponentialOperator(14, Operator::RIGHT),
             //comparison
-            new EqualsOperator(1),
-            new NotEqualsOperator(1),
-            new LessThanOperator(1),
-            new LessThanOrEqualsOperator(1),
-            new GreaterThanOperator(1),
-            new GreaterThanOrEqualsOperator(1),
+            new EqualsOperator(7),
+            new NotEqualsOperator(7),
+            new LessThanOperator(8),
+            new LessThanOrEqualsOperator(8),
+            new GreaterThanOperator(8),
+            new GreaterThanOrEqualsOperator(8),
+            //bitwise
+            new BitwiseAndOperator(6),
+            new BitwiseOrOperator(4),
+            new BitwiseXorOperator(5),
+            new ShiftLeftOperator(9),
+            new ShiftRightOperator(9),
+            //logical
+            new AndOperator(3),
+            new OrOperator(2),
+            new XorOperator(1),
             //other
+            new ConcatenationOperator(10),
+            new PropertyAccessOperator(16),
             new FilterOperator(1),
             new RangeOperator(1),
             new ExclusiveRangeOperator(1),
@@ -83,7 +112,12 @@ class Core extends Extension
     public function getPrefixUnaryOperators()
     {
         $operators = array(
-            new MinusOperator(4),
+            new PreDecrementOperator(13, Operator::RIGHT),
+            new PreIncrementOperator(13, Operator::RIGHT),
+            new BitwiseNotOperator(13, Operator::RIGHT),
+            new MinusOperator(13, Operator::RIGHT),
+            new PlusOperator(13, Operator::RIGHT),
+            new NotOperator(12, Operator::RIGHT)
         );
         return $operators;
     }
@@ -91,8 +125,10 @@ class Core extends Extension
     public function getPostfixUnaryOperators()
     {
         $operators = array(
-            new IsSetOperator(4, Operator::RIGHT),
-            new IsNotSetOperator(4, Operator::RIGHT),
+            new IsSetOperator(15, Operator::RIGHT),
+            new IsNotSetOperator(15, Operator::RIGHT),
+            new PostDecrementOperator(15),
+            new PostIncrementOperator(15),
         );
         return $operators;
     }
