@@ -117,48 +117,49 @@ class Core extends Extension
     {
         return array(
             new SimpleFunction('abs'),
-            new MethodFunction('arguments', 'filter_arguments', true),
-            new MethodFunction('batch', 'filter_batch'),
+            new MethodFunction('arguments', 'argumentsFunction', true),
+            new MethodFunction('batch', 'batchFunction'),
             new SimpleFunction('capitalize', 'ucfirst'),
             new SimpleFunction('count'),
-            new MethodFunction('cycle', 'filter_cycle'),
-            new MethodFunction('date_format', 'filter_date_format'),
-            new MethodFunction('first', 'filter_first'),
+            new MethodFunction('cycle', 'cycleFunction'),
+            new MethodFunction('date_format', 'dateFormatFunction'),
+            new MethodFunction('first', 'firstFunction'),
             new SimpleFunction('format', 'sprintf'),
-            new MethodFunction('join', 'filter_join'),
+            new MethodFunction('join', 'joinFunction'),
             new SimpleFunction('json_encode'),
             new SimpleFunction('keys', 'array_keys'),
-            new MethodFunction('last', 'filter_last'),
-            new MethodFunction('length', 'filter_length', true),
-            new MethodFunction('link_to', 'filter_link_to', true),
+            new MethodFunction('last', 'lastFunction'),
+            new MethodFunction('length', 'lengthFunction', true),
+            new MethodFunction('link_to', 'linkToFunction', true),
             new SimpleFunction('lower', 'strtolower'),
             new SimpleFunction('ltrim'),
             new SimpleFunction('merge', 'array_merge'),
             new SimpleFunction('nl2br', 'nl2br', true),
             new SimpleFunction('number_format'),
-            new MethodFunction('pluck', 'filter_pluck'),
-            new MethodFunction('random', 'filter_random'),
+            new MethodFunction('pluck', 'pluckFunction'),
+            new MethodFunction('random', 'randomFunction'),
             new SimpleFunction('range'),
-            new MethodFunction('replace', 'filter_replace'),
-            new MethodFunction('reverse', 'filter_reverse'),
+            new MethodFunction('regexp_replace', 'regexpReplaceFunction'),
+            new MethodFunction('replace', 'replaceFunction'),
+            new MethodFunction('reverse', 'reverseFunction'),
             new SimpleFunction('rtrim'),
-            new MethodFunction('shuffle', 'filter_shuffle'),
-            new MethodFunction('slice', 'filter_slice'),
-            new MethodFunction('sort', 'filter_sort'),
-            new MethodFunction('spacify', 'filter_spacify'),
-            new MethodFunction('split', 'filter_split'),
+            new MethodFunction('shuffle', 'shuffleFunction'),
+            new MethodFunction('slice', 'sliceFunction'),
+            new MethodFunction('sort', 'sortFunction'),
+            new MethodFunction('spacify', 'spacifyFunction'),
+            new MethodFunction('split', 'splitFunction'),
             new SimpleFunction('striptags', 'strip_tags', true),
             new SimpleFunction('title_case', 'ucwords'),
             new SimpleFunction('trim'),
-            new MethodFunction('truncate', 'filter_truncate'),
+            new MethodFunction('truncate', 'truncateFunction'),
             new SimpleFunction('upper', 'strtoupper'),
-            new MethodFunction('url_encode', 'filter_url_encode'),
-            new MethodFunction('without', 'filter_without'),
+            new MethodFunction('url_encode', 'urlEncodeFunction'),
+            new MethodFunction('without', 'withoutFunction'),
             new SimpleFunction('wordwrap'),
         );
     }
 
-    public function filter_arguments(array $args)
+    public function argumentsFunction(array $args)
     {
         $arglist = '';
         foreach ($args as $name => $value) {
@@ -167,7 +168,7 @@ class Core extends Extension
         return $arglist;
     }
 
-    public function filter_batch($data, $size, $no_item = null)
+    public function batchFunction($data, $size, $no_item = null)
     {
         if ($data instanceof Traversable) {
             $data = iterator_to_array($data);
@@ -181,7 +182,7 @@ class Core extends Extension
         return $result;
     }
 
-    public function filter_cycle(&$array)
+    public function cycleFunction(&$array)
     {
         $element = each($array);
         if ($element === false) {
@@ -191,17 +192,17 @@ class Core extends Extension
         return $element['value'];
     }
 
-    public function filter_date_format($date, $format)
+    public function dateFormatFunction($date, $format)
     {
         return date($format, strtotime($date));
     }
 
-    public function filter_first($data, $number = 1)
+    public function firstFunction($data, $number = 1)
     {
-        return $this->filter_slice($data, 0, $number);
+        return $this->sliceFunction($data, 0, $number);
     }
 
-    public function filter_join($data, $glue = '')
+    public function joinFunction($data, $glue = '')
     {
         if ($data instanceof Traversable) {
             $data = iterator_to_array($data);
@@ -209,12 +210,12 @@ class Core extends Extension
         return implode($glue, $data);
     }
 
-    public function filter_last($data, $number = 1)
+    public function lastFunction($data, $number = 1)
     {
-        return $this->filter_slice($data, -$number, null);
+        return $this->sliceFunction($data, -$number, null);
     }
 
-    public function filter_length($data)
+    public function lengthFunction($data)
     {
         if (is_string($data)) {
             return strlen($data);
@@ -225,13 +226,13 @@ class Core extends Extension
         throw new InvalidArgumentException('Reverse expects an array, a string or a Countable instance');
     }
 
-    public function filter_link_to($label, $url, array $args = array())
+    public function linkToFunction($label, $url, array $args = array())
     {
         $args['href'] = $url;
-        return sprintf('<a%s>%s</a>', $this->filter_arguments($args), $label);
+        return sprintf('<a%s>%s</a>', $this->argumentsFunction($args), $label);
     }
 
-    public function filter_pluck($array, $key)
+    public function pluckFunction($array, $key)
     {
         if (!is_array($array) && !$array instanceof Traversable) {
             throw new InvalidArgumentException('Pluck expects a two-dimensional array as the first argument.');
@@ -248,7 +249,7 @@ class Core extends Extension
         return $return;
     }
 
-    public function filter_random($data = null)
+    public function randomFunction($data = null)
     {
         if ($data === null) {
             return rand();
@@ -268,17 +269,17 @@ class Core extends Extension
         throw new InvalidArgumentException('Random expects an array, a number or a string');
     }
 
-    public function filter_regexp_replace($string, $pattern, $replace)
+    public function regexpReplaceFunction($string, $pattern, $replace)
     {
         return preg_replace($pattern, $replace, $string);
     }
 
-    public function filter_replace($string, $search, $replace)
+    public function replaceFunction($string, $search, $replace)
     {
         return str_replace($search, $replace, $string);
     }
 
-    public function filter_reverse($data, $preserve_keys = false)
+    public function reverseFunction($data, $preserve_keys = false)
     {
         if (is_string($data)) {
             return strrev($data);
@@ -292,7 +293,7 @@ class Core extends Extension
         throw new InvalidArgumentException('Reverse expects an array or a string');
     }
 
-    public function filter_shuffle($data)
+    public function shuffleFunction($data)
     {
         if (is_string($data)) {
             return str_shuffle($data);
@@ -309,7 +310,7 @@ class Core extends Extension
         throw new InvalidArgumentException('Shuffle expects an array or a string');
     }
 
-    public function filter_slice($data, $start, $length, $preserve_keys = false)
+    public function sliceFunction($data, $start, $length, $preserve_keys = false)
     {
         if (is_string($data)) {
             if ($length === null) {
@@ -326,7 +327,7 @@ class Core extends Extension
         throw new InvalidArgumentException('Slice expects an array or a string');
     }
 
-    public function filter_sort($data, $reverse = false)
+    public function sortFunction($data, $reverse = false)
     {
         if ($data instanceof Traversable) {
             $data = iterator_to_array($data);
@@ -342,7 +343,7 @@ class Core extends Extension
         throw new InvalidArgumentException('Sort expects an array');
     }
 
-    public function filter_spacify($string, $delimiter = ' ')
+    public function spacifyFunction($string, $delimiter = ' ')
     {
         if (!is_string($string)) {
             throw new InvalidArgumentException('Spacify expects a string.');
@@ -350,7 +351,7 @@ class Core extends Extension
         return implode($delimiter, str_split($string));
     }
 
-    public function filter_split($string, $delimiter = '', $limit = null)
+    public function splitFunction($string, $delimiter = '', $limit = null)
     {
         if (!is_string($string)) {
             throw new InvalidArgumentException('Split expects a string');
@@ -363,16 +364,16 @@ class Core extends Extension
         return explode($delimiter, $string, $limit);
     }
 
-    public function filter_truncate($string, $length, $ellipsis = '...')
+    public function truncateFunction($string, $length, $ellipsis = '...')
     {
         if (strlen($string) > $length) {
-            $string = $this->filter_first($string, $length);
+            $string = $this->firstFunction($string, $length);
             $string .= $ellipsis;
         }
         return $string;
     }
 
-    public function filter_url_encode($data, $raw)
+    public function urlEncodeFunction($data, $raw)
     {
         if ($data instanceof Traversable) {
             $data = iterator_to_array($data);
@@ -386,7 +387,7 @@ class Core extends Extension
         return urlencode($data);
     }
 
-    public function filter_without($data, $without)
+    public function withoutFunction($data, $without)
     {
         if (is_string($data)) {
             if (!is_string($without) && !is_array($without)) {

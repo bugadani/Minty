@@ -66,8 +66,8 @@ class Parser
                 return $parser->parse($this, $stream);
 
             default:
-                $exception = sprintf('Unexpected %s (%s) token found in line %d', $token->getTypeString(),
-                        $token->getValue(), $token->getLine());
+                $pattern   = 'Unexpected %s (%s) token found in line %d';
+                $exception = sprintf($pattern, $token->getTypeString(), $token->getValue(), $token->getLine());
                 throw new SyntaxException($exception);
         }
     }

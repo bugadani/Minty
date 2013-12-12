@@ -31,11 +31,11 @@ class Miny extends Extension
     public function getFunctions()
     {
         return array(
-            new MethodFunction('route', 'filter_route'),
+            new MethodFunction('route', 'routeFunction'),
         );
     }
 
-    public function filter_route($route, array $parameters = array())
+    public function routeFunction($route, array $parameters = array())
     {
         return $this->application->router->generate($route, $parameters);
     }

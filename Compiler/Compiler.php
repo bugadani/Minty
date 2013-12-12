@@ -235,9 +235,7 @@ class Compiler
         $this->extended_template = 'Template';
 
         $stream = $this->tokenizer->tokenize($template);
-        //print_r($stream);exit;
         $nodes  = $this->parser->parse($stream);
-        //print_r($nodes);exit;
 
         $this->addOutputStack();
         $this->compileNode($nodes, 2);

@@ -77,7 +77,6 @@ class ExpressionParser
 
         $first = true;
         if (!$this->stream->nextTokenIf(Token::PUNCTUATION, ')')) {
-            //$this->stream->step(-1);
             while (!$this->stream->current()->test(Token::PUNCTUATION, ')')) {
                 if ($first) {
                     $first = false;
@@ -163,7 +162,8 @@ class ExpressionParser
             if ($next->test(Token::PUNCTUATION, ',')) {
                 $next = $this->stream->next();
             } elseif (!$next->test(Token::PUNCTUATION, ']')) {
-                $message = 'Unexpected ' . $next->getTypeString() . '(' . $next->getValue() . ') token found in line ' . $next->getLine();
+                $string  = 'Unexpected %s (%s) token found in line %s';
+                $message = sprintf($string, $next->getTypeString(), $next->getValue(), $next->getLine());
                 throw new SyntaxException($message);
             }
         }
@@ -185,8 +185,8 @@ class ExpressionParser
             $this->stream->next();
             $this->parseToken();
         } else {
-            $exception = sprintf('Unexpected %s (%s) token found in line %d', $token->getTypeString(),
-                    $token->getValue(), $token->getLine());
+            $string    = 'Unexpected %s (%s) token found in line %d';
+            $exception = sprintf($string, $token->getTypeString(), $token->getValue(), $token->getLine());
             throw new SyntaxException($exception);
         }
     }

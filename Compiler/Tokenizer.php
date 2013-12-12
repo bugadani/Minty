@@ -167,15 +167,15 @@ class Tokenizer
         }
 
         $parts = preg_split('/([\ \(])/', $tag, 2, PREG_SPLIT_DELIM_CAPTURE);
-        switch(count($parts)) {
+        switch (count($parts)) {
             case 1:
-                $tag_name = $parts[0];
+                $tag_name   = $parts[0];
                 $expression = null;
                 break;
             case 2:
                 break;
             case 3:
-                $tag_name = $parts[0];
+                $tag_name   = $parts[0];
                 $expression = $parts[1] . $parts[2];
                 break;
         }
@@ -253,7 +253,7 @@ class Tokenizer
 
     public function startString($delimiter)
     {
-        $array  = array(
+        $array = array(
             'string'    => '',
             'delimiter' => $delimiter
         );

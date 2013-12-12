@@ -21,7 +21,7 @@ class FunctionNode extends Node
     private $arguments;
     private $object;
 
-    function __construct($function_name)
+    public function __construct($function_name)
     {
         $this->function_name = $function_name;
         $this->arguments     = array();
