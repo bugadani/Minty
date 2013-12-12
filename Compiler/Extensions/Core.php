@@ -126,9 +126,9 @@ class Core extends Extension
             //other
             new ConcatenationOperator(10),
             new PropertyAccessOperator(16),
-            new FilterOperator(1),
-            new RangeOperator(1),
-            new ExclusiveRangeOperator(1),
+            new FilterOperator(8),
+            new RangeOperator(9),
+            new ExclusiveRangeOperator(9),
         );
         return $binary_operators;
     }
