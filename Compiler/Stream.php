@@ -52,6 +52,17 @@ class Stream
         throw new SyntaxException($message);
     }
 
+    public function expectCurrent($type, $value = null)
+    {
+        $current = $this->current();
+        if ($current->test($type, $value)) {
+            return $current;
+        }
+        $pattern = 'Unexpected %s (%s) found in line %s';
+        $message = sprintf($pattern, $current->getTypeString(), $current->getValue(), $current->getLine());
+        throw new SyntaxException($message);
+    }
+
     public function nextTokenIf($type, $value = null)
     {
         if ($this->next()->test($type, $value)) {

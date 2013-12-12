@@ -17,6 +17,7 @@ use Modules\Templating\Compiler\Nodes\DataNode;
 use Modules\Templating\Compiler\Nodes\FunctionNode;
 use Modules\Templating\Compiler\Nodes\IdentifierNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
+use Modules\Templating\Compiler\Operators\ConditionalOperator;
 
 /**
  * Expression parser is based on the Shunting Yard algorithm by Edsger W. Dijkstra
@@ -201,9 +202,32 @@ class ExpressionParser
         }
         //pop sentinel
         array_pop($this->operator_stack);
+        $this->parseConditional();
         if ($return) {
             return array_pop($this->operand_stack);
         }
+    }
+
+    public function parseConditional()
+    {
+        if (!$this->stream->current()->test(Token::PUNCTUATION, '?')) {
+            return;
+        }
+        $node = new OperatorNode(new ConditionalOperator());
+        $node->addOperand(OperatorNode::OPERAND_LEFT, array_pop($this->operand_stack));
+        if ($this->stream->nextTokenIf(Token::PUNCTUATION, ':')) {
+            //?: operator
+            $expression_three = $this->parseExpression(true);
+            $node->addOperand(OperatorNode::OPERAND_RIGHT, $expression_three);
+        } else {
+            $expression_two   = $this->parseExpression(true);
+            $this->stream->expectCurrent(Token::PUNCTUATION, ':');
+            $expression_three = $this->parseExpression(true);
+
+            $node->addOperand(2, $expression_two); //middle expression
+            $node->addOperand(OperatorNode::OPERAND_RIGHT, $expression_three);
+        }
+        $this->operand_stack[] = $node;
     }
 
     public function popOperator()
