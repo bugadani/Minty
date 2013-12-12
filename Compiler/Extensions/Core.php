@@ -48,16 +48,16 @@ use Modules\Templating\Compiler\Operators\LogicOperators\XorOperator;
 use Modules\Templating\Compiler\Operators\PropertyAccessOperator;
 use Modules\Templating\Compiler\Operators\RangeOperator;
 use Modules\Templating\Compiler\Operators\TestOperators\ContainsOperator;
-use Modules\Templating\Compiler\Operators\TestOperators\EmptyOperator;
 use Modules\Templating\Compiler\Operators\TestOperators\EndsOperator;
 use Modules\Templating\Compiler\Operators\TestOperators\MatchesOperator;
 use Modules\Templating\Compiler\Operators\TestOperators\NotContainsOperator;
-use Modules\Templating\Compiler\Operators\TestOperators\NotEmptyOperator;
 use Modules\Templating\Compiler\Operators\TestOperators\NotEndsOperator;
 use Modules\Templating\Compiler\Operators\TestOperators\NotMatchesOperator;
 use Modules\Templating\Compiler\Operators\TestOperators\NotStartsOperator;
 use Modules\Templating\Compiler\Operators\TestOperators\StartsOperator;
+use Modules\Templating\Compiler\Operators\UnaryOperators\EmptyOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\MinusOperator;
+use Modules\Templating\Compiler\Operators\UnaryOperators\NotEmptyOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PlusOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PostDecrementOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PostIncrementOperator;
@@ -195,7 +195,9 @@ class Core extends Extension
             new MethodFunction('link_to', 'linkToFunction', true),
             new SimpleFunction('lower', 'strtolower'),
             new SimpleFunction('ltrim'),
+            new MethodFunction('max', 'maxFunction'),
             new SimpleFunction('merge', 'array_merge'),
+            new MethodFunction('min', 'minFunction'),
             new SimpleFunction('nl2br', 'nl2br', true),
             new SimpleFunction('number_format'),
             new MethodFunction('pluck', 'pluckFunction'),
@@ -292,6 +294,30 @@ class Core extends Extension
     {
         $args['href'] = $url;
         return sprintf('<a%s>%s</a>', $this->argumentsFunction($args), $label);
+    }
+
+    public function maxFunction()
+    {
+        $values = func_get_args();
+        $max    = null;
+        foreach ($values as $value) {
+            if ($value > $max || $max === null) {
+                $max = $value;
+            }
+        }
+        return $max;
+    }
+
+    public function minFunction()
+    {
+        $values = func_get_args();
+        $min    = null;
+        foreach ($values as $value) {
+            if ($value < $min || $min === null) {
+                $min = $value;
+            }
+        }
+        return $min;
     }
 
     public function pluckFunction($array, $key)
