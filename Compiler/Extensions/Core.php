@@ -69,6 +69,7 @@ use Modules\Templating\Compiler\Tags\ListTag;
 use Modules\Templating\Compiler\Tags\OutputTag;
 use Modules\Templating\Compiler\Tags\SwitchTag;
 use Modules\Templating\Compiler\Tags\TemplateExtension\BlockTag;
+use Modules\Templating\Compiler\Tags\TemplateExtension\EmbedTag;
 use Modules\Templating\Compiler\Tags\TemplateExtension\ExtendsTag;
 use Modules\Templating\Compiler\Tags\TemplateExtension\ParentTag;
 use Modules\Templating\Extension;
@@ -166,6 +167,7 @@ class Core extends Extension
             new BlockTag(),
             new ParentTag(),
             new ExtendsTag(),
+            new EmbedTag(),
             new IfTag(),
             new AssignTag(),
             new OutputTag(),

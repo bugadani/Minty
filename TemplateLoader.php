@@ -97,11 +97,14 @@ class TemplateLoader
         if ($this->compiler->extendsTemplate()) {
             $this->load($this->compiler->getExtendedTemplate());
         }
+        foreach ($this->compiler->getEmbeddedTemplates() as $template) {
+            $this->load($template['file']);
+        }
     }
 
     public function load($template)
     {
-        $class     = '\\' . $this->compiler->getClassForTemplate($template);
+        $class = '\\' . $this->compiler->getClassForTemplate($template);
 
         $this->compileIfNeeded($template);
 
@@ -116,6 +119,9 @@ class TemplateLoader
         $parent = $object->getParentTemplate();
         if ($parent) {
             $this->compileIfNeeded($parent);
+        }
+        foreach ($object->getEmbeddedTemplates() as $file) {
+            $this->compileIfNeeded($file);
         }
 
         $object->set($this->options->global_variables);

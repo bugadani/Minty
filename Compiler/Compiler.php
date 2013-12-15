@@ -10,6 +10,7 @@
 namespace Modules\Templating\Compiler;
 
 use BadMethodCallException;
+use Modules\Templating\Compiler\Nodes\RootNode;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Tokenizer;
 use Modules\Templating\TemplatingOptions;
@@ -41,6 +42,8 @@ class Compiler
     private $indentation;
     private $templates;
     private $template_stack;
+    private $extended_template;
+    private $embedded;
 
     public function __construct(Environment $environment)
     {
@@ -104,7 +107,6 @@ class Compiler
                 $this->compileData($value);
             }
             $this->add(')');
-            
         } elseif (is_numeric($data) || is_float($data)) {
             $old = setlocale(LC_NUMERIC, 0);
             if ($old) {
@@ -114,16 +116,12 @@ class Compiler
             if ($old) {
                 setlocale(LC_NUMERIC, $old);
             }
-
         } elseif (is_bool($data)) {
             $this->add($data ? 'true' : 'false');
-
         } elseif ($data === null) {
             $this->add('null');
-
         } elseif ($data instanceof Node) {
             $data->compile($this);
-
         } else {
             $this->add($this->string($data));
         }
@@ -182,9 +180,13 @@ class Compiler
     public function compileNode(Node $node, $indentation = null)
     {
         if ($indentation !== null) {
+            $old_indentation   = $this->indentation;
             $this->indentation = $indentation;
         }
         $node->compile($this);
+        if ($indentation !== null) {
+            $this->indentation = $old_indentation;
+        }
     }
 
     public function compileToString(Node $node)
@@ -231,37 +233,87 @@ class Compiler
         return $namespace . 'Template';
     }
 
+    public function addEmbedded($parent, RootNode $root)
+    {
+        $this->embedded[] = array(
+            'parent' => $this->getClassForTemplate($parent),
+            'file'   => $parent,
+            'body'   => $root
+        );
+        return 'EmbeddedTemplate' . (count($this->embedded) - 1);
+    }
+
+    public function getEmbeddedTemplates()
+    {
+        return $this->embedded;
+    }
+
+    public function hasEmbeddedTemplates()
+    {
+        return !empty($this->embedded);
+    }
+
     public function compile($template, $class)
     {
         $this->output            = '';
-        $this->template_stack    = array();
         $this->output_stack      = array();
+        $this->template_stack    = array('render');
         $this->templates         = array();
         $this->extended_template = 'Template';
+        $this->embedded          = array();
 
         $stream = $this->tokenizer->tokenize($template);
         $nodes  = $this->parser->parse($stream);
 
         $this->addOutputStack();
         $this->compileNode($nodes, 2);
-        $main_template = $this->popOutputStack();
-
-        $extended_template = $this->getExtendedTemplate();
+        $compiled = $this->popOutputStack();
 
         $pos       = strrpos($class, '\\');
         $namespace = substr($class, 0, $pos);
         $classname = substr($class, $pos + 1);
 
-        $use_namespace = $this->getClassForTemplate($extended_template);
+        $extended_template = $this->getExtendedTemplate();
+        $use_namespace     = $this->getClassForTemplate($extended_template);
 
+        $main_class = $this->compileClass($classname, $compiled, $extended_template);
+
+        $this->addOutputStack();
         $this->indentation = 0;
         $this->add('<?php');
         $this->newline();
         $this->indented('namespace %s;', $namespace);
         $this->newline();
         $this->indented('use %s as BaseTemplate;', $use_namespace);
+
+        foreach ($this->embedded as $i => $embedded) {
+            $this->indented('use %s as EmbeddedBaseTemplate%d;', $embedded['parent'], $i);
+        }
+
         $this->newline();
-        $this->indented('class %s extends BaseTemplate', $classname);
+        $this->add($main_class);
+
+        foreach ($this->embedded as $i => $embedded) {
+
+            $this->addOutputStack();
+            $this->compileNode($embedded['body'], 2);
+            $template = $this->popOutputStack();
+
+            $classname    = 'EmbeddedTemplate' . $i;
+            $parent_alias = 'EmbeddedBaseTemplate' . $i;
+
+            $compiled = $this->compileClass($classname, $template, $embedded['parent'], $parent_alias);
+            $this->add($compiled);
+        }
+
+        $this->add('?>');
+        return $this->popOutputStack();
+    }
+
+    private function compileClass($class, $compiled, $extended_template, $parent_class = 'BaseTemplate')
+    {
+        $this->addOutputStack();
+        $this->indented('class %s extends %s', $class, $parent_class);
         $this->indented('{');
         $this->newline();
         $this->indent();
@@ -274,15 +326,33 @@ class Compiler
             $this->indented('}');
             $this->newline();
         } else {
-            $this->addCompiledTemplate('render', $main_template);
+            $this->addCompiledTemplate('render', $compiled);
         }
+        $this->indented('public function getEmbeddedTemplates()');
+        $this->indented('{');
+        $this->indent();
+        $this->indented('return array(');
+        $this->indent();
+        $first = true;
+        foreach ($this->getEmbeddedTemplates() as $embedded) {
+            if ($first) {
+                $first = false;
+            } else {
+                $this->add(',');
+            }
+            $this->indented($this->string($embedded['file']));
+        }
+        $this->outdent();
+        $this->indented(');');
+        $this->outdent();
+        $this->indented('}');
+        $this->newline();
         foreach ($this->templates as $name => $template) {
             $this->addCompiledTemplate($name, $template);
         }
         $this->outdent();
         $this->indented('}');
         $this->newline();
-        $this->indented('?>');
-        return $this->output;
+        return $this->popOutputStack();
     }
 }
