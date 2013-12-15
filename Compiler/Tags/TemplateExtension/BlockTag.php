@@ -39,7 +39,7 @@ class BlockTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $name = $stream->next()->getValue();
+        $name = $stream->expect(Token::IDENTIFIER)->getValue();
         $stream->expect(Token::EXPRESSION_END);
 
         $end = function(Stream $stream) {

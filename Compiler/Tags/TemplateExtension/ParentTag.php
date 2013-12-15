@@ -31,6 +31,7 @@ class ParentTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
+        $stream->step(-1);
         return new TagNode($this);
     }
 

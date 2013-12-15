@@ -37,7 +37,6 @@ abstract class Template
      * @var array
      */
     private $variables;
-    private $embedded_instances;
 
     public function __construct(TemplateLoader $loader, Environment $environment)
     {
@@ -45,7 +44,16 @@ abstract class Template
         $this->loader             = $loader;
         $this->environment        = $environment;
         $this->variables          = array();
-        $this->embedded_instances = array();
+    }
+
+    public function getLoader()
+    {
+        return $this->loader;
+    }
+
+    public function getEnvironment()
+    {
+        return $this->environment;
     }
 
     public function set($variables)
@@ -118,29 +126,6 @@ abstract class Template
             return $key;
         }
         throw new UnexpectedValueException('Variable is not an array or an object.');
-    }
-
-    private function instantiateEmbedded($namespace, $template_name)
-    {
-        $class = $namespace . '\\' . $template_name;
-        if (!isset($this->embedded_instances[$class])) {
-            $this->embedded_instances[$class] = new $class($this->loader, $this->environment);
-        }
-        return $this->embedded_instances[$class];
-    }
-
-    public function embed($namespace, $template_name, array $args)
-    {
-        $template = $this->instantiateEmbedded($namespace, $template_name);
-        $template->set($args);
-        $template->render();
-    }
-
-    public function template($template_name, array $args)
-    {
-        $template = $this->loader->load($template_name);
-        $template->set($args);
-        $template->render();
     }
 
     public function listArrayElements($array, $template = null)

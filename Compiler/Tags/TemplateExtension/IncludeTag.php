@@ -16,37 +16,29 @@ use Modules\Templating\Compiler\Stream;
 use Modules\Templating\Compiler\Tag;
 use Modules\Templating\Compiler\Token;
 
-class EmbedTag extends Tag
+class IncludeTag extends Tag
 {
-
-    public function hasEndingTag()
-    {
-        return true;
-    }
 
     public function getTag()
     {
-        return 'embed';
+        return 'include';
     }
 
     public function compile(Compiler $compiler, array $data)
     {
-        $embedded = $compiler->addEmbedded($data['template'], $data['body']);
+        $compiler->indented('$template = $this->getLoader()->load(');
+        $compiler->add($compiler->string($data['template']));
+        $compiler->add(');');
 
-        $compiler->indented('$embedded = new %s($this->getLoader(), $this->getEnvironment());', $embedded);
-
-        $compiler->indented('$embedded->set(');
+        $compiler->indented('$template->set(');
         $compiler->compileData($data['arguments']);
         $compiler->add(');');
 
-        $compiler->indented('$embedded->render();');
+        $compiler->indented('$template->render();');
     }
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $end = function(Stream $stream) {
-            return $stream->next()->test(Token::TAG, 'endembed');
-        };
         $name = $stream->expect(Token::STRING)->getValue();
 
         if ($stream->nextTokenIf(Token::IDENTIFIER, 'using')) {
@@ -57,7 +49,6 @@ class EmbedTag extends Tag
 
         $data = array(
             'template'  => $name,
-            'body'      => $parser->parse($stream, $end),
             'arguments' => $arguments
         );
 

@@ -89,7 +89,7 @@ class Tokenizer
         $this->punctuation = array(',', '[', ']', '(', ')', ':', '?');
         $punctuation       = $quote(',[]():"\'?');
         arsort($operators);
-        return sprintf('/(%s|[%s])/i', implode('|', array_keys($operators)), $punctuation);
+        return sprintf('/(%s|[%s ])/i', implode('|', array_keys($operators)), $punctuation);
     }
 
     public function tokenize($template)
@@ -111,7 +111,7 @@ class Tokenizer
             $text = substr($template, $cursor, $length);
 
             $this->line += substr_count($text, "\n");
-            
+
             $cursor += strlen($text);
             $cursor += strlen($tag);
 

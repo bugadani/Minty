@@ -293,7 +293,10 @@ class Compiler
         $this->newline();
         $this->add($main_class);
 
-        foreach ($this->embedded as $i => $embedded) {
+        $extended_template  = $this->getExtendedTemplate();
+        $embedded_templates = $this->embedded;
+        $this->embedded     = array();
+        foreach ($embedded_templates as $i => $embedded) {
 
             $this->addOutputStack();
             $this->compileNode($embedded['body'], 2);
@@ -302,9 +305,14 @@ class Compiler
             $classname    = 'EmbeddedTemplate' . $i;
             $parent_alias = 'EmbeddedBaseTemplate' . $i;
 
+            $this->setExtendedTemplate($embedded['parent']);
             $compiled = $this->compileClass($classname, $template, $embedded['parent'], $parent_alias);
             $this->add($compiled);
         }
+        if ($extended_template) {
+            $this->setExtendedTemplate($extended_template);
+        }
+        $this->embedded = $embedded_templates;
 
         $this->add('?>');
         return $this->popOutputStack();

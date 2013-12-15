@@ -71,6 +71,7 @@ use Modules\Templating\Compiler\Tags\SwitchTag;
 use Modules\Templating\Compiler\Tags\TemplateExtension\BlockTag;
 use Modules\Templating\Compiler\Tags\TemplateExtension\EmbedTag;
 use Modules\Templating\Compiler\Tags\TemplateExtension\ExtendsTag;
+use Modules\Templating\Compiler\Tags\TemplateExtension\IncludeTag;
 use Modules\Templating\Compiler\Tags\TemplateExtension\ParentTag;
 use Modules\Templating\Extension;
 use Traversable;
@@ -165,6 +166,7 @@ class Core extends Extension
             new ForTag(),
             new SwitchTag(),
             new BlockTag(),
+            new IncludeTag(),
             new ParentTag(),
             new ExtendsTag(),
             new EmbedTag(),

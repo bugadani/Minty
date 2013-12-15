@@ -46,9 +46,8 @@ class Parser
                 if (!isset($this->tags[$tag])) {
                     $message = sprintf('Unknown %s tag found in line %s', $tag, $token->getLine());
                     throw new ParseException($message);
-                } else {
-                    $stream->next();
                 }
+                $stream->next();
                 $parser = $this->tags[$tag];
                 return $parser->parse($this, $stream);
 
