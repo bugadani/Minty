@@ -53,7 +53,6 @@ class OutputTag extends Tag
             return true;
         } elseif ($node instanceof FunctionNode) {
             return $this->isFunctionSafe($env, $node->getFunctionName()->getName());
-            
         } elseif ($node instanceof OperatorNode) {
             if ($node->getOperator() instanceof FilterOperator) {
                 $filter = $node->getOperand(OperatorNode::OPERAND_RIGHT);
@@ -81,6 +80,9 @@ class OutputTag extends Tag
 
     public function ensureSafe(Environment $env, Node $node)
     {
+        if ($env->getOptions()->autoescape === false) {
+            return true;
+        }
         if ($this->isSafe($env, $node)) {
             return $node;
         }
