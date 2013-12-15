@@ -50,6 +50,11 @@ class OperatorNode extends Node
         return $this->operands[$type];
     }
 
+    public function getOperator()
+    {
+        return $this->operator;
+    }
+
     public function compile(Compiler $compiler)
     {
         $this->operator->compile($compiler, $this);
