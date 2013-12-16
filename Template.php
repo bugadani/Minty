@@ -68,16 +68,6 @@ abstract class Template
         $this->variables = array_merge($this->variables, $variables);
     }
 
-    public function cycle(array &$array)
-    {
-        $element = each($array);
-        if ($element === false) {
-            reset($array);
-            $element = each($array);
-        }
-        return $element['value'];
-    }
-
     public function callFilter($filter)
     {
         $args = func_get_args();
@@ -128,52 +118,15 @@ abstract class Template
         throw new UnexpectedValueException('Variable is not an array or an object.');
     }
 
-    public function listArrayElements($array, $template = null)
-    {
-        if (is_array($array) || $array instanceof Traversable) {
-            if ($template === null) {
-                return implode('', $array);
-            }
-            $object = $this->loader->load($template);
-            foreach ($array as $element) {
-                $object->set($element);
-                echo $object->render();
-            }
-        } else {
-            return $array;
-        }
-    }
-
     public function isEmpty($data)
     {
         return empty($data);
-    }
-
-    public function isOdd($data)
-    {
-        return $data % 2 == 1;
-    }
-
-    public function isEven($data)
-    {
-        return $data % 2 == 0;
     }
 
     public function isDivisibleBy($data, $num)
     {
         $div = $data / $num;
         return $div === (int) $div;
-    }
-
-    public function isLike($data, $pattern, $modifiers = 'u')
-    {
-        $preg_pattern = sprintf('/%s/%s', $pattern, $modifiers);
-        return preg_match($preg_pattern, $data);
-    }
-
-    public function isSameAs($data, $value)
-    {
-        return $data === $value;
     }
 
     public function isIn($needle, $haystack)

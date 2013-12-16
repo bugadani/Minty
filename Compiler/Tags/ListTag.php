@@ -51,10 +51,22 @@ class ListTag extends Tag
     public function compile(Compiler $compiler, array $data)
     {
         $compiler
-                ->indented('echo $this->listArrayElements(')
+                ->indented('$list_source = ')
                 ->compileNode($data['expression'])
-                ->add(', ')
+                ->add(';');
+        $compiler
+                ->indented('if(is_array($list_source) || $list_source instanceof \Traversable) {')
+                ->indent()
+                ->indented('$template = $this->getLoader()->load(')
                 ->add($compiler->string($data['template']))
-                ->add(');');
+                ->add(');')
+                ->indented('foreach ($list_source as $element) {')
+                ->indent()
+                ->indented('$template->set($element);')
+                ->indented('echo $template->render();')
+                ->outdent()
+                ->indented('}')
+                ->outdent()
+                ->indented('}');
     }
 }

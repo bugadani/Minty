@@ -9,9 +9,6 @@
 
 namespace Modules\Templating\Compiler;
 
-use Closure;
-use InvalidArgumentException;
-
 abstract class TemplateFunction
 {
     /**
@@ -22,7 +19,7 @@ abstract class TemplateFunction
     private $extension;
 
     /**
-     * @param Closure|callback $filter
+     * @param string $name
      * @param bool $is_safe
      * @throws InvalidArgumentException
      */

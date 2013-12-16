@@ -26,11 +26,6 @@ abstract class Tag
         $tokenizer->pushToken(Token::EXPRESSION_END);
     }
 
-    public function requiresState()
-    {
-        return array();
-    }
-
     abstract public function parse(Parser $parser, Stream $stream);
 
     abstract public function compile(Compiler $compiler, array $data);

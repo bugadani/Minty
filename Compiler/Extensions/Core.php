@@ -47,16 +47,20 @@ use Modules\Templating\Compiler\Operators\LogicOperators\XorOperator;
 use Modules\Templating\Compiler\Operators\PropertyAccessOperator;
 use Modules\Templating\Compiler\Operators\RangeOperator;
 use Modules\Templating\Compiler\Operators\TestOperators\ContainsOperator;
+use Modules\Templating\Compiler\Operators\TestOperators\DivisibleByOperator;
 use Modules\Templating\Compiler\Operators\TestOperators\EndsOperator;
 use Modules\Templating\Compiler\Operators\TestOperators\MatchesOperator;
 use Modules\Templating\Compiler\Operators\TestOperators\NotContainsOperator;
+use Modules\Templating\Compiler\Operators\TestOperators\NotDivisibleByOperator;
 use Modules\Templating\Compiler\Operators\TestOperators\NotEndsOperator;
 use Modules\Templating\Compiler\Operators\TestOperators\NotMatchesOperator;
 use Modules\Templating\Compiler\Operators\TestOperators\NotStartsOperator;
 use Modules\Templating\Compiler\Operators\TestOperators\StartsOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\EmptyOperator;
+use Modules\Templating\Compiler\Operators\UnaryOperators\EvenOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\MinusOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\NotEmptyOperator;
+use Modules\Templating\Compiler\Operators\UnaryOperators\OddOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PlusOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PostDecrementOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PostIncrementOperator;
@@ -125,10 +129,11 @@ class Core extends Extension
             new NotMatchesOperator(8, Operator::NONE),
             new NotStartsOperator(8, Operator::NONE),
             new StartsOperator(8, Operator::NONE),
+            new DivisibleByOperator(8, Operator::NONE),
             //other
             new ConcatenationOperator(10),
             new PropertyAccessOperator(16),
-            new FilterOperator(8),
+            new FilterOperator(16),
             new RangeOperator(9),
             new ExclusiveRangeOperator(9),
         );
@@ -153,6 +158,10 @@ class Core extends Extension
         $operators = array(
             new IsSetOperator(15, Operator::RIGHT),
             new IsNotSetOperator(15, Operator::RIGHT),
+            new EvenOperator(15, Operator::NONE),
+            new OddOperator(15, Operator::NONE),
+            new DivisibleByOperator(15, Operator::NONE),
+            new NotDivisibleByOperator(15, Operator::NONE),
             new PostDecrementOperator(15),
             new PostIncrementOperator(15),
         );
