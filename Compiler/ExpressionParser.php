@@ -87,26 +87,32 @@ class ExpressionParser
 
     public function parsePostfixExpression()
     {
-        $operand = array_pop($this->operand_stack);
 
         if ($this->stream->nextTokenIf(Token::PUNCTUATION, '(')) {
             //fn call
-            $arguments = $this->parseArgumentList();
-            $node      = new FunctionNode($operand);
+            $operand               = array_pop($this->operand_stack);
+            $arguments             = $this->parseArgumentList();
+            $node                  = new FunctionNode($operand);
             $node->addArguments($arguments);
+            $this->operand_stack[] = $node;
         } elseif ($this->stream->nextTokenIf(Token::PUNCTUATION, '[')) {
             //array indexing
-            $index = $this->parseExpression(true);
-            $node  = new ArrayIndexNode($operand, $index);
+            $operand               = array_pop($this->operand_stack);
+            $index                 = $this->parseExpression(true);
+            $this->operand_stack[] = new ArrayIndexNode($operand, $index);
         } elseif ($this->stream->nextTokenIf(Token::OPERATOR, $this->unary_postfix_test)) {
-            $token    = $this->stream->current();
+            $token = $this->stream->current();
+
             $operator = $this->unary_postfix_operators->getOperator($token->getValue());
-            $node     = new OperatorNode($operator);
-            $node->addOperand(OperatorNode::OPERAND_RIGHT, $operand);
-        } else {
-            $node = $operand;
+            while ($this->compareToStackTop($operator)) {
+                $this->popOperator();
+            }
+
+            $operand               = array_pop($this->operand_stack);
+            $node                  = new OperatorNode($operator);
+            $node->addOperand(OperatorNode::OPERAND_LEFT, $operand);
+            $this->operand_stack[] = $node;
         }
-        $this->operand_stack[] = $node;
     }
 
     public function parseDataToken(Token $token)
