@@ -18,7 +18,7 @@ class OperatorNode extends Node
 {
     const OPERAND_LEFT   = 0;
     const OPERAND_RIGHT  = 1;
-    const OPERAND_MIDDLE = 1;
+    const OPERAND_MIDDLE = 2;
 
     /**
      * @var Operator
