@@ -24,7 +24,7 @@ class IsSetOperator extends Operator
     public function compile(Compiler $compiler, OperatorNode $node)
     {
         $compiler->add('isset(');
-        $node->getOperand(OperatorNode::OPERAND_RIGHT)->compile($compiler);
+        $node->getOperand(OperatorNode::OPERAND_LEFT)->compile($compiler);
         $compiler->add(')');
     }
 }
