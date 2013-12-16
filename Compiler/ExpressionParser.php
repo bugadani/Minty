@@ -100,7 +100,7 @@ class ExpressionParser
 
             $operator = $this->unary_postfix_operators->getOperator($token->getValue());
             $this->popOperatorsCompared($operator);
-            $operand = array_pop($this->operand_stack);
+            $operand  = array_pop($this->operand_stack);
 
             $node = new OperatorNode($operator);
             $node->addOperand(OperatorNode::OPERAND_LEFT, $operand);
@@ -164,21 +164,24 @@ class ExpressionParser
 
     public function parseToken()
     {
-        $token = $this->stream->next();
-        if ($token->isDataType()) {
-            $this->parseDataToken($token);
-        } elseif ($token->test(Token::PUNCTUATION, '(')) {
-            $this->parseExpression();
-        } elseif ($token->test(Token::PUNCTUATION, '[')) {
-            $this->parseArray();
-        } elseif ($token->test(Token::OPERATOR, $this->unary_prefix_test)) {
-            $this->pushUnaryPrefixOperator($token);
-            $this->parseToken();
-        } else {
-            $string    = 'Unexpected %s (%s) token found in line %d';
-            $exception = sprintf($string, $token->getTypeString(), $token->getValue(), $token->getLine());
-            throw new SyntaxException($exception);
-        }
+        do {
+            $return = true;
+            $token  = $this->stream->next();
+            if ($token->isDataType()) {
+                $this->parseDataToken($token);
+            } elseif ($token->test(Token::PUNCTUATION, '(')) {
+                $this->parseExpression();
+            } elseif ($token->test(Token::PUNCTUATION, '[')) {
+                $this->parseArray();
+            } elseif ($token->test(Token::OPERATOR, $this->unary_prefix_test)) {
+                $this->pushUnaryPrefixOperator($token);
+                $return = false;
+            } else {
+                $string    = 'Unexpected %s (%s) token found in line %d';
+                $exception = sprintf($string, $token->getTypeString(), $token->getValue(), $token->getLine());
+                throw new SyntaxException($exception);
+            }
+        } while (!$return);
     }
 
     public function parseExpression($return = false)
