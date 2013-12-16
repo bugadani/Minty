@@ -128,34 +128,32 @@ class ExpressionParser
     public function parseArray()
     {
         //iterate over tokens
-        $next = $this->stream->next();
+        $this->stream->next();
         $node = new ArrayNode();
-        while (!$next->test(Token::PUNCTUATION, ']')) {
+        while (!$this->stream->current()->test(Token::PUNCTUATION, ']')) {
             //expressions are allowed as both array keys and values.
-            if ($next->test(Token::PUNCTUATION, '(')) {
-                $this->parseExpression();
-            } elseif ($next->isDataType()) {
-                $this->parseDataToken($next);
+            $token = $this->stream->current();
+            if ($token->test(Token::PUNCTUATION, '(')) {
+                $value = $this->parseExpression(true);
+                $this->stream->expectCurrent(Token::PUNCTUATION, ')');
+            } elseif ($token->isDataType()) {
+                $this->parseDataToken($token);
+                $value = array_pop($this->operand_stack);
             }
 
-            $next = $this->stream->next();
-            if ($next->test(Token::PUNCTUATION, ':')) {
+            if ($this->stream->next()->test(Token::PUNCTUATION, ':')) {
                 //the previous value was a key
-                $key  = array_pop($this->operand_stack);
-                $this->parseExpression();
-                $next = $this->stream->current();
+                $key   = $value;
+                $value = $this->parseExpression(true);
             } else {
                 $key = null;
             }
-            $value = array_pop($this->operand_stack);
             $node->add($value, $key);
 
-            if ($next->test(Token::PUNCTUATION, ',')) {
-                $next = $this->stream->next();
-            } elseif (!$next->test(Token::PUNCTUATION, ']')) {
-                $string  = 'Unexpected %s (%s) token found in line %s';
-                $message = sprintf($string, $next->getTypeString(), $next->getValue(), $next->getLine());
-                throw new SyntaxException($message);
+            if ($this->stream->current()->test(Token::PUNCTUATION, ',')) {
+                $this->stream->next();
+            } else {
+                $this->stream->expectCurrent(Token::PUNCTUATION, ']');
             }
         }
         //push array node to operand stack
