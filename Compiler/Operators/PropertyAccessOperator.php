@@ -30,11 +30,12 @@ class PropertyAccessOperator extends Operator
 
         if ($right instanceof FunctionNode) {
             $right->setObject($object);
-            $right->compile($compiler);
+            $compiler->compileNode($right);
         } else {
-            $compiler->add('$this->getProperty(');
-            $object->compile($compiler);
-            $compiler->add(', ');
+            $compiler
+                    ->add('$this->getProperty(')
+                    ->compileNode($object)
+                    ->add(', ');
             if ($right instanceof IdentifierNode) {
                 $compiler->add($compiler->string($right->getName()));
             } else {

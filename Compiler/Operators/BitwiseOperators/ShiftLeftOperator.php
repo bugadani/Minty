@@ -9,11 +9,9 @@
 
 namespace Modules\Templating\Compiler\Operators\BitwiseOperators;
 
-use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Nodes\OperatorNode;
-use Modules\Templating\Compiler\Operator;
+use Modules\Templating\Compiler\Operators\SimpleBinaryOperator;
 
-class ShiftLeftOperator extends Operator
+class ShiftLeftOperator extends SimpleBinaryOperator
 {
 
     public function operators()
@@ -21,12 +19,8 @@ class ShiftLeftOperator extends Operator
         return '<<';
     }
 
-    public function compile(Compiler $compiler, OperatorNode $node)
+    protected function compileOperator()
     {
-        $compiler->add('(');
-        $node->getOperand(OperatorNode::OPERAND_LEFT)->compile($compiler);
-        $compiler->add(' << ');
-        $node->getOperand(OperatorNode::OPERAND_RIGHT)->compile($compiler);
-        $compiler->add(')');
+        return ' << ';
     }
 }

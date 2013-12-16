@@ -9,9 +9,9 @@
 
 namespace Modules\Templating\Compiler\Operators\ComparisonOperators;
 
-use Modules\Templating\Compiler\Operators\ComparisonOperator;
+use Modules\Templating\Compiler\Operators\SimpleBinaryOperator;
 
-class NotEqualsOperator extends ComparisonOperator
+class NotEqualsOperator extends SimpleBinaryOperator
 {
 
     public function operators()
@@ -19,7 +19,7 @@ class NotEqualsOperator extends ComparisonOperator
         return array('!=', '<>', 'is not', 'does not equal');
     }
 
-    public function compileSymbol()
+    public function compileOperator()
     {
         return ' != ';
     }

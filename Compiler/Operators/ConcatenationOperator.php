@@ -11,9 +11,8 @@ namespace Modules\Templating\Compiler\Operators;
 
 use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
-use Modules\Templating\Compiler\Operator;
 
-class ConcatenationOperator extends Operator
+class ConcatenationOperator extends SimpleBinaryOperator
 {
 
     public function operators()
@@ -21,12 +20,8 @@ class ConcatenationOperator extends Operator
         return '~';
     }
 
-    public function compile(Compiler $compiler, OperatorNode $node)
+    protected function compileOperator()
     {
-        $compiler->add('(');
-        $node->getOperand(OperatorNode::OPERAND_LEFT)->compile($compiler);
-        $compiler->add(' . ');
-        $node->getOperand(OperatorNode::OPERAND_RIGHT)->compile($compiler);
-        $compiler->add(')');
+        return ' . ';
     }
 }

@@ -29,16 +29,19 @@ class ConditionalOperator extends Operator
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
-        $compiler->add('((');
-        $node->getOperand(OperatorNode::OPERAND_LEFT)->compile($compiler);
-        $compiler->add(') ?');
+        $compiler
+                ->add('((')
+                ->compileNode($node->getOperand(OperatorNode::OPERAND_LEFT))
+                ->add(') ?');
         if ($node->hasOperand(2)) {
-            $compiler->add(' (');
-            $node->getOperand(2)->compile($compiler);
-            $compiler->add(') ');
+            $compiler
+                    ->add(' (')
+                    ->compileNode($node->getOperand(OperatorNode::OPERAND_MIDDLE))
+                    ->add(') ');
         }
-        $compiler->add(': (');
-        $node->getOperand(OperatorNode::OPERAND_RIGHT)->compile($compiler);
-        $compiler->add('))');
+        $compiler
+                ->add(': (')
+                ->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT))
+                ->add('))');
     }
 }

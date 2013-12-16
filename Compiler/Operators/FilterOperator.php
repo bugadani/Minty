@@ -46,13 +46,15 @@ class FilterOperator extends Operator
         if ($function instanceof SimpleFunction) {
             $compiler->add($function->getFunction());
         } elseif ($function instanceof MethodFunction) {
-            $compiler->add('$this->getExtension(');
-            $compiler->add($compiler->string($function->getExtensionName()));
-            $compiler->add(')->');
-            $compiler->add($function->getMethod());
+            $compiler
+                    ->add('$this->getExtension(')
+                    ->add($compiler->string($function->getExtensionName()))
+                    ->add(')->')
+                    ->add($function->getMethod());
         } elseif ($function instanceof CallbackFunction) {
-            $compiler->add('$this->');
-            $compiler->add($function->getFunctionName());
+            $compiler
+                    ->add('$this->')
+                    ->add($function->getFunctionName());
         }
 
         $compiler->add('(');
@@ -63,7 +65,7 @@ class FilterOperator extends Operator
             } else {
                 $compiler->add(', ');
             }
-            $compiler->add($compiler->compileData($argument));
+            $compiler->compileData($argument);
         }
         $compiler->add(')');
     }

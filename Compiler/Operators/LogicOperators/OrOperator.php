@@ -9,11 +9,9 @@
 
 namespace Modules\Templating\Compiler\Operators\LogicOperators;
 
-use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Nodes\OperatorNode;
-use Modules\Templating\Compiler\Operator;
+use Modules\Templating\Compiler\Operators\SimpleBinaryOperator;
 
-class OrOperator extends Operator
+class OrOperator extends SimpleBinaryOperator
 {
 
     public function operators()
@@ -21,12 +19,8 @@ class OrOperator extends Operator
         return array('||', 'or');
     }
 
-    public function compile(Compiler $compiler, OperatorNode $node)
+    public function compileOperator()
     {
-        $compiler->add('(');
-        $node->getOperand(OperatorNode::OPERAND_LEFT)->compile($compiler);
-        $compiler->add(' || ');
-        $node->getOperand(OperatorNode::OPERAND_RIGHT)->compile($compiler);
-        $compiler->add(')');
+        return ' || ';
     }
 }

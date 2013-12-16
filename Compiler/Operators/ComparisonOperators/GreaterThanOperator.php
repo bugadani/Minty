@@ -9,9 +9,9 @@
 
 namespace Modules\Templating\Compiler\Operators\ComparisonOperators;
 
-use Modules\Templating\Compiler\Operators\ComparisonOperator;
+use Modules\Templating\Compiler\Operators\SimpleBinaryOperator;
 
-class GreaterThanOperator extends ComparisonOperator
+class GreaterThanOperator extends SimpleBinaryOperator
 {
 
     public function operators()
@@ -19,7 +19,7 @@ class GreaterThanOperator extends ComparisonOperator
         return array('>', 'is greater than');
     }
 
-    public function compileSymbol()
+    public function compileOperator()
     {
         return ' > ';
     }
