@@ -10,6 +10,7 @@
 namespace Modules\Templating;
 
 use ArrayAccess;
+use BadMethodCallException;
 use InvalidArgumentException;
 use Modules\Templating\Compiler\Environment;
 use OutOfBoundsException;
@@ -40,10 +41,10 @@ abstract class Template
 
     public function __construct(TemplateLoader $loader, Environment $environment)
     {
-        $this->options            = $environment->getOptions();
-        $this->loader             = $loader;
-        $this->environment        = $environment;
-        $this->variables          = array();
+        $this->options     = $environment->getOptions();
+        $this->loader      = $loader;
+        $this->environment = $environment;
+        $this->variables   = array();
     }
 
     public function getLoader()
@@ -99,8 +100,7 @@ abstract class Template
             case 'json':
                 return json_encode($data);
             default:
-                $method = 'filter_' . $for;
-                return $this->plugins->$method($data);
+                throw new BadMethodCallException('Filter not found: ' . $for);
         }
     }
 
