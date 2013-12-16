@@ -37,8 +37,10 @@ class AssignTag extends Tag
     {
         $var        = $data['variable_name'];
         $value_node = $data['value_node'];
-        $compiler->indented('$this->%s = ', $var);
-        $value_node->compile($compiler);
-        $compiler->add(';');
+
+        $compiler
+                ->indented('$this->%s = ', $var)
+                ->compileNode($value_node)
+                ->add(';');
     }
 }

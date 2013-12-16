@@ -94,8 +94,9 @@ class OutputTag extends Tag
     public function compile(Compiler $compiler, array $data)
     {
         $expression = $this->ensureSafe($compiler->getEnvironment(), $data['expression']);
-        $compiler->indented('echo ');
-        $compiler->add($compiler->compileNode($expression));
-        $compiler->add(';');
+        $compiler
+                ->indented('echo ')
+                ->compileNode($expression)
+                ->add(';');
     }
 }

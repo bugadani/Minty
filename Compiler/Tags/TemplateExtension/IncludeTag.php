@@ -26,15 +26,14 @@ class IncludeTag extends Tag
 
     public function compile(Compiler $compiler, array $data)
     {
-        $compiler->indented('$template = $this->getLoader()->load(');
-        $compiler->add($compiler->string($data['template']));
-        $compiler->add(');');
-
-        $compiler->indented('$template->set(');
-        $compiler->compileData($data['arguments']);
-        $compiler->add(');');
-
-        $compiler->indented('$template->render();');
+        $compiler
+                ->indented('$template = $this->getLoader()->load(')
+                ->add($compiler->string($data['template']))
+                ->add(');')
+                ->indented('$template->set(')
+                ->compileData($data['arguments'])
+                ->add(');')
+                ->indented('$template->render();');
     }
 
     public function parse(Parser $parser, Stream $stream)

@@ -37,35 +37,30 @@ class IfTag extends Tag
         foreach ($data as $branch) {
             if ($first) {
                 $compiler->indented('if(');
-                $branch['condition']->compile($compiler);
-                $compiler->add(') {');
-                $this->compileBody($compiler, $branch['body']);
-                $compiler->indented('}');
                 $first = false;
+            } elseif ($branch['condition'] === null) {
+                $else = $branch;
+                continue;
             } else {
-                if ($branch['condition'] === null) {
-                    $else = $branch;
-                } else {
-                    $compiler->add(' elseif(');
-                    $branch['condition']->compile($compiler);
-                    $compiler->add(') {');
-                    $this->compileBody($compiler, $branch['body']);
-                    $compiler->indented('}');
-                }
+                $compiler->add(' elseif(');
             }
+
+            $compiler
+                    ->compileNode($branch['condition'])
+                    ->add(') {')
+                    ->indent()
+                    ->compileNode($branch['body'])
+                    ->outdent()
+                    ->indented('}');
         }
         if ($else !== null) {
-            $compiler->add(' else {');
-            $this->compileBody($compiler, $branch['body']);
-            $compiler->indented('}');
+            $compiler
+                    ->add(' else {')
+                    ->indent()
+                    ->compileNode($branch['body'])
+                    ->outdent()
+                    ->indented('}');
         }
-    }
-
-    private function compileBody(Compiler $compiler, RootNode $body)
-    {
-        $compiler->indent();
-        $body->compile($compiler);
-        $compiler->outdent();
     }
 
     public function parse(Parser $parser, Stream $stream)

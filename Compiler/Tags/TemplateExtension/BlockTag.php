@@ -34,6 +34,7 @@ class BlockTag extends Tag
         $compiler->startTemplate($data['template']);
         $data['body']->compile($compiler);
         $template = $compiler->endTemplate();
+
         $compiler->indented('echo $this->%s();', $template);
     }
 

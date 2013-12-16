@@ -52,33 +52,37 @@ class ForTag extends Tag
         $compiler->indented('if (isset($temp)) {');
         $compiler->indent();
         //TODO
-        $compiler->outdent();
-        $compiler->indented('}');
-        $compiler->indented('$temp = ');
-        $data['source']->compile($compiler);
-        $compiler->add(';');
+        $compiler
+                ->outdent()
+                ->indented('}')
+                ->indented('$temp = ')
+                ->compileNode($data['source'])
+                ->add(';');
         if (isset($data['else'])) {
-            $compiler->indented('if(empty($temp)) {');
-            $compiler->indent();
-            $data['else']->compile($compiler);
-            $compiler->outdent();
-            $compiler->indented('} else {');
-            $compiler->indent();
+            $compiler
+                    ->indented('if(empty($temp)) {')
+                    ->indent()
+                    ->compileNode($data['else'])
+                    ->outdent()
+                    ->indented('} else {')
+                    ->indent();
         }
         $compiler->indented('foreach($temp as ');
         if ($data['loop_key'] !== null) {
-            $compiler->add('$this->' . $data['loop_key']);
-            $compiler->add(' => ');
+            $compiler
+                    ->add('$this->' . $data['loop_key'])
+                    ->add(' => ');
         }
-        $compiler->add('$this->' . $data['loop_variable']);
-        $compiler->add(') {');
-        $compiler->indent();
-        $data['loop']->compile($compiler);
-        $compiler->outdent();
-        $compiler->indented('}');
+        $compiler->add('$this->' . $data['loop_variable'])
+                ->add(') {')
+                ->indent()
+                ->compileNode($data['loop'])
+                ->outdent()
+                ->indented('}');
         if (isset($data['else'])) {
-            $compiler->outdent();
-            $compiler->indented('}');
+            $compiler
+                    ->outdent()
+                    ->indented('}');
         }
     }
 

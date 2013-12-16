@@ -33,11 +33,11 @@ class EmbedTag extends Tag
     {
         $embedded = $compiler->addEmbedded($data['template'], $data['body']);
 
-        $compiler->indented('$embedded = new %s($this->getLoader(), $this->getEnvironment());', $embedded);
-
-        $compiler->indented('$embedded->set(');
-        $compiler->compileData($data['arguments']);
-        $compiler->add(');');
+        $compiler
+                ->indented('$embedded = new %s($this->getLoader(), $this->getEnvironment());', $embedded)
+                ->indented('$embedded->set(')
+                ->compileData($data['arguments'])
+                ->add(');');
 
         $compiler->indented('$embedded->render();');
     }

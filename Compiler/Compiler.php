@@ -79,11 +79,13 @@ class Compiler
         $this->output .= "\n";
         $this->output .= str_repeat(' ', $this->indentation * 4);
         $this->output .= vsprintf($string, $args);
+        return $this;
     }
 
     public function add($string)
     {
         $this->output .= $string;
+        return $this;
     }
 
     public function string($string)
@@ -125,6 +127,7 @@ class Compiler
         } else {
             $this->add($this->string($data));
         }
+        return $this;
     }
 
     public function addOutputStack($output = '')
@@ -167,6 +170,7 @@ class Compiler
     public function indent()
     {
         $this->indentation++;
+        return $this;
     }
 
     public function outdent()
@@ -175,6 +179,7 @@ class Compiler
             throw new BadMethodCallException('Cannot outdent more.');
         }
         $this->indentation--;
+        return $this;
     }
 
     public function compileNode(Node $node, $indentation = null)
@@ -187,6 +192,7 @@ class Compiler
         if ($indentation !== null) {
             $this->indentation = $old_indentation;
         }
+        return $this;
     }
 
     public function compileToString(Node $node)

@@ -50,10 +50,11 @@ class ListTag extends Tag
 
     public function compile(Compiler $compiler, array $data)
     {
-        $compiler->indented('echo $this->listArrayElements(');
-        $data['expression']->compile($compiler);
-        $compiler->add(', ');
-        $compiler->add($compiler->string($data['template']));
-        $compiler->add(');');
+        $compiler
+                ->indented('echo $this->listArrayElements(')
+                ->compileNode($data['expression'])
+                ->add(', ')
+                ->add($compiler->string($data['template']))
+                ->add(');');
     }
 }
