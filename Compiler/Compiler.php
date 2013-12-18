@@ -229,14 +229,22 @@ class Compiler
         return $this->extended_template;
     }
 
-    public function getClassForTemplate($template)
+    public function getClassForTemplate($template, $include_namespace = true)
     {
         if (!$template) {
             return 'Modules\Templating\Template';
         }
-        $namespace = $this->options->cache_namespace;
-        $namespace .= '\\' . strtr($template, '/', '\\');
-        return $namespace . 'Template';
+        $path = $this->options->cache_namespace;
+        $path .= '\\' . strtr($template, '/', '\\');
+
+        $pos       = strrpos($path, '\\') + 1;
+        $classname = substr($path, $pos);
+        if ($include_namespace) {
+            $namespace = substr($path, 0, $pos);
+            $classname = substr($path, $pos);
+            return $namespace . 'Template_' . $classname;
+        }
+        return 'Template_' . $classname;
     }
 
     public function addEmbedded($parent, RootNode $root)
@@ -299,7 +307,6 @@ class Compiler
         $this->newline();
         $this->add($main_class);
 
-        $extended_template  = $this->getExtendedTemplate();
         $embedded_templates = $this->embedded;
         $this->embedded     = array();
         foreach ($embedded_templates as $i => $embedded) {
