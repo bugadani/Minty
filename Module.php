@@ -54,20 +54,29 @@ class Module extends \Miny\Application\Module
             return;
         }
         $response_code = $response->getCode();
-        foreach ($handlers as $handler) {
-            if (!isset($handler['codes'])) {
-                if (!isset($handler['code'])) {
-                    throw new UnexpectedValueException('Response code handler must contain key "code" or "codes".');
+        foreach ($handlers as $key => $handler) {
+            if (!is_array($handler)) {
+                $template_name = $handler;
+                if (!$response->isCode($key)) {
+                    continue;
                 }
-                $codes = array($handler['code']);
             } else {
-                $codes = array($handler['codes']);
-            }
-            if (!in_array($response_code, $codes)) {
-                continue;
-            }
-            if (!isset($handler['template'])) {
-                throw new UnexpectedValueException('Response code handler must specify a template.');
+                if (!isset($handler['codes'])) {
+                    if (!isset($handler['code'])) {
+                        throw new UnexpectedValueException('Response code handler must contain key "code" or "codes".');
+                    }
+                    if (!$response->isCode($handler['code'])) {
+                        continue;
+                    }
+                } else {
+                    if (!in_array($response_code, $handler['codes'])) {
+                        continue;
+                    }
+                }
+                if (!isset($handler['template'])) {
+                    throw new UnexpectedValueException('Response code handler must specify a template.');
+                }
+                $template_name = $handler['template'];
             }
             $loader   = $this->application->template_loader;
             $template = $loader->load($handler['template']);
