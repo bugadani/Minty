@@ -60,7 +60,8 @@ class TemplateLoader
 
     private function getCachedPath($file)
     {
-        return sprintf($this->options->cache_path, $file . 'Template');
+        $classname = $this->compiler->getClassForTemplate($file, false);
+        return sprintf($this->options->cache_path, dirname($file) . '/' . $classname);
     }
 
     private function getPath($file)
