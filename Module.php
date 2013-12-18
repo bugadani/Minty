@@ -28,8 +28,9 @@ class Module extends \Miny\Application\Module
         $app->autoloader->register('\\' . $options->cache_namespace, dirname($options->cache_path));
 
         $app->getBlueprint('events')
-                ->addMethodCall('register', 'filter_response', array($this, 'handleResponseCodes'));
-        
+                ->addMethodCall('register', 'filter_response', array($this, 'handleResponseCodes'))
+                ->addMethodCall('register', 'uncaught_exception', array($this, 'handleException'));
+
         $app->add('miny_extensions', __NAMESPACE__ . '\\Compiler\\Extensions\\Miny')
                 ->setArguments('&app');
         $app->add('template_environment', __NAMESPACE__ . '\\Compiler\\Environment')
@@ -76,6 +77,33 @@ class Module extends \Miny\Application\Module
             ));
             $template->render();
             break;
+        }
+    }
+
+    public function handleException(\Exception $e)
+    {
+        if (!isset($this->application['templating:exceptions'])) {
+            return;
+        }
+        $loader   = $this->application->template_loader;
+        $handlers = $this->application['templating']['exceptions'];
+        if (!is_array($handlers)) {
+            $template_name = $handlers;
+        } else {
+            foreach ($handlers as $class => $handler) {
+                if (!$e instanceof $class) {
+                    continue;
+                }
+                $template_name = $handler;
+                break;
+            }
+        }
+        if (isset($template_name)) {
+            $template = $loader->load($template_name);
+            $template->set(array(
+                'exception' => $e
+            ));
+            $template->render();
         }
     }
 }
