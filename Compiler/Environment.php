@@ -10,8 +10,8 @@
 namespace Modules\Templating\Compiler;
 
 use Modules\Templating\Compiler\Exceptions\CompileException;
-use Modules\Templating\Compiler\Extensions\Core;
 use Modules\Templating\Extension;
+use Modules\Templating\Extensions\Core;
 use Modules\Templating\TemplatingOptions;
 
 class Environment

@@ -19,19 +19,17 @@ class Module extends \Miny\Application\Module
 
     public function init(BaseApplication $app)
     {
+        $options = $app->add('templating_options', __NAMESPACE__ . '\\TemplatingOptions');
         if (isset($app['templating:options'])) {
-            $options = new TemplatingOptions($app['templating']['options']);
-        } else {
-            $options = new TemplatingOptions();
+            $options->setArguments('@templating:options');
         }
-        $app->templating_options = $options;
-        $app->autoloader->register('\\' . $options->cache_namespace, dirname($options->cache_path));
+        $this->setupAutoloader($app);
 
         $app->getBlueprint('events')
                 ->addMethodCall('register', 'filter_response', array($this, 'handleResponseCodes'))
                 ->addMethodCall('register', 'uncaught_exception', array($this, 'handleException'));
 
-        $app->add('miny_extensions', __NAMESPACE__ . '\\Compiler\\Extensions\\Miny')
+        $app->add('miny_extensions', __NAMESPACE__ . '\\Extensions\\Miny')
                 ->setArguments('&app');
         $app->add('template_environment', __NAMESPACE__ . '\\Compiler\\Environment')
                 ->setArguments('&templating_options')
@@ -42,6 +40,14 @@ class Module extends \Miny\Application\Module
                 ->setArguments('&template_environment');
         $app->add('template_loader', __NAMESPACE__ . '\\TemplateLoader')
                 ->setArguments('&template_environment', '&template_compiler', '&log');
+    }
+
+    private function setupAutoloader(BaseApplication $app)
+    {
+        $templating_options = $app->templating_options;
+        $namespace          = $templating_options->cache_namespace;
+        $dirname            = dirname($templating_options->cache_path);
+        $app->autoloader->register('\\' . $namespace, $dirname);
     }
 
     public function handleResponseCodes(Request $request, Response $response)

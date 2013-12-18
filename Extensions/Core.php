@@ -7,7 +7,7 @@
  * For licensing information see the LICENCE file.
  */
 
-namespace Modules\Templating\Compiler\Extensions;
+namespace Modules\Templating\Extensions;
 
 use ArrayAccess;
 use Countable;

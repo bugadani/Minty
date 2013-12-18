@@ -104,6 +104,25 @@ abstract class Template
         }
     }
 
+    public function hasProperty($structure, $key)
+    {
+        if (is_array($structure) || $structure instanceof ArrayAccess) {
+            return isset($structure[$key]);
+        }
+        if (is_object($structure)) {
+            return isset($structure->$key);
+        }
+        throw new UnexpectedValueException('Variable is not an array or an object.');
+    }
+
+    public function hasMethod($object, $method)
+    {
+        if (is_object($object)) {
+            return method_exists($object, $method);
+        }
+        throw new UnexpectedValueException('Variable is not an object.');
+    }
+
     public function getProperty($structure, $key)
     {
         if (is_array($structure) || $structure instanceof ArrayAccess) {
