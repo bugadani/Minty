@@ -214,6 +214,7 @@ class Core extends Extension
             new MethodFunction('pluck', 'pluckFunction'),
             new MethodFunction('random', 'randomFunction'),
             new SimpleFunction('range'),
+            new MethodFunction('raw', 'rawFunction', true),
             new MethodFunction('regexp_replace', 'regexpReplaceFunction'),
             new MethodFunction('replace', 'replaceFunction'),
             new MethodFunction('reverse', 'reverseFunction'),
@@ -366,6 +367,11 @@ class Core extends Extension
             return $data[array_rand($data)];
         }
         throw new InvalidArgumentException('Random expects an array, a number or a string');
+    }
+
+    public function rawFunction($data)
+    {
+        return $data;
     }
 
     public function regexpReplaceFunction($string, $pattern, $replace)
