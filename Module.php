@@ -27,13 +27,9 @@ class Module extends \Miny\Application\Module
         $app->templating_options = $options;
         $app->autoloader->register('\\' . $options->cache_namespace, dirname($options->cache_path));
 
-        /*
-         * ide jöhet hook amivel response kódokat lehet sablonokra továbbítani
-         * configban: [handled codes, template]
-         */
         $app->getBlueprint('events')
                 ->addMethodCall('register', 'filter_response', array($this, 'handleResponseCodes'));
-
+        
         $app->add('miny_extensions', __NAMESPACE__ . '\\Compiler\\Extensions\\Miny')
                 ->setArguments('&app');
         $app->add('template_environment', __NAMESPACE__ . '\\Compiler\\Environment')
