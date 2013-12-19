@@ -85,7 +85,7 @@ class Module extends \Miny\Application\Module
                 $template_name = $handler['template'];
             }
             $loader   = $this->application->template_loader;
-            $template = $loader->load($handler['template']);
+            $template = $loader->load($template_name);
             $template->set(array(
                 'request'  => $request,
                 'response' => $response
