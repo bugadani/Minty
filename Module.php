@@ -47,6 +47,9 @@ class Module extends \Miny\Application\Module
         $templating_options = $app->templating_options;
         $namespace          = $templating_options->cache_namespace;
         $dirname            = dirname($templating_options->cache_path);
+        if(!is_dir($dirname)) {
+            mkdir($dirname);
+        }
         $app->autoloader->register('\\' . $namespace, $dirname);
     }
 
