@@ -41,6 +41,7 @@ class Module extends \Miny\Application\Module
         $app->add('template_loader', __NAMESPACE__ . '\\TemplateLoader')
                 ->setArguments('&template_environment', '&template_compiler', '&log');
         $app->add('templating_controller', __NAMESPACE__ . '\\TemplateController')
+                ->setParent('controller')
                 ->addMethodCall('setTemplateLoader', '&template_loader');
     }
 
