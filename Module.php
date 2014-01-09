@@ -40,6 +40,8 @@ class Module extends \Miny\Application\Module
                 ->setArguments('&template_environment');
         $app->add('template_loader', __NAMESPACE__ . '\\TemplateLoader')
                 ->setArguments('&template_environment', '&template_compiler', '&log');
+        $app->add('templating_controller', __NAMESPACE__ . '\\TemplateController')
+                ->addMethodCall('setTemplateLoader', '&template_loader');
     }
 
     private function setupAutoloader(BaseApplication $app)
@@ -47,7 +49,7 @@ class Module extends \Miny\Application\Module
         $templating_options = $app->templating_options;
         $namespace          = $templating_options->cache_namespace;
         $dirname            = dirname($templating_options->cache_path);
-        if(!is_dir($dirname)) {
+        if (!is_dir($dirname)) {
             mkdir($dirname);
         }
         $app->autoloader->register('\\' . $namespace, $dirname);

@@ -18,6 +18,17 @@ class Controller extends ControllerBase
     private $layout_map;
     private $current_layout;
     private $template_variables = array();
+    private $template_loader;
+
+    public function setTemplateLoader(TemplateLoader $loader)
+    {
+        $this->template_loader = $loader;
+    }
+
+    public function getTemplateLoader()
+    {
+        return $this->template_loader;
+    }
 
     protected function initLayouts()
     {
@@ -50,8 +61,7 @@ class Controller extends ControllerBase
     protected function renderLayout()
     {
         if (isset($this->current_layout)) {
-            $loader = $this->service('template_loader');
-            $layout = $loader->load($this->current_layout);
+            $layout = $this->template_loader->load($this->current_layout);
             $layout->set($this->template_variables);
             echo $layout->render();
         }
