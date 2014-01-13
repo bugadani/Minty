@@ -52,12 +52,18 @@ class Environment
     private $extensions;
 
     /**
+     * @var FunctionCompiler[]
+     */
+    private $function_compilers;
+
+    /**
      * @param TemplatingOptions $options
      */
     public function __construct(TemplatingOptions $options)
     {
         $this->extensions              = array();
         $this->functions               = array();
+        $this->function_compilers      = array();
         $this->binary_operators        = new OperatorCollection();
         $this->unary_prefix_operators  = new OperatorCollection();
         $this->unary_postfix_operators = new OperatorCollection();
@@ -114,6 +120,18 @@ class Environment
             throw new CompileException('Function not found: ' . $name);
         }
         return $this->functions[$name];
+    }
+
+    /**
+     * @param string $class
+     * @return FunctionCompiler
+     */
+    public function getFunctionCompiler($class)
+    {
+        if (!isset($this->function_compilers[$class])) {
+            $this->function_compilers[$class] = new $class;
+        }
+        return $this->function_compilers[$class];
     }
 
     /**
@@ -179,8 +197,7 @@ class Environment
     public function getOperatorSymbols()
     {
         return array_merge(
-                $this->binary_operators->getSymbols(),
-                $this->unary_prefix_operators->getSymbols(),
+                $this->binary_operators->getSymbols(), $this->unary_prefix_operators->getSymbols(),
                 $this->unary_postfix_operators->getSymbols()
         );
     }

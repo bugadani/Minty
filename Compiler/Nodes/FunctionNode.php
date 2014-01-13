@@ -10,9 +10,6 @@
 namespace Modules\Templating\Compiler\Nodes;
 
 use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Functions\CallbackFunction;
-use Modules\Templating\Compiler\Functions\MethodFunction;
-use Modules\Templating\Compiler\Functions\SimpleFunction;
 use Modules\Templating\Compiler\Node;
 
 class FunctionNode extends Node
@@ -21,7 +18,7 @@ class FunctionNode extends Node
     private $arguments;
     private $object;
 
-    public function __construct($function_name)
+    public function __construct(Node $function_name)
     {
         $this->function_name = $function_name;
         $this->arguments     = array();
@@ -57,6 +54,11 @@ class FunctionNode extends Node
         $this->arguments = array_merge($arguments, $this->arguments);
     }
 
+    public function setArguments(array $arguments)
+    {
+        $this->arguments = $arguments;
+    }
+
     public function getArguments()
     {
         return $this->arguments;
@@ -64,36 +66,26 @@ class FunctionNode extends Node
 
     public function compile(Compiler $compiler)
     {
-        $func_name = $this->function_name->getName();
+        $func_name   = $this->function_name->getName();
+        $environment = $compiler->getEnvironment();
         if ($this->object !== null) {
             $this->object->compile($compiler);
             $compiler
                     ->add('->')
                     ->add($func_name);
+        } elseif ($environment->hasFunction($func_name)) {
+            $function = $environment->getFunction($func_name);
+            $environment->getFunctionCompiler($function->getOption('compiler'))->compile($compiler, $function);
         } else {
-            $environment = $compiler->getEnvironment();
-            if ($environment->hasFunction($func_name)) {
-                $function = $environment->getFunction($func_name);
-
-                if ($function instanceof SimpleFunction) {
-                    $compiler->add($function->getFunction());
-                } elseif ($function instanceof MethodFunction) {
-                    $compiler
-                            ->add('$this->getExtension(')
-                            ->add($compiler->string($function->getExtensionName()))
-                            ->add(')->')
-                            ->add($function->getMethod());
-                } elseif ($function instanceof CallbackFunction) {
-                    $compiler
-                            ->add('$this->')
-                            ->add($function->getFunctionName());
-                }
-            } else {
-                $compiler
-                        ->add('$this->')
-                        ->add($func_name);
-            }
+            $compiler
+                    ->add('$this->')
+                    ->add($func_name);
         }
+        $this->compileArgumentList($compiler);
+    }
+
+    public function compileArgumentList(Compiler $compiler)
+    {
         $compiler->add('(');
         $first = true;
         foreach ($this->arguments as $argument) {

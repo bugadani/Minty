@@ -15,9 +15,9 @@ class SimpleFunction extends TemplateFunction
 {
     private $function_name;
 
-    public function __construct($name, $function = null, $is_safe = false)
+    public function __construct($name, $function = null, array $options = array())
     {
-        parent::__construct($name, $is_safe);
+        parent::__construct($name, $options);
 
         if ($function === null) {
             $function = $name;

@@ -9,12 +9,15 @@
 
 namespace Modules\Templating\Compiler;
 
+use InvalidArgumentException;
+use OutOfBoundsException;
+
 abstract class TemplateFunction
 {
     /**
-     * @var bool
+     * @var array
      */
-    private $is_safe;
+    private $options;
     private $name;
     private $extension;
 
@@ -23,10 +26,22 @@ abstract class TemplateFunction
      * @param bool $is_safe
      * @throws InvalidArgumentException
      */
-    public function __construct($name, $is_safe = false)
+    public function __construct($name, array $options = array())
     {
-        $this->is_safe = $is_safe;
         $this->name    = $name;
+        $defaults      = array(
+            'is_safe'  => false,
+            'compiler' => __NAMESPACE__ . '\FunctionCompiler'
+        );
+        $this->options = array_merge($defaults, $options);
+    }
+
+    public function getOption($key)
+    {
+        if (!isset($this->options[$key])) {
+            throw new OutOfBoundsException(sprintf('Option %s is not set.', $key));
+        }
+        return $this->options[$key];
     }
 
     public function setExtensionName($extension)
@@ -44,7 +59,7 @@ abstract class TemplateFunction
      */
     public function isSafe()
     {
-        return $this->is_safe;
+        return $this->options['is_safe'];
     }
 
     public function getFunctionName()

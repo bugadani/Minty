@@ -17,9 +17,9 @@ class CallbackFunction extends TemplateFunction
 {
     private $function;
 
-    public function __construct($name, $function, $is_safe = false)
+    public function __construct($name, $function, array $options = array())
     {
-        parent::__construct($name, $is_safe);
+        parent::__construct($name, $options);
         if (!is_callable($function) && $function instanceof Closure) {
             throw new InvalidArgumentException('Filter must be a callable value');
         }

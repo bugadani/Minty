@@ -29,44 +29,18 @@ class FilterOperator extends Operator
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
-        $environment   = $compiler->getEnvironment();
         $data          = $node->getOperand(OperatorNode::OPERAND_LEFT);
         $function_node = $node->getOperand(OperatorNode::OPERAND_RIGHT);
         if ($function_node instanceof FunctionNode) {
-            $function  = $environment->getFunction($function_node->getFunctionName()->getName());
             $arguments = $function_node->getArguments();
+            array_unshift($arguments, $data);
+            $function_node->setArguments($arguments);
         } elseif ($function_node instanceof IdentifierNode) {
-            $function  = $environment->getFunction($function_node->getName());
-            $arguments = array();
+            $function_node = new FunctionNode($function_node);
+            $function_node->addArgument($data);
         } else {
             throw new ParseException('Invalid filter node.');
         }
-        array_unshift($arguments, $data);
-
-        if ($function instanceof SimpleFunction) {
-            $compiler->add($function->getFunction());
-        } elseif ($function instanceof MethodFunction) {
-            $compiler
-                    ->add('$this->getExtension(')
-                    ->add($compiler->string($function->getExtensionName()))
-                    ->add(')->')
-                    ->add($function->getMethod());
-        } elseif ($function instanceof CallbackFunction) {
-            $compiler
-                    ->add('$this->')
-                    ->add($function->getFunctionName());
-        }
-
-        $compiler->add('(');
-        $first = true;
-        foreach ($arguments as $argument) {
-            if ($first) {
-                $first = false;
-            } else {
-                $compiler->add(', ');
-            }
-            $compiler->compileData($argument);
-        }
-        $compiler->add(')');
+        $function_node->compile($compiler);
     }
 }
