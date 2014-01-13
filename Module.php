@@ -14,7 +14,7 @@ use Miny\HTTP\Request;
 use Miny\HTTP\Response;
 use UnexpectedValueException;
 
-class Module extends \Miny\Application\Module
+class Module extends \Miny\Modules\Module
 {
 
     public function init(BaseApplication $app)
