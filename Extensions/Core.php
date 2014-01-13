@@ -195,6 +195,7 @@ class Core extends Extension
             new SimpleFunction('capitalize', 'ucfirst'),
             new SimpleFunction('count'),
             new MethodFunction('cycle', 'cycleFunction'),
+            new SimpleFunction('default', null, array('compiler' => '\Modules\Templating\Extensions\Compilers\DefaultCompiler')),
             new MethodFunction('date_format', 'dateFormatFunction'),
             new MethodFunction('first', 'firstFunction'),
             new SimpleFunction('format', 'sprintf'),

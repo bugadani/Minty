@@ -93,6 +93,21 @@ class Compiler
         return "'" . str_replace("'", "\'", $string) . "'";
     }
 
+    public function compileArgumentList(array $arguments)
+    {
+        $this->add('(');
+        $first = true;
+        foreach ($arguments as $argument) {
+            if ($first) {
+                $first = false;
+            } else {
+                $this->add(', ');
+            }
+            $this->compileData($argument);
+        }
+        $this->add(')');
+    }
+
     public function compileData($data)
     {
         if (is_array($data)) {

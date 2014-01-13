@@ -73,29 +73,17 @@ class FunctionNode extends Node
             $compiler
                     ->add('->')
                     ->add($func_name);
+            $compiler->compileArgumentList($this->arguments);
         } elseif ($environment->hasFunction($func_name)) {
             $function = $environment->getFunction($func_name);
-            $environment->getFunctionCompiler($function->getOption('compiler'))->compile($compiler, $function);
+            $environment
+                    ->getFunctionCompiler($function->getOption('compiler'))
+                    ->compile($compiler, $function, $this->arguments);
         } else {
             $compiler
                     ->add('$this->')
                     ->add($func_name);
+            $compiler->compileArgumentList($this->arguments);
         }
-        $this->compileArgumentList($compiler);
-    }
-
-    public function compileArgumentList(Compiler $compiler)
-    {
-        $compiler->add('(');
-        $first = true;
-        foreach ($this->arguments as $argument) {
-            if ($first) {
-                $first = false;
-            } else {
-                $compiler->add(', ');
-            }
-            $compiler->compileData($argument);
-        }
-        $compiler->add(')');
     }
 }

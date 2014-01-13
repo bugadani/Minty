@@ -16,7 +16,7 @@ use Modules\Templating\Compiler\Functions\SimpleFunction;
 class FunctionCompiler
 {
 
-    public function compile(Compiler $compiler, TemplateFunction $function)
+    public function compile(Compiler $compiler, TemplateFunction $function, array $arguments)
     {
         if ($function instanceof SimpleFunction) {
             $compiler->add($function->getFunction());
@@ -31,5 +31,6 @@ class FunctionCompiler
                     ->add('$this->')
                     ->add($function->getFunctionName());
         }
+        $compiler->compileArgumentList($arguments);
     }
 }
