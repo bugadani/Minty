@@ -10,6 +10,7 @@
 namespace Modules\Templating\Compiler;
 
 use Modules\Templating\Compiler\Exceptions\SyntaxException;
+use Modules\Templating\Environment;
 
 class Tokenizer
 {

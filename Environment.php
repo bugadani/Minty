@@ -7,12 +7,14 @@
  * For licensing information see the LICENSE file.
  */
 
-namespace Modules\Templating\Compiler;
+namespace Modules\Templating;
 
 use Modules\Templating\Compiler\Exceptions\CompileException;
-use Modules\Templating\Extension;
+use Modules\Templating\Compiler\FunctionCompiler;
+use Modules\Templating\Compiler\OperatorCollection;
+use Modules\Templating\Compiler\Tag;
+use Modules\Templating\Compiler\TemplateFunction;
 use Modules\Templating\Extensions\Core;
-use Modules\Templating\TemplatingOptions;
 
 class Environment
 {
@@ -42,7 +44,7 @@ class Environment
     private $functions;
 
     /**
-     * @var TemplatingOptions
+     * @var array
      */
     private $options;
 
@@ -57,9 +59,9 @@ class Environment
     private $function_compilers;
 
     /**
-     * @param TemplatingOptions $options
+     * @param array $options
      */
-    public function __construct(TemplatingOptions $options)
+    public function __construct($options)
     {
         $this->extensions              = array();
         $this->functions               = array();
@@ -72,7 +74,7 @@ class Environment
     }
 
     /**
-     * @return TemplatingOptions
+     * @return array
      */
     public function getOptions()
     {

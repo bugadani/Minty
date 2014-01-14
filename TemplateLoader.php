@@ -10,14 +10,13 @@
 namespace Modules\Templating;
 
 use Miny\Log;
-use Modules\Templating\Compiler\Environment;
 use Modules\Templating\Compiler\Compiler;
 use RuntimeException;
 
 class TemplateLoader
 {
     /**
-     * @var TemplatingOptions
+     * @var array
      */
     private $options;
 
@@ -61,17 +60,17 @@ class TemplateLoader
     private function getCachedPath($file)
     {
         $classname = $this->compiler->getClassForTemplate($file, false);
-        return sprintf($this->options->cache_path, dirname($file) . '/' . $classname);
+        return sprintf($this->options['cache_path'], dirname($file) . '/' . $classname);
     }
 
     private function getPath($file)
     {
-        return sprintf($this->options->template_path, $file);
+        return sprintf($this->options['template_path'], $file);
     }
 
     private function shouldReload($file, $cached)
     {
-        return $this->options->reload && (filemtime($file) > filemtime($cached));
+        return $this->options['reload'] && (filemtime($file) > filemtime($cached));
     }
 
     private function compileIfNeeded($template)
@@ -125,7 +124,7 @@ class TemplateLoader
             $this->compileIfNeeded($file);
         }
 
-        $object->set($this->options->global_variables);
+        $object->set($this->options['global_variables']);
         return $object;
     }
 }

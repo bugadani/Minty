@@ -13,14 +13,14 @@ use BadMethodCallException;
 use Modules\Templating\Compiler\Nodes\RootNode;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Tokenizer;
-use Modules\Templating\TemplatingOptions;
+use Modules\Templating\Environment;
 
 class Compiler
 {
     const MAIN_TEMPLATE = 'Template';
 
     /**
-     * @var TemplatingOptions
+     * @var array
      */
     private $options;
 
@@ -249,7 +249,7 @@ class Compiler
         if (!$template) {
             return 'Modules\Templating\Template';
         }
-        $path = $this->options->cache_namespace;
+        $path = $this->options['cache_namespace'];
         $path .= '\\' . strtr($template, '/', '\\');
 
         $pos       = strrpos($path, '\\') + 1;

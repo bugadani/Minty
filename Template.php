@@ -12,7 +12,6 @@ namespace Modules\Templating;
 use ArrayAccess;
 use BadMethodCallException;
 use InvalidArgumentException;
-use Modules\Templating\Compiler\Environment;
 use OutOfBoundsException;
 use Traversable;
 use UnexpectedValueException;
@@ -20,7 +19,7 @@ use UnexpectedValueException;
 abstract class Template
 {
     /**
-     * @var TemplatingOptions
+     * @var array
      */
     private $options;
 

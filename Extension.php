@@ -9,7 +9,6 @@
 
 namespace Modules\Templating;
 
-use Modules\Templating\Compiler\Environment;
 use Modules\Templating\Compiler\Operator;
 use Modules\Templating\Compiler\Tag;
 use Modules\Templating\Compiler\TemplateFunction;

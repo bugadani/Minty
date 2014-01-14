@@ -18,6 +18,7 @@ use Modules\Templating\Compiler\Nodes\FunctionNode;
 use Modules\Templating\Compiler\Nodes\IdentifierNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Operators\ConditionalOperator;
+use Modules\Templating\Environment;
 
 /**
  * Expression parser is based on the Shunting Yard algorithm by Edsger W. Dijkstra

@@ -14,6 +14,7 @@ use Modules\Templating\Compiler\Exceptions\ParseException;
 use Modules\Templating\Compiler\Exceptions\SyntaxException;
 use Modules\Templating\Compiler\Nodes\RootNode;
 use Modules\Templating\Compiler\Nodes\TextNode;
+use Modules\Templating\Environment;
 
 class Parser
 {

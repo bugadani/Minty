@@ -18,16 +18,30 @@ use UnexpectedValueException;
 class Module extends \Miny\Modules\Module
 {
 
+    public function defaultConfiguration()
+    {
+        return array(
+            'templating' => array(
+                'options' => array(
+                    'reload'           => false,
+                    'global_variables' => array(),
+                    'cache_namespace'  => 'Application\\Templating\\Cached',
+                    'strict_mode'      => true,
+                    'reload'           => false,
+                    'cache_path'       => 'templates/compiled/%s.php',
+                    'template_path'    => 'templates/%s.tpl',
+                    'autoescape'       => true
+                ),
+                'codes'   => array(),
+            )
+        );
+    }
+
     public function init(BaseApplication $app)
     {
-        $factory    = $app->getFactory();
-        $parameters = $factory->getParameters();
+        $factory = $app->getFactory();
 
-        $options = $factory->add('templating_options', __NAMESPACE__ . '\\TemplatingOptions');
-        if (isset($parameters['templating']['options'])) {
-            $options->setArguments('@templating:options');
-        }
-        $this->setupAutoloader($factory);
+        $this->setupAutoloader($factory, $factory->getParameters());
 
         $factory->getBlueprint('events')
                 ->addMethodCall('register', 'filter_response', array($this, 'handleResponseCodes'))
@@ -35,8 +49,8 @@ class Module extends \Miny\Modules\Module
 
         $factory->add('miny_extensions', __NAMESPACE__ . '\\Extensions\\Miny')
                 ->setArguments('&app');
-        $factory->add('template_environment', __NAMESPACE__ . '\\Compiler\\Environment')
-                ->setArguments('&templating_options')
+        $factory->add('template_environment', __NAMESPACE__ . '\\Environment')
+                ->setArguments('@templating:options')
                 ->addMethodCall('addExtension', '&miny_extensions');
         $factory->add('template_plugins', __NAMESPACE__ . '\\Plugins')
                 ->setArguments('&app');
@@ -49,24 +63,21 @@ class Module extends \Miny\Modules\Module
                 ->addMethodCall('setTemplateLoader', '&template_loader');
     }
 
-    private function setupAutoloader(Factory $factory)
+    private function setupAutoloader(Factory $factory, $options)
     {
-        $templating_options = $factory->templating_options;
-        $namespace          = $templating_options->cache_namespace;
-        $dirname            = dirname($templating_options->cache_path);
+        $dirname   = dirname($options['templating']['options']['cache_path']);
         if (!is_dir($dirname)) {
             mkdir($dirname);
         }
-        $factory->autoloader->register('\\' . $namespace, $dirname);
+        $factory->get('autoloader')->register('\\' . $options['templating']['options']['cache_namespace'], $dirname);
     }
 
     public function handleResponseCodes(Request $request, Response $response)
     {
-        if (!isset($this->application['templating:codes'])) {
-            return;
-        }
-        $handlers = $this->application['templating']['codes'];
-        if (!is_array($handlers)) {
+        $factory = $this->application->getFactory();
+        $parameters = $factory->getParameters();
+        $handlers   = $parameters['templating']['codes'];
+        if (!is_array($handlers) || empty($handlers)) {
             return;
         }
         $response_code = $response->getCode();
@@ -94,7 +105,7 @@ class Module extends \Miny\Modules\Module
                 }
                 $template_name = $handler['template'];
             }
-            $loader   = $this->application->template_loader;
+            $loader   = $factory->get('template_loader');
             $template = $loader->load($template_name);
             $template->set(array(
                 'request'  => $request,
@@ -107,11 +118,13 @@ class Module extends \Miny\Modules\Module
 
     public function handleException(\Exception $e)
     {
-        if (!isset($this->application['templating:exceptions'])) {
+        $factory = $this->application->getFactory();
+        $parameters = $factory->getParameters();
+        if (!isset($parameters['templating']['exceptions'])) {
             return;
         }
-        $loader   = $this->application->template_loader;
-        $handlers = $this->application['templating']['exceptions'];
+        $loader   = $factory->get('template_loader');
+        $handlers = $parameters['templating']['exceptions'];
         if (!is_array($handlers)) {
             $template_name = $handlers;
         } else {

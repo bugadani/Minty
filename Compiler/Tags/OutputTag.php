@@ -10,7 +10,6 @@
 namespace Modules\Templating\Compiler\Tags;
 
 use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Environment;
 use Modules\Templating\Compiler\Node;
 use Modules\Templating\Compiler\Nodes\DataNode;
 use Modules\Templating\Compiler\Nodes\FunctionNode;
@@ -21,6 +20,7 @@ use Modules\Templating\Compiler\Operators\FilterOperator;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
 use Modules\Templating\Compiler\Tag;
+use Modules\Templating\Environment;
 
 class OutputTag extends Tag
 {
@@ -80,7 +80,8 @@ class OutputTag extends Tag
 
     public function ensureSafe(Environment $env, Node $node)
     {
-        if ($env->getOptions()->autoescape === false) {
+        $options = $env->getOptions();
+        if ($options['autoescape'] === false) {
             return true;
         }
         if ($this->isSafe($env, $node)) {
