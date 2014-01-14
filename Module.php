@@ -10,6 +10,7 @@
 namespace Modules\Templating;
 
 use Miny\Application\BaseApplication;
+use Miny\Factory\Factory;
 use Miny\HTTP\Request;
 use Miny\HTTP\Response;
 use UnexpectedValueException;
@@ -19,41 +20,44 @@ class Module extends \Miny\Modules\Module
 
     public function init(BaseApplication $app)
     {
-        $options = $app->add('templating_options', __NAMESPACE__ . '\\TemplatingOptions');
-        if (isset($app['templating:options'])) {
+        $factory    = $app->getFactory();
+        $parameters = $factory->getParameters();
+
+        $options = $factory->add('templating_options', __NAMESPACE__ . '\\TemplatingOptions');
+        if (isset($parameters['templating']['options'])) {
             $options->setArguments('@templating:options');
         }
-        $this->setupAutoloader($app);
+        $this->setupAutoloader($factory);
 
-        $app->getBlueprint('events')
+        $factory->getBlueprint('events')
                 ->addMethodCall('register', 'filter_response', array($this, 'handleResponseCodes'))
                 ->addMethodCall('register', 'uncaught_exception', array($this, 'handleException'));
 
-        $app->add('miny_extensions', __NAMESPACE__ . '\\Extensions\\Miny')
+        $factory->add('miny_extensions', __NAMESPACE__ . '\\Extensions\\Miny')
                 ->setArguments('&app');
-        $app->add('template_environment', __NAMESPACE__ . '\\Compiler\\Environment')
+        $factory->add('template_environment', __NAMESPACE__ . '\\Compiler\\Environment')
                 ->setArguments('&templating_options')
                 ->addMethodCall('addExtension', '&miny_extensions');
-        $app->add('template_plugins', __NAMESPACE__ . '\\Plugins')
+        $factory->add('template_plugins', __NAMESPACE__ . '\\Plugins')
                 ->setArguments('&app');
-        $app->add('template_compiler', __NAMESPACE__ . '\\Compiler\\Compiler')
+        $factory->add('template_compiler', __NAMESPACE__ . '\\Compiler\\Compiler')
                 ->setArguments('&template_environment');
-        $app->add('template_loader', __NAMESPACE__ . '\\TemplateLoader')
+        $factory->add('template_loader', __NAMESPACE__ . '\\TemplateLoader')
                 ->setArguments('&template_environment', '&template_compiler', '&log');
-        $app->add('templating_controller', __NAMESPACE__ . '\\TemplateController')
+        $factory->add('templating_controller', __NAMESPACE__ . '\\TemplateController')
                 ->setParent('controller')
                 ->addMethodCall('setTemplateLoader', '&template_loader');
     }
 
-    private function setupAutoloader(BaseApplication $app)
+    private function setupAutoloader(Factory $factory)
     {
-        $templating_options = $app->templating_options;
+        $templating_options = $factory->templating_options;
         $namespace          = $templating_options->cache_namespace;
         $dirname            = dirname($templating_options->cache_path);
         if (!is_dir($dirname)) {
             mkdir($dirname);
         }
-        $app->autoloader->register('\\' . $namespace, $dirname);
+        $factory->autoloader->register('\\' . $namespace, $dirname);
     }
 
     public function handleResponseCodes(Request $request, Response $response)
