@@ -83,7 +83,7 @@ class Controller extends ControllerBase
         if ($this->actionHasLayout($action)) {
             $this->layout($this->getLayoutForAction($action));
         }
-        if (parent::run($action, $request, $response) !== false) {
+        if (parent::run($action, $request, $response) !== false && !$response->getHeaders()->has('Location')) {
             $this->renderLayout();
         }
     }
