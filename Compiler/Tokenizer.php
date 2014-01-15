@@ -17,8 +17,6 @@ class Tokenizer
     const STATE_TEXT           = 0;
     const STATE_STRING         = 1;
     const STATE_POSSIBLE_FLOAT = 2;
-    const STATE_RAW            = 3;
-    const STATE_COMMENT        = 4;
 
     private static $exceptions = array(
         'unexpected'            => 'Unexpected %s found in line %d',
@@ -56,7 +54,7 @@ class Tokenizer
 
         $this->patterns = array(
             'assignment'  => '/(.*?)\s*:\s*(.*?)$/ADsu',
-            'closing_tag' => sprintf('/end(raw|%s)/Ai', $blocks_pattern),
+            'closing_tag' => sprintf('/end(%s)/Ai', $blocks_pattern),
             'operator'    => $this->getOperatorPattern($environment),
             'literal'     => sprintf('/(%s|\d+(?:\.\d+)?)/Ai', $literal_pattern)
         );
@@ -103,11 +101,12 @@ class Tokenizer
         $in_string      = false;
         $tag            = '';
         $offset         = 0;
-        foreach ($parts as $part) {
+        $in_raw         = false;
+        foreach ($parts as $i => $part) {
             list($part, $off) = $part;
             switch ($part) {
                 case '{#':
-                    if (!$in_tag) {
+                    if (!$in_tag && !$in_raw) {
                         $in_comment = true;
                     }
                     break;
@@ -118,15 +117,23 @@ class Tokenizer
                     break;
                 case '{':
                     if (!$in_comment) {
-                        if (!$in_string) {
-                            if ($in_tag) {
-                                $tag = '';
-                            } else {
+                        if ($in_raw) {
+                            if (isset($parts[$i]) && trim($parts[$i + 1][0]) === 'endraw') {
+                                $in_raw = false;
                                 $in_tag = true;
+                                $tag    = '';
                             }
-                            $offset = $off;
                         } else {
-                            $tag .= $part;
+                            if (!$in_string) {
+                                if ($in_tag) {
+                                    $tag = '';
+                                } else {
+                                    $in_tag = true;
+                                }
+                                $offset = $off;
+                            } else {
+                                $tag .= $part;
+                            }
                         }
                     }
                     break;
@@ -160,9 +167,13 @@ class Tokenizer
                     break;
             }
             if ($tag_just_ended) {
-                $matches[1][] = array(trim($tag), $offset);
-                $matches[0][] = array('{' . $tag . '}', $offset);
-                $tag          = '';
+                if (trim($tag) == 'raw') {
+                    $in_raw = true;
+                } elseif (trim($tag) !== 'endraw') {
+                    $matches[1][] = array(trim($tag), $offset);
+                    $matches[0][] = array('{' . $tag . '}', $offset);
+                }
+                $tag = '';
             }
             $tag_just_ended = false;
         }
@@ -200,7 +211,9 @@ class Tokenizer
 
             $this->line += substr_count($tag, "\n");
             if (!$this->processAssignment($tag_expr)) {
-                $this->processTag($tag_expr);
+                if (!$this->processTag($tag_expr)) {
+                    $this->pushToken(Token::TEXT, $tag);
+                }
             }
         }
 
@@ -224,18 +237,11 @@ class Tokenizer
         if (preg_match($this->patterns['closing_tag'], $tag, $match)) {
 
             $type = $match[1];
-            if (!$this->isState(self::STATE_RAW, ($type == 'raw'))) {
-                $this->pushToken(Token::TAG, 'end' . $type);
-            }
+            $this->pushToken(Token::TAG, 'end' . $type);
             return true;
         }
 
-        if ($this->isState(self::STATE_RAW)) {
-            $this->pushToken(Token::TEXT, $tag);
-            return true;
-        }
-
-        $parts = preg_split('/([\ \(])/', $tag, 2, PREG_SPLIT_DELIM_CAPTURE);
+        $parts = preg_split('/([ (])/', $tag, 2, PREG_SPLIT_DELIM_CAPTURE);
         switch (count($parts)) {
             case 1:
                 $tag_name   = $parts[0];
@@ -247,10 +253,7 @@ class Tokenizer
                 $expression = $parts[1] . $parts[2];
                 break;
         }
-        if ($tag_name === 'raw') {
-            $this->pushState(self::STATE_RAW);
-            return true;
-        }
+
         if (isset($this->tags[$tag_name])) {
             $tag = $this->tags[$tag_name];
             $this->pushToken(Token::TAG, $tag_name);
@@ -266,9 +269,6 @@ class Tokenizer
 
     private function processAssignment($tag)
     {
-        if ($this->isState(self::STATE_RAW)) {
-            return false;
-        }
         $match = array();
         if (!preg_match($this->patterns['assignment'], $tag, $match)) {
             return false;
