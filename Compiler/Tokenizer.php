@@ -56,7 +56,6 @@ class Tokenizer
 
         $this->patterns = array(
             'assignment'  => '/(.*?)\s*:\s*(.*?)$/ADsu',
-            'tag'         => "/{\s*(#.*?#|(?:'.*?(?<!\\\)'|\".*?(?<!\\\)\"|(?>[^{}]))+)\s*}(?:\n?)/m",
             'closing_tag' => sprintf('/end(raw|%s)/Ai', $blocks_pattern),
             'operator'    => $this->getOperatorPattern($environment),
             'literal'     => sprintf('/(%s|\d+(?:\.\d+)?)/Ai', $literal_pattern)
@@ -93,6 +92,81 @@ class Tokenizer
         return sprintf('/(%s|[%s ])/i', implode('|', array_keys($operators)), $punctuation);
     }
 
+    private function findTags($template)
+    {
+        $flags          = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_OFFSET_CAPTURE;
+        $parts          = preg_split('/(\{#|#\}|[{}"\'])/', $template, -1, $flags);
+        $matches        = array();
+        $tag_just_ended = false;
+        $in_comment     = false;
+        $in_tag         = false;
+        $in_string      = false;
+        $tag            = '';
+        $offset         = 0;
+        foreach ($parts as $part) {
+            list($part, $off) = $part;
+            switch ($part) {
+                case '{#':
+                    if (!$in_tag) {
+                        $in_comment = true;
+                    }
+                    break;
+                case '#}':
+                    if ($in_comment) {
+                        $in_comment = false;
+                    }
+                    break;
+                case '{':
+                    if (!$in_comment) {
+                        if (!$in_string) {
+                            $in_tag = true;
+                            $offset = $off;
+                        } else {
+                            $tag .= $part;
+                        }
+                    }
+                    break;
+                case '}':
+                    if (!$in_comment) {
+                        if (!$in_string && $in_tag) {
+                            $in_tag = false;
+                            if (!$in_tag) {
+                                $tag_just_ended = true;
+                            }
+                        } else {
+                            $tag .= $part;
+                        }
+                    }
+                    break;
+                case '"':
+                case "'":
+                    if ($in_tag) {
+                        if (!$in_string) {
+                            $in_string = $part;
+                        } elseif ($part == $in_string) {
+                            if (substr($tag, -1) !== '\\') {
+                                $in_string = false;
+                            }
+                        }
+                        $tag .= $part;
+                    }
+                    break;
+                default:
+                    if ($in_tag) {
+                        $tag .= $part;
+                    }
+                    break;
+            }
+            if ($tag_just_ended) {
+                $matches[1][] = array(trim($tag), $offset);
+                $matches[0][] = array('{' . $tag . '}', $offset);
+                $tag          = '';
+            }
+            $tag_just_ended = false;
+        }
+        return $matches;
+    }
+
     public function tokenize($template)
     {
         $this->line        = 1;
@@ -101,8 +175,7 @@ class Tokenizer
         $this->tokens      = array();
 
         $this->pushState(self::STATE_TEXT);
-        $matches = array();
-        preg_match_all($this->patterns['tag'], $template, $matches, PREG_OFFSET_CAPTURE);
+        $matches = $this->findTags($template);
         $cursor  = 0;
         foreach ($matches[0] as $position => $match) {
             list($tag, $tag_position) = $match;
@@ -115,15 +188,11 @@ class Tokenizer
             $cursor += strlen($text);
             $cursor += strlen($tag);
 
-            if (strpos($tag, '{#') === 0) {
-                $this->pushState(self::STATE_COMMENT);
+            if (($pos = strpos($text, '{#')) !== false) {
+                $rpos = strrpos($text, '#}');
+                $text = substr($text, 0, $pos) . substr($text, $rpos + 2);
             }
-            if ($this->isState(self::STATE_COMMENT)) {
-                if (strrpos($tag, '#}') === strlen($tag) - 3) {
-                    $this->popState();
-                }
-                continue;
-            }
+
             $this->pushToken(Token::TEXT, $text);
             $tag_expr = $matches[1][$position][0];
 
