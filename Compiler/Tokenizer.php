@@ -56,7 +56,7 @@ class Tokenizer
 
         $this->patterns = array(
             'assignment'  => '/(.*?)\s*:\s*(.*?)$/ADsu',
-            'tag'         => "/{\s*(#.*?#|(?:'.*(?<!\\\)'|\".*(?<!\\\)\"|(?>[^{}]))+)\s*}(?:\n?)/m",
+            'tag'         => "/{\s*(#.*?#|(?:'.*?(?<!\\\)'|\".*?(?<!\\\)\"|(?>[^{}]))+)\s*}(?:\n?)/m",
             'closing_tag' => sprintf('/end(raw|%s)/Ai', $blocks_pattern),
             'operator'    => $this->getOperatorPattern($environment),
             'literal'     => sprintf('/(%s|\d+(?:\.\d+)?)/Ai', $literal_pattern)
