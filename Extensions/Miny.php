@@ -10,7 +10,6 @@
 namespace Modules\Templating\Extensions;
 
 use Miny\Application\Application;
-use Miny\Application\BaseApplication;
 use Modules\Templating\Compiler\Functions\MethodFunction;
 use Modules\Templating\Compiler\Functions\SimpleFunction;
 use Modules\Templating\Extension;
@@ -18,7 +17,7 @@ use Modules\Templating\Extension;
 class Miny extends Extension
 {
     /**
-     * @var BaseApplication
+     * @var Application
      */
     private $application;
 
