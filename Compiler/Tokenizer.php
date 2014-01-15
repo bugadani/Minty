@@ -56,7 +56,7 @@ class Tokenizer
 
         $this->patterns = array(
             'assignment'  => '/(.*?)\s*:\s*(.*?)$/ADsu',
-            'tag'         => "/{\s*(#.*#|(?:'.*(?<!\\\)'|\".*(?<!\\\)\"|(?>[^{}])|(?R))+)\s*}(?:\n?)/m",
+            'tag'         => "/{\s*(#.*?#|(?:'.*(?<!\\\)'|\".*(?<!\\\)\"|(?>[^{}]))+)\s*}(?:\n?)/m",
             'closing_tag' => sprintf('/end(raw|%s)/Ai', $blocks_pattern),
             'operator'    => $this->getOperatorPattern($environment),
             'literal'     => sprintf('/(%s|\d+(?:\.\d+)?)/Ai', $literal_pattern)
@@ -103,8 +103,7 @@ class Tokenizer
         $this->pushState(self::STATE_TEXT);
         $matches = array();
         preg_match_all($this->patterns['tag'], $template, $matches, PREG_OFFSET_CAPTURE);
-
-        $cursor = 0;
+        $cursor  = 0;
         foreach ($matches[0] as $position => $match) {
             list($tag, $tag_position) = $match;
             $length = $tag_position - $cursor;
