@@ -12,6 +12,7 @@ namespace Modules\Templating\Extensions;
 use Miny\Application\Application;
 use Miny\Application\BaseApplication;
 use Modules\Templating\Compiler\Functions\MethodFunction;
+use Modules\Templating\Compiler\Functions\SimpleFunction;
 use Modules\Templating\Extension;
 
 class Miny extends Extension
@@ -34,10 +35,14 @@ class Miny extends Extension
 
     public function getFunctions()
     {
-        return array(
+        $functions = array(
             new MethodFunction('route', 'routeFunction'),
             new MethodFunction('request', 'requestFunction'),
         );
+        if($this->application->isDeveloperEnvironment()) {
+            $functions[] = new SimpleFunction('dump', 'var_dump');
+        }
+        return $functions;
     }
 
     public function routeFunction($route, array $parameters = array())
