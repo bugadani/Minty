@@ -195,6 +195,9 @@ class Tokenizer
 
     private function processAssignment($tag)
     {
+        if ($this->isState(self::STATE_RAW)) {
+            return false;
+        }
         $match = array();
         if (!preg_match($this->patterns['assignment'], $tag, $match)) {
             return false;
