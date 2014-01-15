@@ -245,12 +245,15 @@ class Core extends Extension
         return $arglist;
     }
 
-    public function batchFunction($data, $size, $no_item = null)
+    public function batchFunction($data, $size, $preserve_keys = true, $no_item = null)
     {
         if ($data instanceof Traversable) {
             $data = iterator_to_array($data);
         }
-        $result = array_chunk($data, abs($size), true);
+        if (!is_array($data)) {
+            throw new InvalidArgumentException('batch expects an array.');
+        }
+        $result = array_chunk($data, abs($size), $preserve_keys);
         if ($no_item == null) {
             return $result;
         }
