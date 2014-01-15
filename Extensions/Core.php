@@ -67,6 +67,7 @@ use Modules\Templating\Compiler\Operators\UnaryOperators\PostIncrementOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PreDecrementOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PreIncrementOperator;
 use Modules\Templating\Compiler\Tags\AssignTag;
+use Modules\Templating\Compiler\Tags\ExtractTag;
 use Modules\Templating\Compiler\Tags\ForTag;
 use Modules\Templating\Compiler\Tags\IfTag;
 use Modules\Templating\Compiler\Tags\ListTag;
@@ -182,6 +183,7 @@ class Core extends Extension
             new IfTag(),
             new AssignTag(),
             new OutputTag(),
+            new ExtractTag()
         );
         return $tags;
     }

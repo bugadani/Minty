@@ -103,6 +103,16 @@ abstract class Template
         }
     }
 
+    public function extract($source, $keys)
+    {
+        if (is_string($keys)) {
+            $keys = array($keys);
+        }
+        foreach ($keys as $key) {
+            $this->$key = $this->getProperty($source, $key);
+        }
+    }
+
     public function hasProperty($structure, $key)
     {
         if (is_array($structure) || $structure instanceof ArrayAccess) {
