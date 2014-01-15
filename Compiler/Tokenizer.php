@@ -119,7 +119,11 @@ class Tokenizer
                 case '{':
                     if (!$in_comment) {
                         if (!$in_string) {
-                            $in_tag = true;
+                            if ($in_tag) {
+                                $tag = '';
+                            } else {
+                                $in_tag = true;
+                            }
                             $offset = $off;
                         } else {
                             $tag .= $part;
@@ -127,12 +131,10 @@ class Tokenizer
                     }
                     break;
                 case '}':
-                    if (!$in_comment) {
-                        if (!$in_string && $in_tag) {
-                            $in_tag = false;
-                            if (!$in_tag) {
-                                $tag_just_ended = true;
-                            }
+                    if ($in_tag) {
+                        if (!$in_string) {
+                            $in_tag         = false;
+                            $tag_just_ended = true;
                         } else {
                             $tag .= $part;
                         }
