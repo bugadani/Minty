@@ -147,7 +147,7 @@ abstract class Template
         if (is_object($structure)) {
             return $structure->$key;
         }
-        if (!$this->options->strict_mode) {
+        if (!$this->options['strict_mode']) {
             return $key;
         }
         throw new UnexpectedValueException('Variable is not an array or an object.');
@@ -208,7 +208,7 @@ abstract class Template
         if (isset($this->variables[$key])) {
             return $this->variables[$key];
         }
-        if (!$this->options->strict_mode) {
+        if (!$this->options['strict_mode']) {
             return $key;
         }
         throw new OutOfBoundsException(sprintf('Variable %s is not set.', $key));
