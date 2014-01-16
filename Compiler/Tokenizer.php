@@ -278,7 +278,7 @@ class Tokenizer
         if (!preg_match('/^([a-zA-Z])+[a-zA-Z0-9\_]*$/i', $identifier)) {
             return false;
         }
-        if (in_array($identifier, $this->literals)) {
+        if (preg_match($this->patterns['literal'], $identifier)) {
             return false;
         }
 
