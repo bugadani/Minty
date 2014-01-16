@@ -140,6 +140,7 @@ class ExpressionParser
             } elseif ($token->isDataType()) {
                 $this->parseDataToken($token);
                 $value = array_pop($this->operand_stack);
+            } else {
             }
 
             if ($this->stream->next()->test(Token::PUNCTUATION, ':')) {

@@ -14,9 +14,8 @@ use Modules\Templating\Environment;
 
 class Tokenizer
 {
-    const STATE_TEXT           = 0;
-    const STATE_STRING         = 1;
-    const STATE_POSSIBLE_FLOAT = 2;
+    const STATE_TEXT   = 0;
+    const STATE_STRING = 1;
 
     private static $exceptions = array(
         'unexpected'            => 'Unexpected %s found in line %d',
@@ -47,7 +46,7 @@ class Tokenizer
             $this->tags[$name] = $tag;
         }
 
-        $this->literals = array('true', 'false', 'null');
+        $this->literals = array('true', 'false', 'null', ':[a-zA-Z]+[a-zA-Z_\-0-9]*');
 
         $blocks_pattern  = implode('|', $blocknames);
         $literal_pattern = implode('|', $this->literals);
@@ -56,7 +55,7 @@ class Tokenizer
             'assignment'  => '/(.*?)\s*:\s*(.*?)$/ADsu',
             'closing_tag' => sprintf('/end(%s)/Ai', $blocks_pattern),
             'operator'    => $this->getOperatorPattern($environment),
-            'literal'     => sprintf('/(%s|\d+(?:\.\d+)?)/Ai', $literal_pattern)
+            'literal'     => sprintf('/(%s|\d+(?:\.\d+)?)/i', $literal_pattern)
         );
     }
 
@@ -291,35 +290,6 @@ class Tokenizer
         return true;
     }
 
-    private function tokenizeLiteralOrIdentifier($token)
-    {
-        if ($this->isState(self::STATE_POSSIBLE_FLOAT)) {
-            $this->popState();
-            if (is_numeric($token) && $token > 0) {
-                array_pop($this->stream); //.
-                $integer_part = array_pop($this->stream)->getValue();
-                $this->pushToken(Token::LITERAL, $integer_part . '.' . $token);
-            }
-        } elseif (is_numeric($token)) {
-            $this->pushToken(Token::LITERAL, $token);
-        } else {
-            switch (strtolower($token)) {
-                case 'null':
-                case 'none':
-                    $this->pushToken(Token::LITERAL, null);
-                    break;
-                case 'true':
-                    $this->pushToken(Token::LITERAL, true);
-                    break;
-                case 'false':
-                    $this->pushToken(Token::LITERAL, false);
-                    break;
-                default:
-                    $this->pushToken(Token::IDENTIFIER, $token);
-            }
-        }
-    }
-
     public function startString($delimiter)
     {
         $array = array(
@@ -359,7 +329,30 @@ class Tokenizer
             } elseif (in_array($token, $this->operators)) {
                 $this->pushToken(Token::OPERATOR, $token);
             } elseif (strlen($token) !== 0) {
-                $this->tokenizeLiteralOrIdentifier($token);
+                $this->pushToken(Token::IDENTIFIER, $token);
+            }
+        }
+    }
+
+    private function tokenizeLiteral($literal)
+    {
+        if (is_numeric($literal)) {
+            $this->pushToken(Token::LITERAL, $literal);
+        } else {
+            switch (strtolower($literal)) {
+                case 'null':
+                case 'none':
+                    $this->pushToken(Token::LITERAL, null);
+                    break;
+                case 'true':
+                    $this->pushToken(Token::LITERAL, true);
+                    break;
+                case 'false':
+                    $this->pushToken(Token::LITERAL, false);
+                    break;
+                default:
+                    $this->pushToken(Token::STRING, ltrim($literal, ':'));
+                    break;
             }
         }
     }
@@ -369,10 +362,16 @@ class Tokenizer
         if ($expr === null || $expr === '') {
             return;
         }
-
-        $parts = preg_split($this->patterns['operator'], $expr, null, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
-
-        array_walk($parts, array($this, 'processToken'));
+        $flags = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
+        $parts = preg_split($this->patterns['literal'], $expr, null, $flags);
+        foreach ($parts as $part) {
+            if (preg_match($this->patterns['literal'], $part)) {
+                $this->tokenizeLiteral($part);
+            } else {
+                $subparts = preg_split($this->patterns['operator'], $part, null, $flags);
+                array_walk($subparts, array($this, 'processToken'));
+            }
+        }
     }
 
     //Utilities
