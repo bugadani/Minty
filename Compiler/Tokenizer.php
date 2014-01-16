@@ -46,10 +46,10 @@ class Tokenizer
             $this->tags[$name] = $tag;
         }
 
-        $this->literals = array('true', 'false', 'null', ':[a-zA-Z]+[a-zA-Z_\-0-9]*');
+        $literals = array('true', 'false', 'null', ':[a-zA-Z]+[a-zA-Z_\-0-9]*');
 
         $blocks_pattern  = implode('|', $blocknames);
-        $literal_pattern = implode('|', $this->literals);
+        $literal_pattern = implode('|', $literals);
 
         $this->patterns = array(
             'assignment'  => '/(.*?)\s*:\s*(.*?)$/ADsu',
