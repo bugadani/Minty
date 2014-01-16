@@ -131,6 +131,9 @@ class ExpressionParser
         //iterate over tokens
         $node = new ArrayNode();
         while (!$this->stream->current()->test(Token::PUNCTUATION, ']')) {
+            if ($this->stream->nextTokenIf(Token::PUNCTUATION, ']')) {
+                break;
+            }
             //expressions are allowed as both array keys and values.
             $value = $this->parseExpression(true);
 
@@ -145,8 +148,6 @@ class ExpressionParser
 
             if (!$this->stream->current()->test(Token::PUNCTUATION, ',')) {
                 $this->stream->expectCurrent(Token::PUNCTUATION, ']');
-            } elseif ($this->stream->nextTokenIf(Token::PUNCTUATION, ']')) {
-                break;
             }
         }
         //push array node to operand stack
