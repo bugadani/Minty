@@ -129,20 +129,12 @@ class ExpressionParser
     public function parseArray()
     {
         //iterate over tokens
-        $this->stream->next();
         $node = new ArrayNode();
         while (!$this->stream->current()->test(Token::PUNCTUATION, ']')) {
             //expressions are allowed as both array keys and values.
-            $token = $this->stream->current();
-            if ($token->test(Token::PUNCTUATION, '(')) {
-                $value = $this->parseExpression(true);
-                $this->stream->expectCurrent(Token::PUNCTUATION, ')');
-            } elseif ($token->isDataType()) {
-                $this->parseDataToken($token);
-                $value = array_pop($this->operand_stack);
-            }
+            $value = $this->parseExpression(true);
 
-            if ($this->stream->next()->test(Token::PUNCTUATION, ':')) {
+            if ($this->stream->current()->test(Token::PUNCTUATION, ':')) {
                 //the previous value was a key
                 $key   = $value;
                 $value = $this->parseExpression(true);
@@ -151,10 +143,10 @@ class ExpressionParser
             }
             $node->add($value, $key);
 
-            if ($this->stream->current()->test(Token::PUNCTUATION, ',')) {
-                $this->stream->next();
-            } else {
+            if (!$this->stream->current()->test(Token::PUNCTUATION, ',')) {
                 $this->stream->expectCurrent(Token::PUNCTUATION, ']');
+            } elseif ($this->stream->nextTokenIf(Token::PUNCTUATION, ']')) {
+                break;
             }
         }
         //push array node to operand stack
