@@ -226,9 +226,7 @@ class Tokenizer
             $tag_expr = $matches[1][$position][0];
 
             if (!$this->processAssignment($tag_expr)) {
-                if (!$this->processTag($tag_expr)) {
-                    $this->pushToken(Token::TEXT, $tag);
-                }
+                $this->processTag($tag_expr);
             }
             $cursor += strlen($tag);
             $this->line += substr_count($tag, "\n");
