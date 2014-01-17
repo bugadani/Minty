@@ -190,6 +190,16 @@ class Tokenizer
         return $matches;
     }
 
+    private function stripComments($text)
+    {
+        // We can safely do this because $text contains no tags, thus no strings.
+        if (($pos = strpos($text, $this->delimiters['comment'][0])) !== false) {
+            $rpos = strrpos($text, $this->delimiters['comment'][1]);
+            $text = substr($text, 0, $pos) . substr($text, $rpos + strlen($this->delimiters['comment'][1]));
+        }
+        return $text;
+    }
+
     public function tokenize($template)
     {
         $this->line        = 1;
@@ -204,17 +214,11 @@ class Tokenizer
             list($tag, $tag_position) = $match;
 
             $text_length = $tag_position - $cursor;
-            $text = substr($template, $cursor, $text_length);
+            $text        = substr($template, $cursor, $text_length);
 
             $text_lines = substr_count($text, "\n");
 
-            // We can safely do this because $text contains no tags, thus no strings.
-            if (($pos = strpos($text, $this->delimiters['comment'][0])) !== false) {
-                $rpos = strrpos($text, $this->delimiters['comment'][1]);
-                $text = substr($text, 0, $pos) . substr($text, $rpos + strlen($this->delimiters['comment'][1]));
-            }
-
-            $this->pushToken(Token::TEXT, $text);
+            $this->pushToken(Token::TEXT, $this->stripComments($text));
 
             $cursor = $tag_position;
             $this->line += $text_lines;
@@ -232,7 +236,7 @@ class Tokenizer
 
         if ($cursor < strlen($template)) {
             $text = substr($template, $cursor);
-            $this->pushToken(Token::TEXT, $text);
+            $this->pushToken(Token::TEXT, $this->stripComments($text));
         }
         if (count($this->state_stack) > 1) {
             if ($this->isState(self::STATE_STRING)) {
