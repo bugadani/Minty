@@ -26,6 +26,7 @@ class Tokenizer
     );
     private $tokens;
     private $operators;
+    private $delimiters;
 
     /**
      * @var Tag[]
@@ -45,6 +46,9 @@ class Tokenizer
             }
             $this->tags[$name] = $tag;
         }
+
+        $options          = $environment->getOptions();
+        $this->delimiters = $options['delimiters'];
 
         $literals = array('true', 'false', 'null', ':[a-zA-Z]+[a-zA-Z_\-0-9]*');
 
@@ -91,8 +95,15 @@ class Tokenizer
 
     private function findTags($template)
     {
-        $flags          = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_OFFSET_CAPTURE;
-        $parts          = preg_split('/(\{#|#\}|[{}"\'])/', $template, -1, $flags);
+        $flags         = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_OFFSET_CAPTURE;
+        $pattern_parts = array();
+        foreach ($this->delimiters as $delimiter) {
+            $opening         = preg_quote($delimiter[0], '/');
+            $closing         = preg_quote($delimiter[1], '/');
+            $pattern_parts[] = $opening . '|' . $closing;
+        }
+        $pattern        = implode('|', $pattern_parts);
+        $parts          = preg_split(sprintf('/(%s|[{}"\'])/', $pattern), $template, -1, $flags);
         $matches        = array();
         $tag_just_ended = false;
         $in_comment     = false;
@@ -104,17 +115,17 @@ class Tokenizer
         foreach ($parts as $i => $part) {
             list($part, $off) = $part;
             switch ($part) {
-                case '{#':
+                case $this->delimiters['comment'][0]:
                     if (!$in_tag && !$in_raw) {
                         $in_comment = true;
                     }
                     break;
-                case '#}':
+                case $this->delimiters['comment'][1]:
                     if ($in_comment) {
                         $in_comment = false;
                     }
                     break;
-                case '{':
+                case $this->delimiters['tag'][0]:
                     if (!$in_comment) {
                         if ($in_raw) {
                             if (isset($parts[$i]) && trim($parts[$i + 1][0]) === 'endraw') {
@@ -136,7 +147,7 @@ class Tokenizer
                         }
                     }
                     break;
-                case '}':
+                case $this->delimiters['tag'][1]:
                     if ($in_tag) {
                         if (!$in_string) {
                             $in_tag         = false;
@@ -170,7 +181,7 @@ class Tokenizer
                     $in_raw = true;
                 } elseif (trim($tag) !== 'endraw') {
                     $matches[1][] = array(trim($tag), $offset);
-                    $matches[0][] = array('{' . $tag . '}', $offset);
+                    $matches[0][] = array($this->delimiters['tag'][0] . $tag . $this->delimiters['tag'][1], $offset);
                 }
                 $tag = '';
             }
@@ -200,9 +211,10 @@ class Tokenizer
             $cursor += strlen($text);
             $cursor += strlen($tag);
 
-            if (($pos = strpos($text, '{#')) !== false) {
-                $rpos = strrpos($text, '#}');
-                $text = substr($text, 0, $pos) . substr($text, $rpos + 2);
+            // We can safely do this because $text contains no tags, thus no strings.
+            if (($pos = strpos($text, $this->delimiters['comment'][0])) !== false) {
+                $rpos = strrpos($text, $this->delimiters['comment'][1]);
+                $text = substr($text, 0, $pos) . substr($text, $rpos + strlen($this->delimiters['comment'][1]));
             }
 
             $this->pushToken(Token::TEXT, $text);

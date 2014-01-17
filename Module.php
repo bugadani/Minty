@@ -30,7 +30,11 @@ class Module extends \Miny\Modules\Module
                     'reload'           => false,
                     'cache_path'       => 'templates/compiled/%s.php',
                     'template_path'    => 'templates/%s.tpl',
-                    'autoescape'       => true
+                    'autoescape'       => true,
+                    'delimiters'       => array(
+                        'tag'     => array('{', '}'),
+                        'comment' => array('{#', '#}')
+                    )
                 ),
                 'codes'   => array(),
             )
@@ -65,7 +69,7 @@ class Module extends \Miny\Modules\Module
 
     private function setupAutoloader(Factory $factory, $options)
     {
-        $dirname   = dirname($options['templating']['options']['cache_path']);
+        $dirname = dirname($options['templating']['options']['cache_path']);
         if (!is_dir($dirname)) {
             mkdir($dirname);
         }
@@ -74,7 +78,7 @@ class Module extends \Miny\Modules\Module
 
     public function handleResponseCodes(Request $request, Response $response)
     {
-        $factory = $this->application->getFactory();
+        $factory    = $this->application->getFactory();
         $parameters = $factory->getParameters();
         $handlers   = $parameters['templating']['codes'];
         if (!is_array($handlers) || empty($handlers)) {
@@ -118,7 +122,7 @@ class Module extends \Miny\Modules\Module
 
     public function handleException(\Exception $e)
     {
-        $factory = $this->application->getFactory();
+        $factory    = $this->application->getFactory();
         $parameters = $factory->getParameters();
         if (!isset($parameters['templating']['exceptions'])) {
             return;
