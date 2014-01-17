@@ -202,14 +202,11 @@ class Tokenizer
         $cursor  = 0;
         foreach ($matches[0] as $position => $match) {
             list($tag, $tag_position) = $match;
-            $length = $tag_position - $cursor;
 
-            $text = substr($template, $cursor, $length);
+            $text_length = $tag_position - $cursor;
+            $text = substr($template, $cursor, $text_length);
 
-            $this->line += substr_count($text, "\n");
-
-            $cursor += strlen($text);
-            $cursor += strlen($tag);
+            $text_lines = substr_count($text, "\n");
 
             // We can safely do this because $text contains no tags, thus no strings.
             if (($pos = strpos($text, $this->delimiters['comment'][0])) !== false) {
@@ -218,14 +215,19 @@ class Tokenizer
             }
 
             $this->pushToken(Token::TEXT, $text);
+
+            $cursor = $tag_position;
+            $this->line += $text_lines;
+
             $tag_expr = $matches[1][$position][0];
 
-            $this->line += substr_count($tag, "\n");
             if (!$this->processAssignment($tag_expr)) {
                 if (!$this->processTag($tag_expr)) {
                     $this->pushToken(Token::TEXT, $tag);
                 }
             }
+            $cursor += strlen($tag);
+            $this->line += substr_count($tag, "\n");
         }
 
         if ($cursor < strlen($template)) {
