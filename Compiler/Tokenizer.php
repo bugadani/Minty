@@ -83,10 +83,10 @@ class Tokenizer
                 $operators[$symbol] = strlen($symbol);
             }
         }
-        $this->punctuation = array(',', '[', ']', '(', ')', ':', '?');
+        $this->punctuation = array(',', '[', ']', '(', ')', ':', '?', '=>');
         $punctuation       = $quote(',[]():"\'?');
         arsort($operators);
-        return sprintf('/(%s|[%s ])/i', implode('|', array_keys($operators)), $punctuation);
+        return sprintf('/(=>|%s|[%s ])/i', implode('|', array_keys($operators)), $punctuation);
     }
 
     private function findTags($template)

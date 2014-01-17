@@ -137,7 +137,7 @@ class ExpressionParser
             //expressions are allowed as both array keys and values.
             $value = $this->parseExpression(true);
 
-            if ($this->stream->current()->test(Token::PUNCTUATION, ':')) {
+            if ($this->stream->current()->test(Token::PUNCTUATION, array(':', '=>'))) {
                 //the previous value was a key
                 $key   = $value;
                 $value = $this->parseExpression(true);
