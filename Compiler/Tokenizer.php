@@ -102,8 +102,8 @@ class Tokenizer
             $closing         = preg_quote($delimiter[1], '/');
             $pattern_parts[] = $opening . '|' . $closing;
         }
-        $pattern        = implode('|', $pattern_parts);
-        $parts          = preg_split(sprintf('/(%s|[{}"\'])/', $pattern), $template, -1, $flags);
+        $pattern        = sprintf('/(%s|["\'])/', implode('|', $pattern_parts));
+        $parts          = preg_split($pattern, $template, -1, $flags);
         $matches        = array();
         $tag_just_ended = false;
         $in_comment     = false;
