@@ -14,16 +14,6 @@ use Modules\Templating\Environment;
 
 class Tokenizer
 {
-    const STATE_TEXT   = 0;
-    const STATE_STRING = 1;
-
-    private static $exceptions = array(
-        'unexpected'            => 'Unexpected %s found in line %d',
-        'unexpected_eof'        => 'Unexpected end of file found in line %d',
-        'unexpected_tag'        => 'Unexpected %s tag found in line %d',
-        'unexpected_ending_tag' => 'Unexpected closing tag %s found in line %d',
-        'unterminated'          => 'Unterminated %s found in line %d'
-    );
     private $tokens;
     private $operators;
     private $delimiters;
@@ -33,7 +23,7 @@ class Tokenizer
      */
     private $tags;
     private $patterns;
-    private $state_stack;
+    private $in_string;
     private $punctuation;
 
     public function __construct(Environment $environment)
@@ -218,12 +208,11 @@ class Tokenizer
 
     public function tokenize($template)
     {
-        $this->line        = 1;
+        $this->line   = 1;
         //init states
-        $this->state_stack = array();
-        $this->tokens      = array();
+        $this->tokens = array();
+        unset($this->in_string);
 
-        $this->pushState(self::STATE_TEXT);
         $matches = $this->findTags($template);
         $cursor  = 0;
         foreach ($matches[0] as $position => $match) {
@@ -252,11 +241,9 @@ class Tokenizer
             $text = substr($template, $cursor);
             $this->pushToken(Token::TEXT, $this->stripComments($text));
         }
-        if (count($this->state_stack) > 1) {
-            if ($this->isState(self::STATE_STRING)) {
-                $this->throwException('unterminated', 'string');
-            }
-            $this->throwException('unexpected_eof');
+        if (isset($this->in_string)) {
+            $message = sprintf('Unterminated string found in line %d', $this->line);
+            throw new SyntaxException($message);
         }
         $this->pushToken(Token::EOF);
         return new Stream($this->tokens);
@@ -324,33 +311,29 @@ class Tokenizer
 
     public function startString($delimiter)
     {
-        $array = array(
+        $this->in_string = array(
             'string'    => '',
             'delimiter' => $delimiter
         );
-        $this->pushState(self::STATE_STRING, $array);
     }
 
     private function processString($token)
     {
-        $state_value = $this->getStateValue();
-        if ($token === $state_value['delimiter']) {
-            if (substr($state_value['string'], -1) !== '\\') {
-                $this->pushToken(Token::STRING, $state_value['string']);
-                $this->popState();
+        if ($token === $this->in_string['delimiter']) {
+            if (substr($this->in_string['string'], -1) !== '\\') {
+                $this->pushToken(Token::STRING, $this->in_string['string']);
+                unset($this->in_string);
                 return;
             } else {
-                $state_value['string'] = substr($state_value['string'], 0, -1);
+                $this->in_string['string'] = substr($this->in_string['string'], 0, -1);
             }
         }
-        $state_value['string'] .= $token;
-        $this->popState();
-        $this->pushState(self::STATE_STRING, $state_value);
+        $this->in_string['string'] .= $token;
     }
 
     public function processToken($token)
     {
-        if ($this->isState(self::STATE_STRING)) {
+        if (isset($this->in_string)) {
             $this->processString($token);
         } elseif ($token == '"' || $token == "'") {
             $this->startString($token);
@@ -407,57 +390,6 @@ class Tokenizer
     }
 
     //Utilities
-    public function throwException($type)
-    {
-        $args   = func_get_args();
-        array_shift($args);
-        $args[] = $this->line;
-        throw new SyntaxException(vsprintf(self::$exceptions[$type], $args));
-    }
-
-    public function getState()
-    {
-        $state = end($this->state_stack);
-        return $state['state'];
-    }
-
-    public function getStateValue()
-    {
-        $state = end($this->state_stack);
-        return $state['value'];
-    }
-
-    public function pushState($state, $value = null)
-    {
-        $this->state_stack[] = array(
-            'state' => $state,
-            'line'  => $this->line,
-            'value' => $value
-        );
-    }
-
-    public function popState()
-    {
-        if (empty($this->state_stack)) {
-            throw new SyntaxException('Unexpected closing tag in line ' . $this->line);
-        }
-        array_pop($this->state_stack);
-    }
-
-    public function isState($checked, $pop = false)
-    {
-        if (is_array($checked)) {
-            $args    = $checked;
-            $checked = array_shift($args);
-        }
-        if ($checked !== $this->getState()) {
-            return false;
-        }
-        if ($pop) {
-            $this->popState();
-        }
-        return true;
-    }
 
     public function pushToken($type, $value = null)
     {
