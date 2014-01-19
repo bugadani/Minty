@@ -63,34 +63,50 @@ class Tokenizer
         );
     }
 
-    private function getOperatorPattern(Environment $environment)
+    private function fetchOperators(Environment $environment)
     {
         $this->operators = array();
-        $operators       = array();
+        foreach ($environment->getOperatorSymbols() as $operator) {
+
+            if (!is_array($operator)) {
+                $this->operators[] = $operator;
+            } else {
+                foreach ($operator as $symbol) {
+                    $this->operators[] = $symbol;
+                }
+            }
+        }
+    }
+
+    private function getOperatorPattern(Environment $environment)
+    {
+        $this->punctuation = array(',', '[', ']', '(', ')', ':', '?', '=>', "'", '"');
 
         $quote = function ($operator) {
-            if (preg_match('/[a-zA-Z\ ]/', $operator)) {
+            if (preg_match('/^[a-zA-Z\ ]+$/', $operator)) {
                 return '(?<=^|[^\w])' . preg_quote($operator, '/') . '(?=[\s()\[\]]|$)';
             } else {
                 return preg_quote($operator, '/');
             }
         };
 
-        foreach ($environment->getOperatorSymbols() as $operator) {
-            if (!is_array($operator)) {
-                $operator = array($operator);
-            }
+        $this->fetchOperators($environment);
 
-            foreach ($operator as $symbol) {
-                $this->operators[]  = $symbol;
+        $operators = array();
+        $signs     = '';
+
+        $symbols = array_merge($this->operators, $this->punctuation);
+        foreach ($symbols as $symbol) {
+            $length = strlen($symbol);
+            if ($length == 1) {
+                $signs .= $symbol;
+            } else {
                 $symbol             = $quote($symbol);
-                $operators[$symbol] = strlen($symbol);
+                $operators[$symbol] = $length;
             }
         }
-        $this->punctuation = array(',', '[', ']', '(', ')', ':', '?', '=>');
-        $punctuation       = $quote(',[]():"\'?');
         arsort($operators);
-        return sprintf('/(=>|%s|[%s ])/i', implode('|', array_keys($operators)), $punctuation);
+        return sprintf('/(%s|[%s ])/i', implode('|', array_keys($operators)), $quote($signs));
     }
 
     private function findTags($template)
