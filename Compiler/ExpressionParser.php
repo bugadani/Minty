@@ -131,6 +131,7 @@ class ExpressionParser
         //iterate over tokens
         $node = new ArrayNode();
         while (!$this->stream->current()->test(Token::PUNCTUATION, ']')) {
+            // Checking here allows for a trailing comma.
             if ($this->stream->nextTokenIf(Token::PUNCTUATION, ']')) {
                 break;
             }
@@ -146,9 +147,7 @@ class ExpressionParser
             }
             $node->add($value, $key);
 
-            if (!$this->stream->current()->test(Token::PUNCTUATION, ',')) {
-                $this->stream->expectCurrent(Token::PUNCTUATION, ']');
-            }
+            $this->stream->expectCurrent(Token::PUNCTUATION, array(',', ']'));
         }
         //push array node to operand stack
         $this->operand_stack[] = $node;
