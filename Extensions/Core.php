@@ -134,7 +134,7 @@ class Core extends Extension
             //other
             new ConcatenationOperator(10),
             new PropertyAccessOperator(16),
-            new FilterOperator(16),
+            new FilterOperator(11),
             new RangeOperator(9),
             new ExclusiveRangeOperator(9),
         );
