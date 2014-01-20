@@ -47,10 +47,6 @@ class Module extends \Miny\Modules\Module
 
         $this->setupAutoloader($factory, $factory->getParameters());
 
-        $factory->getBlueprint('events')
-                ->addMethodCall('register', 'filter_response', array($this, 'handleResponseCodes'))
-                ->addMethodCall('register', 'uncaught_exception', array($this, 'handleException'));
-
         $factory->add('miny_extensions', __NAMESPACE__ . '\\Extensions\\Miny')
                 ->setArguments('&app');
         $factory->add('template_environment', __NAMESPACE__ . '\\Environment')
@@ -65,6 +61,20 @@ class Module extends \Miny\Modules\Module
         $factory->add('templating_controller', __NAMESPACE__ . '\\TemplateController')
                 ->setParent('controller')
                 ->addMethodCall('setTemplateLoader', '&template_loader');
+        $factory->add('templating_controller_handler', __NAMESPACE__ . '\\ControllerHandler')
+                ->setArguments('&template_loader');
+    }
+
+    public function eventHandlers()
+    {
+        $factory = $this->application->getFactory();
+        $controller_handler = $factory->get('templating_controller_handler');
+        return array(
+            'filter_response'      => array($this, 'handleResponseCodes'),
+            'uncaught_exception'   => array($this, 'handleException'),
+            'onControllerLoaded'   => $controller_handler,
+            'onControllerFinished' => $controller_handler
+        );
     }
 
     private function setupAutoloader(Factory $factory, $options)
