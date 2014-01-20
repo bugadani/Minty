@@ -40,7 +40,7 @@ class Tokenizer
         $options          = $environment->getOptions();
         $this->delimiters = $options['delimiters'];
 
-        $literals = array('true', 'false', 'null', ':[a-zA-Z]+[a-zA-Z_\-0-9]*');
+        $literals = array('true', 'false', 'null', ':[a-zA-Z]+[a-zA-Z_\-0-9]*', '\d+(?:\.\d+)?');
 
         $blocks_pattern  = implode('|', $blocknames);
         $literal_pattern = implode('|', $literals);
@@ -49,7 +49,7 @@ class Tokenizer
             'assignment'  => '/(.*?)\s*:\s*(.*?)$/ADsu',
             'closing_tag' => sprintf('/end(%s)/Ai', $blocks_pattern),
             'operator'    => $this->getOperatorPattern($environment),
-            'literal'     => sprintf('/(%s|\d+(?:\.\d+)?)/i', $literal_pattern)
+            'literal'     => sprintf('/(%s)/i', $literal_pattern)
         );
     }
 
@@ -349,7 +349,9 @@ class Tokenizer
 
     private function tokenizeLiteral($literal)
     {
-        if (is_numeric($literal)) {
+        if (isset($this->in_string)) {
+            $this->in_string['string'] .= $literal;
+        } elseif (is_numeric($literal)) {
             $this->pushToken(Token::LITERAL, $literal);
         } else {
             switch (strtolower($literal)) {
