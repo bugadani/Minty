@@ -52,24 +52,30 @@ class Module extends \Miny\Modules\Module
         $factory->add('template_environment', __NAMESPACE__ . '\\Environment')
                 ->setArguments('@templating:options')
                 ->addMethodCall('addExtension', '&miny_extensions');
-        $factory->add('template_plugins', __NAMESPACE__ . '\\Plugins')
-                ->setArguments('&app');
         $factory->add('template_compiler', __NAMESPACE__ . '\\Compiler\\Compiler')
                 ->setArguments('&template_environment');
         $factory->add('template_loader', __NAMESPACE__ . '\\TemplateLoader')
                 ->setArguments('&template_environment', '&template_compiler', '&log');
-        $factory->add('templating_controller_handler', __NAMESPACE__ . '\\ControllerHandler')
-                ->setArguments('&template_loader');
+        $factory->add('templating_controller_handler', __NAMESPACE__ . '\\ControllerHandler');
     }
 
     public function eventHandlers()
     {
-        $factory = $this->application->getFactory();
+        $factory            = $this->application->getFactory();
         $controller_handler = $factory->get('templating_controller_handler');
+
+        $set_loader = function () use($factory) {
+            $controller_handler = $factory->get('templating_controller_handler');
+            $controller_handler->setTemplateLoader($factory->get('template_loader'));
+        };
+
         return array(
             'filter_response'      => array($this, 'handleResponseCodes'),
             'uncaught_exception'   => array($this, 'handleException'),
-            'onControllerLoaded'   => $controller_handler,
+            'onControllerLoaded'   => array(
+                $set_loader,
+                $controller_handler
+            ),
             'onControllerFinished' => $controller_handler
         );
     }

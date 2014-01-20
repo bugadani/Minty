@@ -16,7 +16,7 @@ class ControllerHandler
     private $assigned_variables;
     private $current_layout;
 
-    public function __construct(TemplateLoader $loader)
+    public function setTemplateLoader(TemplateLoader $loader)
     {
         $this->template_loader = $loader;
     }
