@@ -58,9 +58,6 @@ class Module extends \Miny\Modules\Module
                 ->setArguments('&template_environment');
         $factory->add('template_loader', __NAMESPACE__ . '\\TemplateLoader')
                 ->setArguments('&template_environment', '&template_compiler', '&log');
-        $factory->add('templating_controller', __NAMESPACE__ . '\\TemplateController')
-                ->setParent('controller')
-                ->addMethodCall('setTemplateLoader', '&template_loader');
         $factory->add('templating_controller_handler', __NAMESPACE__ . '\\ControllerHandler')
                 ->setArguments('&template_loader');
     }
