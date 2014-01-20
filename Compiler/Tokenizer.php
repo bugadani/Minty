@@ -24,6 +24,7 @@ class Tokenizer
     private $tags;
     private $patterns;
     private $in_string;
+    private $in_raw;
     private $punctuation;
 
     public function __construct(Environment $environment)
@@ -47,7 +48,7 @@ class Tokenizer
 
         $this->patterns = array(
             'assignment'  => '/(.*?)\s*:\s*(.*?)$/ADsu',
-            'closing_tag' => sprintf('/end(%s)/Ai', $blocks_pattern),
+            'closing_tag' => sprintf('/end(%s|raw)/Ai', $blocks_pattern),
             'operator'    => $this->getOperatorPattern($environment),
             'literal'     => sprintf('/(%s)/i', $literal_pattern)
         );
@@ -138,6 +139,7 @@ class Tokenizer
                                 $in_raw = false;
                                 $in_tag = true;
                                 $tag    = '';
+                                $offset = $off;
                             }
                         } elseif (!$in_string) {
                             if ($in_tag) {
@@ -183,11 +185,11 @@ class Tokenizer
             if ($tag_just_ended) {
                 if (trim($tag) == 'raw') {
                     $in_raw = true;
-                } elseif (trim($tag) !== 'endraw') {
-                    $matches[1][] = array(trim($tag), $offset);
-                    $matches[0][] = array($this->delimiters['tag'][0] . $tag . $this->delimiters['tag'][1], $offset);
                 }
-                $tag = '';
+
+                $matches[1][] = array(trim($tag), $offset);
+                $matches[0][] = array($this->delimiters['tag'][0] . $tag . $this->delimiters['tag'][1], $offset);
+                $tag          = '';
             }
             $tag_just_ended = false;
         }
@@ -209,6 +211,7 @@ class Tokenizer
         $this->line   = 1;
         //init states
         $this->tokens = array();
+        $this->in_raw = false;
         unset($this->in_string);
 
         $matches = $this->findTags($template);
@@ -227,9 +230,11 @@ class Tokenizer
             $this->line += $text_lines;
 
             $tag_expr = $matches[1][$position][0];
-
+            
             if (!$this->processAssignment($tag_expr)) {
-                $this->processTag($tag_expr);
+                if (!$this->processTag($tag_expr)) {
+                    $this->pushToken(Token::TEXT, $this->stripComments($tag_expr));
+                }
             }
             $cursor += strlen($tag);
             $this->line += substr_count($tag, "\n");
@@ -243,6 +248,10 @@ class Tokenizer
             $message = sprintf('Unterminated string found in line %d', $this->line);
             throw new SyntaxException($message);
         }
+        if($this->in_raw) {
+            $message = sprintf('Unterminated raw block found in line %d', $this->line);
+            throw new SyntaxException($message);
+        }
         $this->pushToken(Token::EOF);
         return new Stream($this->tokens);
     }
@@ -251,12 +260,21 @@ class Tokenizer
     {
         $match = array();
         if (preg_match($this->patterns['closing_tag'], $tag, $match)) {
-
             $type = $match[1];
-            $this->pushToken(Token::TAG, 'end' . $type);
-            return true;
+            if ($this->in_raw) {
+                if ($type === 'raw') {
+                    $this->in_raw = false;
+                    return true;
+                }
+            } else {
+                $this->pushToken(Token::TAG, 'end' . $type);
+                return true;
+            }
         }
 
+        if ($this->in_raw) {
+            return false;
+        }
         $parts = preg_split('/([ (])/', $tag, 2, PREG_SPLIT_DELIM_CAPTURE);
         switch (count($parts)) {
             case 1:
@@ -270,7 +288,9 @@ class Tokenizer
                 break;
         }
 
-        if (isset($this->tags[$tag_name])) {
+        if ($tag_name === 'raw') {
+            $this->in_raw = true;
+        } elseif (isset($this->tags[$tag_name])) {
             $tag = $this->tags[$tag_name];
             $this->pushToken(Token::TAG, $tag_name);
             $tag->tokenizeExpression($this, $expression);

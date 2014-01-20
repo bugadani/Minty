@@ -193,7 +193,7 @@ class ExpressionParser
 
         // A conditional is marked by '?' (puncturation, not operator) so it breaks the loop above.
         $this->parseConditional();
-        
+
         if ($return) {
             return array_pop($this->operand_stack);
         }
