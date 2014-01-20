@@ -139,17 +139,15 @@ class Tokenizer
                                 $in_tag = true;
                                 $tag    = '';
                             }
-                        } else {
-                            if (!$in_string) {
-                                if ($in_tag) {
-                                    $tag = '';
-                                } else {
-                                    $in_tag = true;
-                                }
-                                $offset = $off;
+                        } elseif (!$in_string) {
+                            if ($in_tag) {
+                                $tag = '';
                             } else {
-                                $tag .= $part;
+                                $in_tag = true;
                             }
+                            $offset = $off;
+                        } else {
+                            $tag .= $part;
                         }
                     }
                     break;

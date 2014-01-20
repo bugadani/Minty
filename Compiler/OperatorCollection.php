@@ -1,18 +1,14 @@
 <?php
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * This file is part of the Miny framework.
+ * (c) Dániel Buga <daniel@bugadani.hu>
+ *
+ * For licensing information see the LICENSE file.
  */
 
 namespace Modules\Templating\Compiler;
 
-/**
- * Description of OperatorCollection
- *
- * @author Dániel
- */
 class OperatorCollection
 {
     private $operators;

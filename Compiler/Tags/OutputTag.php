@@ -47,9 +47,7 @@ class OutputTag extends Tag
 
     public function isSafe(Environment $env, Node $node)
     {
-        if ($node instanceof IdentifierNode) {
-            return false;
-        } elseif ($node instanceof DataNode) {
+        if ($node instanceof DataNode) {
             return true;
         } elseif ($node instanceof FunctionNode) {
             return $this->isFunctionSafe($env, $node->getFunctionName()->getName());

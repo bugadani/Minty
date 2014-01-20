@@ -182,7 +182,6 @@ class ExpressionParser
 
         $this->parseToken();
         while ($this->stream->next()->test(Token::OPERATOR, $this->binary_test)) {
-            //?: can be handled here?
             $this->pushBinaryOperator($this->stream->current());
             $this->parseToken();
         }
@@ -191,7 +190,10 @@ class ExpressionParser
         }
         //pop sentinel
         array_pop($this->operator_stack);
+
+        // A conditional is marked by '?' (puncturation, not operator) so it breaks the loop above.
         $this->parseConditional();
+        
         if ($return) {
             return array_pop($this->operand_stack);
         }
@@ -204,18 +206,17 @@ class ExpressionParser
         }
         $node = new OperatorNode(new ConditionalOperator());
         $node->addOperand(OperatorNode::OPERAND_LEFT, array_pop($this->operand_stack));
-        if ($this->stream->nextTokenIf(Token::PUNCTUATION, ':')) {
-            //?: operator
-            $expression_three = $this->parseExpression(true);
-            $node->addOperand(OperatorNode::OPERAND_RIGHT, $expression_three);
-        } else {
-            $expression_two   = $this->parseExpression(true);
-            $this->stream->expectCurrent(Token::PUNCTUATION, ':');
-            $expression_three = $this->parseExpression(true);
 
+        // Check whether the current expression is a simplified conditional expression (expr1 ?: expr3)
+        if (!$this->stream->nextTokenIf(Token::PUNCTUATION, ':')) {
+            $expression_two = $this->parseExpression(true);
             $node->addOperand(OperatorNode::OPERAND_MIDDLE, $expression_two);
-            $node->addOperand(OperatorNode::OPERAND_RIGHT, $expression_three);
         }
+
+        $this->stream->expectCurrent(Token::PUNCTUATION, ':');
+        $expression_three = $this->parseExpression(true);
+        $node->addOperand(OperatorNode::OPERAND_RIGHT, $expression_three);
+
         $this->operand_stack[] = $node;
     }
 
