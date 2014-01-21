@@ -15,6 +15,7 @@ use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
 use Modules\Templating\Compiler\Tag;
 use Modules\Templating\Compiler\Token;
+use Modules\Templating\Compiler\Tokenizer;
 
 class IncludeTag extends Tag
 {
@@ -24,11 +25,32 @@ class IncludeTag extends Tag
         return 'include';
     }
 
+    public function tokenizeExpression(Tokenizer $tokenizer, $expression)
+    {
+        $tokenizer->pushToken(Token::EXPRESSION_START, $this->getTag());
+
+        if (!strpos($expression, 'using')) {
+            $template = $expression;
+        } else {
+            list($template, $source) = explode('using', $expression);
+        }
+        $tokenizer->tokenizeExpression($template);
+        $tokenizer->pushToken(Token::EXPRESSION_END);
+
+        if (isset($source)) {
+            $tokenizer->pushToken(Token::IDENTIFIER, 'using');
+
+            $tokenizer->pushToken(Token::EXPRESSION_START);
+            $tokenizer->tokenizeExpression($source);
+            $tokenizer->pushToken(Token::EXPRESSION_END);
+        }
+    }
+
     public function compile(Compiler $compiler, array $data)
     {
         $compiler
                 ->indented('$template = $this->getLoader()->load(')
-                ->add($compiler->string($data['template']))
+                ->compileData($data['template'])
                 ->add(');')
                 ->indented('$template->set(')
                 ->compileData($data['arguments'])
@@ -38,9 +60,10 @@ class IncludeTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $name = $stream->expect(Token::STRING)->getValue();
+        $name = $parser->parseExpression($stream);
 
         if ($stream->nextTokenIf(Token::IDENTIFIER, 'using')) {
+            $stream->expect(Token::EXPRESSION_START);
             $arguments = $parser->parseExpression($stream);
         } else {
             $arguments = array();
