@@ -305,8 +305,7 @@ class Tokenizer
             $tag->tokenizeExpression($this, $expression);
         } else {
             $this->pushToken(Token::EXPRESSION_START);
-            $this->tokenizeExpression($tag_name);
-            $this->tokenizeExpression($expression);
+            $this->tokenizeExpression($tag);
             $this->pushToken(Token::EXPRESSION_END);
         }
         return true;
