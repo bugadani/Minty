@@ -23,7 +23,6 @@ class Tokenizer
      */
     private $tags;
     private $patterns;
-    private $in_string;
     private $in_raw;
     private $punctuation;
 
@@ -41,7 +40,15 @@ class Tokenizer
         $options          = $environment->getOptions();
         $this->delimiters = $options['delimiters'];
 
-        $literals = array('true', 'false', 'null', ':[a-zA-Z]+[a-zA-Z_\-0-9]*', '\d+(?:\.\d+)?');
+        $literals = array(
+            'true',
+            'false',
+            'null',
+            ':[a-zA-Z]+[a-zA-Z_\-0-9]*',
+            '\d+(?:\.\d+)?',
+            '"(?:\\\\.|[^"\\\\])*"',
+            "'(?:\\\\.|[^'\\\\])*'"
+        );
 
         $blocks_pattern  = implode('|', $blocknames);
         $literal_pattern = implode('|', $literals);
@@ -71,7 +78,7 @@ class Tokenizer
 
     private function getOperatorPattern(Environment $environment)
     {
-        $this->punctuation = array(',', '[', ']', '(', ')', ':', '?', '=>', "'", '"');
+        $this->punctuation = array(',', '[', ']', '(', ')', ':', '?', '=>');
 
         $quote = function ($operator) {
             if (preg_match('/^[a-zA-Z\ ]+$/', $operator)) {
@@ -169,7 +176,14 @@ class Tokenizer
                         if (!$in_string) {
                             $in_string = $part;
                         } elseif ($part == $in_string) {
-                            if (substr($tag, -1) !== '\\') {
+                            if (substr($tag, -1, 1) === '\\') {
+                                $i = 2;
+                                while (substr($tag, -$i, 1) !== '\\') {
+                                    $i++;
+                                }
+                                // odd number of backslashes means that the delimiter is escaped
+                                $in_string = $i % 2 == 1;
+                            } else {
                                 $in_string = false;
                             }
                         }
@@ -212,7 +226,6 @@ class Tokenizer
         //init states
         $this->tokens = array();
         $this->in_raw = false;
-        unset($this->in_string);
 
         $matches = $this->findTags($template);
         $cursor  = 0;
@@ -230,7 +243,7 @@ class Tokenizer
             $this->line += $text_lines;
 
             $tag_expr = $matches[1][$position][0];
-            
+
             if (!$this->processAssignment($tag_expr)) {
                 if (!$this->processTag($tag_expr)) {
                     $this->pushToken(Token::TEXT, $this->stripComments($tag_expr));
@@ -244,11 +257,7 @@ class Tokenizer
             $text = substr($template, $cursor);
             $this->pushToken(Token::TEXT, $this->stripComments($text));
         }
-        if (isset($this->in_string)) {
-            $message = sprintf('Unterminated string found in line %d', $this->line);
-            throw new SyntaxException($message);
-        }
-        if($this->in_raw) {
+        if ($this->in_raw) {
             $message = sprintf('Unterminated raw block found in line %d', $this->line);
             throw new SyntaxException($message);
         }
@@ -327,52 +336,26 @@ class Tokenizer
         return true;
     }
 
-    public function startString($delimiter)
-    {
-        $this->in_string = array(
-            'string'    => '',
-            'delimiter' => $delimiter
-        );
-    }
-
-    private function processString($token)
-    {
-        if ($token === $this->in_string['delimiter']) {
-            if (substr($this->in_string['string'], -1) !== '\\') {
-                $this->pushToken(Token::STRING, $this->in_string['string']);
-                unset($this->in_string);
-                return;
-            } else {
-                $this->in_string['string'] = substr($this->in_string['string'], 0, -1);
-            }
-        }
-        $this->in_string['string'] .= $token;
-    }
-
     public function processToken($token)
     {
-        if (isset($this->in_string)) {
-            $this->processString($token);
-        } elseif ($token == '"' || $token == "'") {
-            $this->startString($token);
-        } else {
-            $token = trim($token);
-            if (in_array($token, $this->punctuation)) {
-                $this->pushToken(Token::PUNCTUATION, $token);
-            } elseif (in_array($token, $this->operators)) {
-                $this->pushToken(Token::OPERATOR, $token);
-            } elseif (strlen($token) !== 0) {
-                $this->pushToken(Token::IDENTIFIER, $token);
-            }
+        $token = trim($token);
+        if (in_array($token, $this->punctuation)) {
+            $this->pushToken(Token::PUNCTUATION, $token);
+        } elseif (in_array($token, $this->operators)) {
+            $this->pushToken(Token::OPERATOR, $token);
+        } elseif (strlen($token) !== 0) {
+            $this->pushToken(Token::IDENTIFIER, $token);
         }
     }
 
     private function tokenizeLiteral($literal)
     {
-        if (isset($this->in_string)) {
-            $this->in_string['string'] .= $literal;
-        } elseif (is_numeric($literal)) {
+        if (is_numeric($literal)) {
             $this->pushToken(Token::LITERAL, $literal);
+        } elseif (substr($literal, 0, 1) === '"') {
+            $this->pushToken(Token::STRING, substr($literal, 1, -1));
+        } elseif (substr($literal, 0, 1) === "'") {
+            $this->pushToken(Token::STRING, substr($literal, 1, -1));
         } else {
             switch (strtolower($literal)) {
                 case 'null':
