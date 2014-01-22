@@ -57,6 +57,11 @@ class Module extends \Miny\Modules\Module
         $factory->add('template_loader', __NAMESPACE__ . '\\TemplateLoader')
                 ->setArguments('&template_environment', '&template_compiler', '&log');
         $factory->add('templating_controller_handler', __NAMESPACE__ . '\\ControllerHandler');
+
+        $this->ifModule('Annotation', function() use($factory) {
+            $factory->getBlueprint('templating_controller_handler')
+                    ->addMethodCall('setAnnotation', '&annotation');
+        });
     }
 
     public function eventHandlers()

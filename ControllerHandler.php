@@ -9,12 +9,21 @@
 
 namespace Modules\Templating;
 
+use Closure;
+use Modules\Annotation\Annotation;
+
 class ControllerHandler
 {
     private $template_loader;
     private $layout_map;
     private $assigned_variables;
     private $current_layout;
+    private $annotation;
+
+    public function setAnnotation(Annotation $annotation)
+    {
+        $this->annotation = $annotation;
+    }
 
     public function setTemplateLoader(TemplateLoader $loader)
     {
@@ -23,26 +32,33 @@ class ControllerHandler
 
     public function onControllerLoaded($controller, $action)
     {
-        if (!$controller instanceof iTemplatingController) {
-            return;
+        if ($controller instanceof iTemplatingController) {
+            $this->layout_map = $controller->initLayouts();
+        } else {
+            $this->layout_map = array();
         }
         $this->assigned_variables = array();
-        $this->layout_map         = $controller->initLayouts();
         // Add templating related methods
         $controller->addMethods($this, array('assign', 'layout'));
     }
 
     public function onControllerFinished($controller, $action, $controller_retval)
     {
-        if (!$controller instanceof iTemplatingController) {
-            return;
-        }
         if ($controller->getHeaders()->has('location') || $controller_retval === false) {
             return;
         }
         if (!isset($this->current_layout)) {
             if (isset($this->layout_map[$action])) {
                 $this->current_layout = $this->layout_map[$action];
+            } elseif (isset($this->annotation)) {
+                if ($controller instanceof Closure) {
+                    $comment = $this->annotation->readFunction($controller);
+                } else {
+                    $comment = $this->annotation->readMethod($controller, $action . 'Action');
+                }
+                if ($comment->has('template')) {
+                    $this->current_layout = $comment->get('template');
+                }
             } else {
                 return;
             }
