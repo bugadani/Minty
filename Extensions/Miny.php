@@ -46,15 +46,17 @@ class Miny extends Extension
 
     public function routeFunction($route, array $parameters = array())
     {
-        return $this->application->router->generate($route, $parameters);
+        return $this->application->getFactory()->get('router')->generate($route, $parameters);
     }
 
     public function requestFunction($url, $method = 'GET', array $post = array())
     {
-        $main = $this->application->response;
+        $factory = $this->application->getFactory();
+
+        $main = $factory->get('response');
         $main->addContent(ob_get_clean());
 
-        $request  = $this->application->request->getSubRequest($method, $url, $post);
+        $request  = $factory->get('request')->getSubRequest($method, $url, $post);
         $response = $this->application->dispatch($request);
 
         $main->addResponse($response);
