@@ -17,28 +17,27 @@ class Stream
      * @var Token[]
      */
     private $tokens;
-    private $pointer;
 
     public function __construct(array $tokens)
     {
-        $this->tokens  = $tokens;
-        $this->pointer = -1;
+        array_unshift($tokens, null);
+        $this->tokens = $tokens;
+        reset($this->tokens);
     }
 
     public function current()
     {
-        return $this->tokens[$this->pointer];
+        return current($this->tokens);
     }
 
-    public function step($step = 1)
+    public function prev()
     {
-        $this->pointer += $step;
+        return prev($this->tokens);
     }
 
     public function next()
     {
-        $this->step();
-        return $this->current();
+        return next($this->tokens);
     }
 
     public function expect($type, $value = null)
@@ -68,7 +67,7 @@ class Stream
         if ($this->next()->test($type, $value)) {
             return $this->current();
         }
-        $this->step(-1);
+        $this->prev();
         return false;
     }
 }
