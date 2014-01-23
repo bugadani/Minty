@@ -10,6 +10,7 @@
 namespace Modules\Templating;
 
 use Modules\Templating\Compiler\Operator;
+use Modules\Templating\Compiler\OperatorCollection;
 use Modules\Templating\Compiler\Tag;
 use Modules\Templating\Compiler\TemplateFunction;
 
@@ -24,26 +25,39 @@ abstract class Extension
 
     abstract public function getExtensionName();
 
-    public function registerExtension(Environment $environment)
+    public function registerFunctions(Environment $environment)
     {
         foreach ($this->getFunctions() as $function) {
             $function->setExtensionName($this->extension_name);
             $environment->addFunction($function);
         }
-        $binary        = $environment->getBinaryOperators();
-        $unary_prefix  = $environment->getUnaryPrefixOperators();
-        $unary_postfix = $environment->getUnaryPostfixOperators();
+    }
+
+    public function registerTags(Environment $environment)
+    {
+        foreach ($this->getTags() as $tag) {
+            $environment->addTag($tag);
+        }
+    }
+
+    public function registerBinaryOperators(OperatorCollection $binary)
+    {
         foreach ($this->getBinaryOperators() as $operator) {
             $binary->addOperator($operator);
         }
+    }
+
+    public function registerUnaryPrefixOperators(OperatorCollection $unary_prefix)
+    {
         foreach ($this->getPrefixUnaryOperators() as $operator) {
             $unary_prefix->addOperator($operator);
         }
+    }
+
+    public function registerUnaryPostfixOperators(OperatorCollection $unary_postfix)
+    {
         foreach ($this->getPostfixUnaryOperators() as $operator) {
             $unary_postfix->addOperator($operator);
-        }
-        foreach ($this->getTags() as $tag) {
-            $environment->addTag($tag);
         }
     }
 

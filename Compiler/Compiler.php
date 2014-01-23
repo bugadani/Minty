@@ -44,16 +44,26 @@ class Compiler
     private $template_stack;
     private $extended_template;
     private $embedded;
+    private $initialized;
 
     public function __construct(Environment $environment)
     {
-        $this->parser      = new Parser($environment);
-        $this->tokenizer   = new Tokenizer($environment);
         $this->environment = $environment;
         $this->options     = $environment->getOptions();
-        $this->filters     = $environment->getFunctions();
+        $this->initialized = false;
+    }
 
-        foreach ($environment->getTags() as $tag) {
+    private function initialize()
+    {
+        if ($this->initialized) {
+            return;
+        }
+        $this->initialized = true;
+        $this->parser      = new Parser($this->environment);
+        $this->tokenizer   = new Tokenizer($this->environment);
+        $this->filters     = $this->environment->getFunctions();
+
+        foreach ($this->environment->getTags() as $tag) {
             $name              = $tag->getTag();
             $this->tags[$name] = $tag;
         }
@@ -291,6 +301,7 @@ class Compiler
         $this->extended_template = 'Template';
         $this->embedded          = array();
 
+        $this->initialize();
         $stream = $this->tokenizer->tokenize($template);
         $nodes  = $this->parser->parse($stream);
 

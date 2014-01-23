@@ -66,6 +66,7 @@ class Environment
         $this->extensions              = array();
         $this->functions               = array();
         $this->function_compilers      = array();
+        $this->tags                    = array();
         $this->binary_operators        = new OperatorCollection();
         $this->unary_prefix_operators  = new OperatorCollection();
         $this->unary_postfix_operators = new OperatorCollection();
@@ -87,7 +88,7 @@ class Environment
     public function addExtension(Extension $extension)
     {
         $this->extensions[$extension->getExtensionName()] = $extension;
-        $extension->registerExtension($this);
+        $extension->registerFunctions($this);
     }
 
     /**
@@ -166,6 +167,11 @@ class Environment
      */
     public function getTags()
     {
+        if (empty($this->tags)) {
+            foreach ($this->extensions as $ext) {
+                $ext->registerTags($this);
+            }
+        }
         return $this->tags;
     }
 
@@ -174,6 +180,11 @@ class Environment
      */
     public function getBinaryOperators()
     {
+        if ($this->binary_operators->isEmpty()) {
+            foreach ($this->extensions as $ext) {
+                $ext->registerBinaryOperators($this->binary_operators);
+            }
+        }
         return $this->binary_operators;
     }
 
@@ -182,6 +193,11 @@ class Environment
      */
     public function getUnaryPrefixOperators()
     {
+        if ($this->unary_prefix_operators->isEmpty()) {
+            foreach ($this->extensions as $ext) {
+                $ext->registerUnaryPrefixOperators($this->unary_prefix_operators);
+            }
+        }
         return $this->unary_prefix_operators;
     }
 
@@ -190,6 +206,11 @@ class Environment
      */
     public function getUnaryPostfixOperators()
     {
+        if ($this->unary_postfix_operators->isEmpty()) {
+            foreach ($this->extensions as $ext) {
+                $ext->registerUnaryPostfixOperators($this->unary_postfix_operators);
+            }
+        }
         return $this->unary_postfix_operators;
     }
 
