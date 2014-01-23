@@ -10,6 +10,8 @@
 namespace Modules\Templating\Compiler\Operators\ExistenceOperators;
 
 use Modules\Templating\Compiler\Compiler;
+use Modules\Templating\Compiler\Nodes\ArrayIndexNode;
+use Modules\Templating\Compiler\Nodes\FunctionNode;
 use Modules\Templating\Compiler\Nodes\IdentifierNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Operator;
@@ -44,7 +46,7 @@ class IsNotSetOperator extends Operator
                 $right->compile($compiler);
             }
             $compiler->add(')');
-        } elseif ($operand instanceof IdentifierNode) {
+        } elseif ($operand instanceof IdentifierNode || $operand instanceof ArrayIndexNode) {
             $compiler->add('!isset(')
                     ->compileNode($operand)
                     ->add(')');

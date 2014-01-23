@@ -96,7 +96,8 @@ class ExpressionParser
             $index   = $this->parseExpression(true);
 
             $this->operand_stack[] = new ArrayIndexNode($operand, $index);
-        } elseif ($this->stream->nextTokenIf(Token::OPERATOR, $this->unary_postfix_test)) {
+        }
+        if ($this->stream->nextTokenIf(Token::OPERATOR, $this->unary_postfix_test)) {
             $token = $this->stream->current();
 
             $operator = $this->unary_postfix_operators->getOperator($token->getValue());
