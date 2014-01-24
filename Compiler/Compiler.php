@@ -266,7 +266,6 @@ class Compiler
         $classname = substr($path, $pos);
         if ($include_namespace) {
             $namespace = substr($path, 0, $pos);
-            $classname = substr($path, $pos);
             return $namespace . 'Template_' . $classname;
         }
         return 'Template_' . $classname;
