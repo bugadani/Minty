@@ -58,7 +58,8 @@ class Module extends \Miny\Modules\Module
                 ->setArguments('&template_environment', '&template_compiler', '&log');
         $factory->add('templating_controller_handler', __NAMESPACE__ . '\\ControllerHandler');
 
-        $this->ifModule('Annotation', function() use($factory) {
+        $this->ifModule('Annotation',
+                function() use($factory) {
             $factory->getBlueprint('templating_controller_handler')
                     ->addMethodCall('setAnnotation', '&annotation');
         });
@@ -117,10 +118,8 @@ class Module extends \Miny\Modules\Module
                     if (!$response->isCode($handler['code'])) {
                         continue;
                     }
-                } else {
-                    if (!in_array($response_code, $handler['codes'])) {
-                        continue;
-                    }
+                } elseif (!in_array($response_code, $handler['codes'])) {
+                    continue;
                 }
                 if (!isset($handler['template'])) {
                     throw new UnexpectedValueException('Response code handler must specify a template.');
@@ -151,11 +150,10 @@ class Module extends \Miny\Modules\Module
             $template_name = $handlers;
         } else {
             foreach ($handlers as $class => $handler) {
-                if (!$e instanceof $class) {
-                    continue;
+                if ($e instanceof $class) {
+                    $template_name = $handler;
+                    break;
                 }
-                $template_name = $handler;
-                break;
             }
         }
         if (isset($template_name)) {
