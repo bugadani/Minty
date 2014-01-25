@@ -10,7 +10,7 @@
 namespace Modules\Templating;
 
 use Miny\Application\BaseApplication;
-use Miny\Factory\Factory;
+use Miny\AutoLoader;
 use Miny\HTTP\Request;
 use Miny\HTTP\Response;
 use UnexpectedValueException;
@@ -45,7 +45,7 @@ class Module extends \Miny\Modules\Module
     {
         $factory = $app->getFactory();
 
-        $this->setupAutoloader($factory, $factory->getParameters());
+        $this->setupAutoloader($factory->get('autoloader'), $factory->getParameters());
 
         $factory->add('miny_extensions', __NAMESPACE__ . '\\Extensions\\Miny')
                 ->setArguments('&app');
@@ -56,12 +56,10 @@ class Module extends \Miny\Modules\Module
                 ->setArguments('&template_environment');
         $factory->add('template_loader', __NAMESPACE__ . '\\TemplateLoader')
                 ->setArguments('&template_environment', '&template_compiler', '&log');
-        $factory->add('templating_controller_handler', __NAMESPACE__ . '\\ControllerHandler');
+        $handler = $factory->add('templating_controller_handler', __NAMESPACE__ . '\\ControllerHandler');
 
-        $this->ifModule('Annotation',
-                function() use($factory) {
-            $factory->getBlueprint('templating_controller_handler')
-                    ->addMethodCall('setAnnotation', '&annotation');
+        $this->ifModule('Annotation', function() use($handler) {
+            $handler->addMethodCall('setAnnotation', '&annotation');
         });
     }
 
@@ -70,8 +68,7 @@ class Module extends \Miny\Modules\Module
         $factory            = $this->application->getFactory();
         $controller_handler = $factory->get('templating_controller_handler');
 
-        $set_loader = function () use($factory) {
-            $controller_handler = $factory->get('templating_controller_handler');
+        $set_loader = function () use($factory, $controller_handler) {
             $controller_handler->setTemplateLoader($factory->get('template_loader'));
         };
 
@@ -86,13 +83,13 @@ class Module extends \Miny\Modules\Module
         );
     }
 
-    private function setupAutoloader(Factory $factory, $options)
+    private function setupAutoloader(AutoLoader $autoloader, $options)
     {
         $dirname = dirname($options['templating']['options']['cache_path']);
         if (!is_dir($dirname)) {
             mkdir($dirname);
         }
-        $factory->get('autoloader')->register('\\' . $options['templating']['options']['cache_namespace'], $dirname);
+        $autoloader->register('\\' . $options['templating']['options']['cache_namespace'], $dirname);
     }
 
     public function handleResponseCodes(Request $request, Response $response)
