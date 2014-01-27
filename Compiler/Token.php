@@ -26,7 +26,7 @@ class Token
     const TAG              = 10;
     const EOF              = 11;
 
-    private static $strings = array(
+    private static $strings    = array(
         self::EXPRESSION_START => 'EXPRESSION START',
         self::EXPRESSION_END   => 'EXPRESSION END',
         self::BLOCK_START      => 'BLOCK START',
@@ -39,6 +39,11 @@ class Token
         self::TEXT             => 'TEXT',
         self::TAG              => 'TAG',
         self::EOF              => 'EOF',
+    );
+    private static $data_types = array(
+        Token::LITERAL,
+        Token::STRING,
+        Token::IDENTIFIER
     );
     private $type;
     private $value;
@@ -76,8 +81,13 @@ class Token
     {
         if (is_array($type)) {
             foreach ($type as $args) {
-                $token = array_shift($args);
-                $value = array_shift($args);
+                if (is_array($args)) {
+                    $token = array_shift($args);
+                    $value = array_shift($args);
+                } else {
+                    $token = $args;
+                    $value = null;
+                }
                 if ($this->test($token, $value)) {
                     return true;
                 }
@@ -98,12 +108,7 @@ class Token
 
     public function isDataType()
     {
-        $data_types = array(
-            Token::LITERAL,
-            Token::STRING,
-            Token::IDENTIFIER
-        );
-        return in_array($this->type, $data_types);
+        return in_array($this->type, self::$data_types);
     }
 
     public function getType()

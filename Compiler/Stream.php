@@ -40,26 +40,26 @@ class Stream
         return next($this->tokens);
     }
 
+    private function testOrThrow(Token $token, $type, $value)
+    {
+        if ($token->test($type, $value)) {
+            return $token;
+        }
+        $pattern = 'Unexpected %s (%s) found in line %s';
+        $message = sprintf($pattern, $token->getTypeString(), $token->getValue(), $token->getLine());
+        throw new SyntaxException($message);
+    }
+
     public function expect($type, $value = null)
     {
         $next = $this->next();
-        if ($next->test($type, $value)) {
-            return $next;
-        }
-        $pattern = 'Unexpected %s (%s) found in line %s';
-        $message = sprintf($pattern, $next->getTypeString(), $next->getValue(), $next->getLine());
-        throw new SyntaxException($message);
+        return $this->testOrThrow($next, $type, $value);
     }
 
     public function expectCurrent($type, $value = null)
     {
         $current = $this->current();
-        if ($current->test($type, $value)) {
-            return $current;
-        }
-        $pattern = 'Unexpected %s (%s) found in line %s';
-        $message = sprintf($pattern, $current->getTypeString(), $current->getValue(), $current->getLine());
-        throw new SyntaxException($message);
+        return $this->testOrThrow($current, $type, $value);
     }
 
     public function nextTokenIf($type, $value = null)
