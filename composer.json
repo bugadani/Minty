@@ -1,0 +1,21 @@
+{
+    "name": "miny/templating",
+    "description": "The Templating package of the Miny Framework.",
+    "minimum-stability": "dev",
+    "license": "MIT",
+    "type": "library",
+    "require": {
+        "php": ">=5.3.3"
+    },
+    "authors": [
+        {
+            "name": "Dániel Buga",
+            "email": "bugadani@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Modules\\Templating\\": "src/"
+        }
+    }
+}
