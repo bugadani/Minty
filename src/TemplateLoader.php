@@ -9,7 +9,7 @@
 
 namespace Modules\Templating;
 
-use Miny\Log;
+use Miny\Log\Log;
 use Modules\Templating\Compiler\Compiler;
 use RuntimeException;
 
@@ -51,9 +51,8 @@ class TemplateLoader
     protected function log($message)
     {
         if (isset($this->log)) {
-            $args = func_get_args();
-            array_shift($args);
-            $this->log->debug('TemplateLoader: ' . $message, $args);
+            $args = array_slice(func_get_args(), 1);
+            $this->log->write(Log::DEBUG, 'TemplateLoader', $message, $args);
         }
     }
 
