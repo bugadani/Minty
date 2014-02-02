@@ -57,7 +57,7 @@ class Miny extends Extension
         $main->addContent(ob_get_clean());
 
         $request  = $factory->get('request')->getSubRequest($method, $url, $post);
-        $response = $this->application->dispatch($request);
+        $response = $factory->get('dispatcher')->dispatch($request);
 
         $main->addResponse($response);
         ob_start();
