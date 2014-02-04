@@ -51,13 +51,13 @@ class Miny extends Extension
 
     public function requestFunction($url, $method = 'GET', array $post = array())
     {
-        $factory = $this->application->getFactory();
+        $factory = $this->application->getContainer();
 
-        $main = $factory->get('response');
+        $main = $factory->get('\\Miny\\HTTP\\Response');
         $main->addContent(ob_get_clean());
 
-        $request  = $factory->get('request')->getSubRequest($method, $url, $post);
-        $response = $factory->get('dispatcher')->dispatch($request);
+        $request  = $factory->get('\\Miny\\HTTP\\Request')->getSubRequest($method, $url, $post);
+        $response = $factory->get('\\Miny\\Application\\Dispatcher')->dispatch($request);
 
         $main->addResponse($response);
         ob_start();
