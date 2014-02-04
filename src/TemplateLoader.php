@@ -101,6 +101,12 @@ class TemplateLoader
         }
     }
 
+    /**
+     * @param $template
+     *
+     * @return Template
+     * @throws \RuntimeException
+     */
     public function load($template)
     {
         $class = '\\' . $this->compiler->getClassForTemplate($template);

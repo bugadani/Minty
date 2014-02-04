@@ -5,7 +5,9 @@
     "license": "MIT",
     "type": "library",
     "require": {
-        "php": ">=5.3.3"
+        "php": ">=5.3.3",
+        "miny/framework": "dev-master",
+        "miny/annotation": "dev-master"
     },
     "authors": [
         {

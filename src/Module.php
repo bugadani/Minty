@@ -11,8 +11,10 @@ namespace Modules\Templating;
 
 use Miny\Application\BaseApplication;
 use Miny\AutoLoader;
+use Miny\Factory\Container;
 use Miny\HTTP\Request;
 use Miny\HTTP\Response;
+use Modules\Templating\Extensions\Miny;
 use UnexpectedValueException;
 
 class Module extends \Miny\Modules\Module
@@ -27,7 +29,6 @@ class Module extends \Miny\Modules\Module
                     'global_variables' => array(),
                     'cache_namespace'  => 'Application\\Templating\\Cached',
                     'strict_mode'      => true,
-                    'reload'           => false,
                     'cache_path'       => 'templates/compiled/%s.php',
                     'template_path'    => 'templates/%s.tpl',
                     'autoescape'       => true,
@@ -43,33 +44,47 @@ class Module extends \Miny\Modules\Module
 
     public function init(BaseApplication $app)
     {
-        $factory = $app->getFactory();
+        $container = $app->getContainer();
 
-        $this->setupAutoloader($factory->get('autoloader'), $factory->getParameters());
+        /** @var $autoLoader AutoLoader */
+        $autoLoader = $container->get('\Miny\AutoLoader');
+        $this->setupAutoloader($autoLoader, $app->getParameterContainer());
 
-        $factory->add('miny_extensions', __NAMESPACE__ . '\\Extensions\\Miny')
-                ->setArguments('&app');
-        $factory->add('template_environment', __NAMESPACE__ . '\\Environment')
-                ->setArguments('@templating:options')
-                ->addMethodCall('addExtension', '&miny_extensions');
-        $factory->add('template_compiler', __NAMESPACE__ . '\\Compiler\\Compiler')
-                ->setArguments('&template_environment');
-        $factory->add('template_loader', __NAMESPACE__ . '\\TemplateLoader')
-                ->setArguments('&template_environment', '&template_compiler', '&log');
-        $handler = $factory->add('templating_controller_handler', __NAMESPACE__ . '\\ControllerHandler');
+        $container->addAlias(__NAMESPACE__ . '\\Environment', null, array('@templating:options'));
+        $container->addCallback(
+            __NAMESPACE__ . '\\Environment',
+            function (Environment $environment, Container $container) {
+                /** @var $minyExtension Miny */
+                $minyExtension = $container->get(__NAMESPACE__ . '\\Extensions\\Miny');
+                $environment->addExtension($minyExtension);
+            }
+        );
 
-        $this->ifModule('Annotation', function() use($handler) {
-            $handler->addMethodCall('setAnnotation', '&annotation');
-        });
+        $this->ifModule(
+            'Annotation',
+            function () use ($container) {
+                $container->addCallback(
+                    __NAMESPACE__ . '\\ControllerHandler',
+                    function (ControllerHandler $handler, Container $container) {
+                        /** @var $annotation \Modules\Annotation\Annotation */
+                        $annotation = $container->get('\Modules\Annotation\Annotation');
+                        $handler->setAnnotation($annotation);
+                    }
+                );
+            }
+        );
     }
 
     public function eventHandlers()
     {
-        $factory            = $this->application->getFactory();
-        $controller_handler = $factory->get('templating_controller_handler');
+        $container = $this->application->getContainer();
+        /** @var $controllerHandler ControllerHandler */
+        $controllerHandler = $container->get(__NAMESPACE__ . '\\ControllerHandler');
 
-        $set_loader = function () use($factory, $controller_handler) {
-            $controller_handler->setTemplateLoader($factory->get('template_loader'));
+        $set_loader = function () use ($container, $controllerHandler) {
+            /** @var $loader TemplateLoader */
+            $loader = $container->get(__NAMESPACE__ . '\\TemplateLoader');
+            $controllerHandler->setTemplateLoader($loader);
         };
 
         return array(
@@ -77,26 +92,27 @@ class Module extends \Miny\Modules\Module
             'uncaught_exception'   => array($this, 'handleException'),
             'onControllerLoaded'   => array(
                 $set_loader,
-                $controller_handler
+                $controllerHandler
             ),
-            'onControllerFinished' => $controller_handler
+            'onControllerFinished' => $controllerHandler
         );
     }
 
-    private function setupAutoloader(AutoLoader $autoloader, $options)
+    private function setupAutoloader(AutoLoader $autoLoader, $options)
     {
-        $dirname = dirname($options['templating']['options']['cache_path']);
-        if (!is_dir($dirname)) {
-            mkdir($dirname);
+        $cacheDirectoryName = dirname($options['templating']['options']['cache_path']);
+        if (!is_dir($cacheDirectoryName)) {
+            mkdir($cacheDirectoryName);
         }
-        $autoloader->register('\\' . $options['templating']['options']['cache_namespace'], $dirname);
+        $autoLoader->register('\\' . $options['templating']['options']['cache_namespace'], $cacheDirectoryName);
     }
 
     public function handleResponseCodes(Request $request, Response $response)
     {
-        $factory    = $this->application->getFactory();
-        $parameters = $factory->getParameters();
-        $handlers   = $parameters['templating']['codes'];
+        $container  = $this->application->getContainer();
+        $parameters = $this->application->getParameterContainer();
+
+        $handlers = $parameters['templating']['codes'];
         if (!is_array($handlers) || empty($handlers)) {
             return;
         }
@@ -123,12 +139,15 @@ class Module extends \Miny\Modules\Module
                 }
                 $template_name = $handler['template'];
             }
-            $loader   = $factory->get('template_loader');
+            /** @var $loader TemplateLoader */
+            $loader   = $container->get(__NAMESPACE__ . '\\TemplateLoader');
             $template = $loader->load($template_name);
-            $template->set(array(
-                'request'  => $request,
-                'response' => $response
-            ));
+            $template->set(
+                array(
+                    'request'  => $request,
+                    'response' => $response
+                )
+            );
             $template->render();
             break;
         }
@@ -136,12 +155,14 @@ class Module extends \Miny\Modules\Module
 
     public function handleException(\Exception $e)
     {
-        $factory    = $this->application->getFactory();
-        $parameters = $factory->getParameters();
+        $container  = $this->application->getContainer();
+        $parameters = $this->application->getParameterContainer();
+
         if (!isset($parameters['templating']['exceptions'])) {
             return;
         }
-        $loader   = $factory->get('template_loader');
+        /** @var $loader TemplateLoader */
+        $loader = $container->get(__NAMESPACE__ . '\\TemplateLoader');
         $handlers = $parameters['templating']['exceptions'];
         if (!is_array($handlers)) {
             $template_name = $handlers;
@@ -155,9 +176,11 @@ class Module extends \Miny\Modules\Module
         }
         if (isset($template_name)) {
             $template = $loader->load($template_name);
-            $template->set(array(
-                'exception' => $e
-            ));
+            $template->set(
+                array(
+                    'exception' => $e
+                )
+            );
             $template->render();
         }
     }
