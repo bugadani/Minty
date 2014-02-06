@@ -58,6 +58,8 @@ class ControllerHandler
                 }
                 if ($comment->has('template')) {
                     $this->current_layout = $comment->get('template');
+                } else {
+                    return;
                 }
             } else {
                 return;
