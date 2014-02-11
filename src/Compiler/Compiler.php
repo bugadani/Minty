@@ -11,8 +11,6 @@ namespace Modules\Templating\Compiler;
 
 use BadMethodCallException;
 use Modules\Templating\Compiler\Nodes\RootNode;
-use Modules\Templating\Compiler\Parser;
-use Modules\Templating\Compiler\Tokenizer;
 use Modules\Templating\Environment;
 
 class Compiler
@@ -25,16 +23,6 @@ class Compiler
     private $options;
 
     /**
-     * @var Parser
-     */
-    private $parser;
-
-    /**
-     * @var Tokenizer
-     */
-    private $tokenizer;
-
-    /**
      * @var Environment
      */
     private $environment;
@@ -45,6 +33,9 @@ class Compiler
     private $extended_template;
     private $embedded;
     private $initialized;
+    private $filters;
+    private $tags;
+    private $output_stack;
 
     public function __construct(Environment $environment)
     {
@@ -59,8 +50,6 @@ class Compiler
             return;
         }
         $this->initialized = true;
-        $this->parser      = new Parser($this->environment);
-        $this->tokenizer   = new Tokenizer($this->environment);
         $this->filters     = $this->environment->getFunctions();
 
         foreach ($this->environment->getTags() as $tag) {
@@ -89,12 +78,14 @@ class Compiler
         $this->output .= "\n";
         $this->output .= str_repeat(' ', $this->indentation * 4);
         $this->output .= vsprintf($string, $args);
+
         return $this;
     }
 
     public function add($string)
     {
         $this->output .= $string;
+
         return $this;
     }
 
@@ -152,6 +143,7 @@ class Compiler
         } else {
             $this->add($this->string($data));
         }
+
         return $this;
     }
 
@@ -165,6 +157,7 @@ class Compiler
     {
         $output       = $this->output;
         $this->output = array_pop($this->output_stack);
+
         return $output;
     }
 
@@ -184,6 +177,7 @@ class Compiler
         $template = array_pop($this->template_stack);
 
         $this->templates[$template] = $this->popOutputStack();
+
         return $template;
     }
 
@@ -195,6 +189,7 @@ class Compiler
     public function indent()
     {
         $this->indentation++;
+
         return $this;
     }
 
@@ -204,6 +199,7 @@ class Compiler
             throw new BadMethodCallException('Cannot outdent more.');
         }
         $this->indentation--;
+
         return $this;
     }
 
@@ -212,11 +208,12 @@ class Compiler
         if ($indentation !== null) {
             $old_indentation   = $this->indentation;
             $this->indentation = $indentation;
-        }
-        $node->compile($this);
-        if ($indentation !== null) {
+            $node->compile($this);
             $this->indentation = $old_indentation;
+        } else {
+            $node->compile($this);
         }
+
         return $this;
     }
 
@@ -224,6 +221,7 @@ class Compiler
     {
         $this->addOutputStack();
         $node->compile($this);
+
         return $this->popOutputStack();
     }
 
@@ -251,6 +249,7 @@ class Compiler
         if (!$this->extendsTemplate()) {
             return false;
         }
+
         return $this->extended_template;
     }
 
@@ -263,12 +262,14 @@ class Compiler
         $path .= '\\' . strtr($template, '/', '\\');
 
         $pos       = strrpos($path, '\\') + 1;
-        $classname = substr($path, $pos);
+        $className = substr($path, $pos);
         if ($include_namespace) {
             $namespace = substr($path, 0, $pos);
-            return $namespace . 'Template_' . $classname;
+
+            return $namespace . 'Template_' . $className;
         }
-        return 'Template_' . $classname;
+
+        return 'Template_' . $className;
     }
 
     public function addEmbedded($parent, RootNode $root)
@@ -278,6 +279,7 @@ class Compiler
             'file'   => $parent,
             'body'   => $root
         );
+
         return 'EmbeddedTemplate' . (count($this->embedded) - 1);
     }
 
@@ -291,7 +293,7 @@ class Compiler
         return !empty($this->embedded);
     }
 
-    public function compile($template, $class)
+    public function compile(Node $node, $class)
     {
         $this->output            = '';
         $this->output_stack      = array();
@@ -301,21 +303,19 @@ class Compiler
         $this->embedded          = array();
 
         $this->initialize();
-        $stream = $this->tokenizer->tokenize($template);
-        $nodes  = $this->parser->parse($stream);
 
         $this->addOutputStack();
-        $this->compileNode($nodes, 2);
+        $this->compileNode($node, 2);
         $compiled = $this->popOutputStack();
 
         $pos       = strrpos($class, '\\');
         $namespace = substr($class, 0, $pos);
-        $classname = substr($class, $pos + 1);
+        $className = substr($class, $pos + 1);
 
         $extended_template = $this->getExtendedTemplate();
         $use_namespace     = $this->getClassForTemplate($extended_template);
 
-        $main_class = $this->compileClass($classname, $compiled, $extended_template);
+        $main_class = $this->compileClass($className, $compiled, $extended_template);
 
         $this->addOutputStack();
         $this->indentation = 0;
@@ -340,11 +340,16 @@ class Compiler
             $this->compileNode($embedded['body'], 2);
             $template = $this->popOutputStack();
 
-            $classname    = 'EmbeddedTemplate' . $i;
+            $className    = 'EmbeddedTemplate' . $i;
             $parent_alias = 'EmbeddedBaseTemplate' . $i;
 
             $this->setExtendedTemplate($embedded['parent']);
-            $compiled = $this->compileClass($classname, $template, $embedded['parent'], $parent_alias);
+            $compiled = $this->compileClass(
+                $className,
+                $template,
+                $embedded['parent'],
+                $parent_alias
+            );
             $this->add($compiled);
         }
         if ($extended_template) {
@@ -353,11 +358,16 @@ class Compiler
         $this->embedded = $embedded_templates;
 
         $this->add('?>');
+
         return $this->popOutputStack();
     }
 
-    private function compileClass($class, $compiled, $extended_template, $parent_class = 'BaseTemplate')
-    {
+    private function compileClass(
+        $class,
+        $compiled,
+        $extended_template,
+        $parent_class = 'BaseTemplate'
+    ) {
         $this->addOutputStack();
         $this->indented('class %s extends %s', $class, $parent_class);
         $this->indented('{');
@@ -399,6 +409,7 @@ class Compiler
         $this->outdent();
         $this->indented('}');
         $this->newline();
+
         return $this->popOutputStack();
     }
 }

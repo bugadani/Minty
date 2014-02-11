@@ -11,6 +11,8 @@ namespace Modules\Templating;
 
 use Miny\Log\Log;
 use Modules\Templating\Compiler\Compiler;
+use Modules\Templating\Compiler\Parser;
+use Modules\Templating\Compiler\Tokenizer;
 use RuntimeException;
 
 class TemplateLoader
@@ -36,9 +38,24 @@ class TemplateLoader
     private $log;
 
     /**
+     * @var bool
+     */
+    private $initialized;
+
+    /**
+     * @var Parser
+     */
+    private $parser;
+
+    /**
+     * @var Tokenizer
+     */
+    private $tokenizer;
+
+    /**
      * @param Environment $environment
-     * @param Compiler $compiler
-     * @param Log|null $log
+     * @param Compiler    $compiler
+     * @param Log|null    $log
      */
     public function __construct(Environment $environment, Compiler $compiler, Log $log = null)
     {
@@ -46,20 +63,23 @@ class TemplateLoader
         $this->options     = $environment->getOptions();
         $this->environment = $environment;
         $this->log         = $log;
+        $this->initialized = false;
     }
 
     protected function log($message)
     {
-        if (isset($this->log)) {
-            $args = array_slice(func_get_args(), 1);
-            $this->log->write(Log::DEBUG, 'TemplateLoader', $message, $args);
+        if (!isset($this->log)) {
+            return;
         }
+        $args = array_slice(func_get_args(), 1);
+        $this->log->write(Log::DEBUG, 'TemplateLoader', $message, $args);
     }
 
     private function getCachedPath($file)
     {
-        $classname = $this->compiler->getClassForTemplate($file, false);
-        return sprintf($this->options['cache_path'], dirname($file) . '/' . $classname);
+        $className = $this->compiler->getClassForTemplate($file, false);
+
+        return sprintf($this->options['cache_path'], dirname($file) . '/' . $className);
     }
 
     private function getPath($file)
@@ -84,21 +104,40 @@ class TemplateLoader
         if (is_file($cached) && !$this->shouldReload($file, $cached)) {
             return;
         }
-        $class    = $this->compiler->getClassForTemplate($template);
+
+        if (!$this->initialized) {
+            $this->initialized = true;
+            $this->parser      = new Parser($this->environment);
+            $this->tokenizer   = new Tokenizer($this->environment);
+        }
+        $class = $this->compiler->getClassForTemplate($template);
         $this->log('Compiling %s into %s', $file, $cached);
         $this->log('Compiled class name is %s', $class);
-        $contents = file_get_contents($file);
-        $compiled = $this->compiler->compile($contents, $class);
-        if (!is_dir(dirname($cached))) {
-            mkdir(dirname($cached), 0777, true);
-        }
-        file_put_contents($cached, $compiled);
+        $this->compileFile($file, $class, $cached);
         if ($this->compiler->extendsTemplate()) {
             $this->load($this->compiler->getExtendedTemplate());
         }
         foreach ($this->compiler->getEmbeddedTemplates() as $template) {
             $this->load($template['file']);
         }
+    }
+
+    /**
+     * @param $file
+     * @param $class
+     * @param $cached
+     */
+    private function compileFile($file, $class, $cached)
+    {
+        $contents = file_get_contents($file);
+        $stream   = $this->tokenizer->tokenize($contents);
+        $node     = $this->parser->parse($stream);
+        $compiled = $this->compiler->compile($node, $class);
+        $cacheDir = dirname($cached);
+        if (!is_dir($cacheDir)) {
+            mkdir($cacheDir, 0777, true);
+        }
+        file_put_contents($cached, $compiled);
     }
 
     /**
@@ -130,6 +169,7 @@ class TemplateLoader
         }
 
         $object->set($this->options['global_variables']);
+
         return $object;
     }
 }
