@@ -12,8 +12,10 @@ namespace Modules\Templating;
 use Modules\Templating\Compiler\Exceptions\CompileException;
 use Modules\Templating\Compiler\FunctionCompiler;
 use Modules\Templating\Compiler\OperatorCollection;
+use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Tag;
 use Modules\Templating\Compiler\TemplateFunction;
+use Modules\Templating\Compiler\Tokenizer;
 use Modules\Templating\Extensions\Core;
 
 class Environment
@@ -26,17 +28,17 @@ class Environment
     /**
      * @var OperatorCollection
      */
-    private $binary_operators;
+    private $binaryOperators;
 
     /**
      * @var OperatorCollection
      */
-    private $unary_prefix_operators;
+    private $unaryPrefixOperators;
 
     /**
      * @var OperatorCollection
      */
-    private $unary_postfix_operators;
+    private $unaryPostfixOperators;
 
     /**
      * @var TemplateFunction[]
@@ -56,21 +58,31 @@ class Environment
     /**
      * @var FunctionCompiler[]
      */
-    private $function_compilers;
+    private $functionCompilers;
+
+    /**
+     * @var Tokenizer
+     */
+    private $tokenizer;
+
+    /**
+     * @var Parser
+     */
+    private $parser;
 
     /**
      * @param array $options
      */
     public function __construct($options)
     {
-        $this->extensions              = array();
-        $this->functions               = array();
-        $this->function_compilers      = array();
-        $this->tags                    = array();
-        $this->binary_operators        = new OperatorCollection();
-        $this->unary_prefix_operators  = new OperatorCollection();
-        $this->unary_postfix_operators = new OperatorCollection();
-        $this->options                 = $options;
+        $this->extensions            = array();
+        $this->functions             = array();
+        $this->functionCompilers     = array();
+        $this->tags                  = array();
+        $this->binaryOperators       = new OperatorCollection();
+        $this->unaryPrefixOperators  = new OperatorCollection();
+        $this->unaryPostfixOperators = new OperatorCollection();
+        $this->options               = $options;
         $this->addExtension(new Core());
     }
 
@@ -101,6 +113,7 @@ class Environment
 
     /**
      * @param string $name
+     *
      * @return Extension
      * @throws CompileException
      */
@@ -109,11 +122,13 @@ class Environment
         if (!isset($this->extensions[$name])) {
             throw new CompileException('Extension not found: ' . $name);
         }
+
         return $this->extensions[$name];
     }
 
     /**
      * @param string $name
+     *
      * @return TemplateFunction
      * @throws CompileException
      */
@@ -122,19 +137,8 @@ class Environment
         if (!isset($this->functions[$name])) {
             throw new CompileException('Function not found: ' . $name);
         }
-        return $this->functions[$name];
-    }
 
-    /**
-     * @param string $class
-     * @return FunctionCompiler
-     */
-    public function getFunctionCompiler($class)
-    {
-        if (!isset($this->function_compilers[$class])) {
-            $this->function_compilers[$class] = new $class;
-        }
-        return $this->function_compilers[$class];
+        return $this->functions[$name];
     }
 
     /**
@@ -147,6 +151,7 @@ class Environment
 
     /**
      * @param string $name
+     *
      * @return bool
      */
     public function hasFunction($name)
@@ -172,6 +177,7 @@ class Environment
                 $ext->registerTags($this);
             }
         }
+
         return $this->tags;
     }
 
@@ -180,12 +186,13 @@ class Environment
      */
     public function getBinaryOperators()
     {
-        if ($this->binary_operators->isEmpty()) {
+        if ($this->binaryOperators->isEmpty()) {
             foreach ($this->extensions as $ext) {
-                $ext->registerBinaryOperators($this->binary_operators);
+                $ext->registerBinaryOperators($this->binaryOperators);
             }
         }
-        return $this->binary_operators;
+
+        return $this->binaryOperators;
     }
 
     /**
@@ -193,12 +200,13 @@ class Environment
      */
     public function getUnaryPrefixOperators()
     {
-        if ($this->unary_prefix_operators->isEmpty()) {
+        if ($this->unaryPrefixOperators->isEmpty()) {
             foreach ($this->extensions as $ext) {
-                $ext->registerUnaryPrefixOperators($this->unary_prefix_operators);
+                $ext->registerUnaryPrefixOperators($this->unaryPrefixOperators);
             }
         }
-        return $this->unary_prefix_operators;
+
+        return $this->unaryPrefixOperators;
     }
 
     /**
@@ -206,12 +214,13 @@ class Environment
      */
     public function getUnaryPostfixOperators()
     {
-        if ($this->unary_postfix_operators->isEmpty()) {
+        if ($this->unaryPostfixOperators->isEmpty()) {
             foreach ($this->extensions as $ext) {
-                $ext->registerUnaryPostfixOperators($this->unary_postfix_operators);
+                $ext->registerUnaryPostfixOperators($this->unaryPostfixOperators);
             }
         }
-        return $this->unary_postfix_operators;
+
+        return $this->unaryPostfixOperators;
     }
 
     /**
@@ -220,8 +229,47 @@ class Environment
     public function getOperatorSymbols()
     {
         return array_merge(
-                $this->binary_operators->getSymbols(), $this->unary_prefix_operators->getSymbols(),
-                $this->unary_postfix_operators->getSymbols()
+            $this->binaryOperators->getSymbols(),
+            $this->unaryPrefixOperators->getSymbols(),
+            $this->unaryPostfixOperators->getSymbols()
         );
+    }
+
+    /**
+     * @param string $class
+     *
+     * @return FunctionCompiler
+     */
+    public function getFunctionCompiler($class)
+    {
+        if (!isset($this->functionCompilers[$class])) {
+            $this->functionCompilers[$class] = new $class;
+        }
+
+        return $this->functionCompilers[$class];
+    }
+
+    /**
+     * @return Tokenizer
+     */
+    public function getTokenizer()
+    {
+        if (!isset($this->tokenizer)) {
+            $this->tokenizer = new Tokenizer($this);
+        }
+
+        return $this->tokenizer;
+    }
+
+    /**
+     * @return Parser
+     */
+    public function getParser()
+    {
+        if (!isset($this->parser)) {
+            $this->parser = new Parser($this);
+        }
+
+        return $this->parser;
     }
 }

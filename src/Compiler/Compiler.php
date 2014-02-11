@@ -35,7 +35,7 @@ class Compiler
     private $initialized;
     private $filters;
     private $tags;
-    private $output_stack;
+    private $outputStack;
 
     public function __construct(Environment $environment)
     {
@@ -149,14 +149,14 @@ class Compiler
 
     public function addOutputStack($output = '')
     {
-        $this->output_stack[] = $this->output;
-        $this->output         = $output;
+        $this->outputStack[] = $this->output;
+        $this->output        = $output;
     }
 
     public function popOutputStack()
     {
         $output       = $this->output;
-        $this->output = array_pop($this->output_stack);
+        $this->output = array_pop($this->outputStack);
 
         return $output;
     }
@@ -296,7 +296,7 @@ class Compiler
     public function compile(Node $node, $class)
     {
         $this->output            = '';
-        $this->output_stack      = array();
+        $this->outputStack       = array();
         $this->template_stack    = array('render');
         $this->templates         = array();
         $this->extended_template = 'Template';
@@ -362,14 +362,10 @@ class Compiler
         return $this->popOutputStack();
     }
 
-    private function compileClass(
-        $class,
-        $compiled,
-        $extended_template,
-        $parent_class = 'BaseTemplate'
-    ) {
+    private function compileClass($class, $body, $extendedTemplate, $parentClass = 'BaseTemplate')
+    {
         $this->addOutputStack();
-        $this->indented('class %s extends %s', $class, $parent_class);
+        $this->indented('class %s extends %s', $class, $parentClass);
         $this->indented('{');
         $this->newline();
         $this->indent();
@@ -377,12 +373,30 @@ class Compiler
             $this->indented('public function getParentTemplate()');
             $this->indented('{');
             $this->indent();
-            $this->indented('return \'%s\';', $extended_template);
+            $this->indented('return \'%s\';', $extendedTemplate);
             $this->outdent();
             $this->indented('}');
             $this->newline();
         } else {
-            $this->addCompiledTemplate('render', $compiled);
+            $this->addCompiledTemplate('render', $body);
+        }
+        $this->compileEmbeddedTemplates();
+        foreach ($this->templates as $name => $template) {
+            $this->addCompiledTemplate($name, $template);
+        }
+
+        $this->outdent();
+        $this->indented('}');
+        $this->newline();
+
+        return $this->popOutputStack();
+    }
+
+    private function compileEmbeddedTemplates()
+    {
+        $embeddedTemplates = $this->getEmbeddedTemplates();
+        if (empty($embeddedTemplates)) {
+            return;
         }
         $this->indented('public function getEmbeddedTemplates()');
         $this->indented('{');
@@ -390,7 +404,7 @@ class Compiler
         $this->indented('return array(');
         $this->indent();
         $first = true;
-        foreach ($this->getEmbeddedTemplates() as $embedded) {
+        foreach ($embeddedTemplates as $embedded) {
             if ($first) {
                 $first = false;
             } else {
@@ -403,13 +417,5 @@ class Compiler
         $this->outdent();
         $this->indented('}');
         $this->newline();
-        foreach ($this->templates as $name => $template) {
-            $this->addCompiledTemplate($name, $template);
-        }
-        $this->outdent();
-        $this->indented('}');
-        $this->newline();
-
-        return $this->popOutputStack();
     }
 }

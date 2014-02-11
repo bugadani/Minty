@@ -11,8 +11,6 @@ namespace Modules\Templating;
 
 use Miny\Log\Log;
 use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Parser;
-use Modules\Templating\Compiler\Tokenizer;
 use RuntimeException;
 
 class TemplateLoader
@@ -38,21 +36,6 @@ class TemplateLoader
     private $log;
 
     /**
-     * @var bool
-     */
-    private $initialized;
-
-    /**
-     * @var Parser
-     */
-    private $parser;
-
-    /**
-     * @var Tokenizer
-     */
-    private $tokenizer;
-
-    /**
      * @param Environment $environment
      * @param Compiler    $compiler
      * @param Log|null    $log
@@ -63,7 +46,6 @@ class TemplateLoader
         $this->options     = $environment->getOptions();
         $this->environment = $environment;
         $this->log         = $log;
-        $this->initialized = false;
     }
 
     protected function log($message)
@@ -105,11 +87,6 @@ class TemplateLoader
             return;
         }
 
-        if (!$this->initialized) {
-            $this->initialized = true;
-            $this->parser      = new Parser($this->environment);
-            $this->tokenizer   = new Tokenizer($this->environment);
-        }
         $class = $this->compiler->getClassForTemplate($template);
         $this->log('Compiling %s into %s', $file, $cached);
         $this->log('Compiled class name is %s', $class);
@@ -130,8 +107,8 @@ class TemplateLoader
     private function compileFile($file, $class, $cached)
     {
         $contents = file_get_contents($file);
-        $stream   = $this->tokenizer->tokenize($contents);
-        $node     = $this->parser->parse($stream);
+        $stream   = $this->environment->getTokenizer()->tokenize($contents);
+        $node     = $this->environment->getParser()->parse($stream);
         $compiled = $this->compiler->compile($node, $class);
         $cacheDir = dirname($cached);
         if (!is_dir($cacheDir)) {
@@ -144,7 +121,7 @@ class TemplateLoader
      * @param $template
      *
      * @return Template
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function load($template)
     {
@@ -158,6 +135,8 @@ class TemplateLoader
             $this->log('Template %s was not found in file %s', $class, $file);
             throw new RuntimeException('Template not found: ' . $template);
         }
+
+        /** @var $object Template */
         $object = new $class($this, $this->environment);
 
         $parent = $object->getParentTemplate();

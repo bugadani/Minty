@@ -59,20 +59,12 @@ abstract class Template
     public function set($variables)
     {
         if (!is_array($variables)) {
-            if (method_exists($variables, 'toArray')) {
-                $variables = $variables->toArray();
-            } else {
+            if (!method_exists($variables, 'toArray')) {
                 throw new InvalidArgumentException('Set expects an array as parameter.');
             }
+            $variables = $variables->toArray();
         }
         $this->variables = array_merge($this->variables, $variables);
-    }
-
-    public function callFilter($filter)
-    {
-        $args = func_get_args();
-        array_shift($args);
-        return $this->environment->getFunction($filter)->callFilter($args);
     }
 
     public function getExtension($name)
@@ -85,6 +77,7 @@ abstract class Template
         if ($function === 'empty') {
             return $this->isEmpty(current($args));
         }
+
         return $this->environment->getFunction($function)->callFunction($args);
     }
 
@@ -116,7 +109,7 @@ abstract class Template
     public function hasProperty($structure, $key)
     {
         if (is_array($structure) || $structure instanceof ArrayAccess) {
-            return(isset($structure[$key]));
+            return (isset($structure[$key]));
         }
         if ($structure instanceof ArrayAccess) {
             if (isset($structure[$key])) {
@@ -131,10 +124,11 @@ abstract class Template
 
     public function hasMethod($object, $method)
     {
-        if (is_object($object)) {
-            return method_exists($object, $method);
+        if (!is_object($object)) {
+            throw new UnexpectedValueException('Variable is not an object.');
         }
-        throw new UnexpectedValueException('Variable is not an object.');
+
+        return method_exists($object, $method);
     }
 
     public function getProperty($structure, $key)
@@ -161,7 +155,8 @@ abstract class Template
     public function isDivisibleBy($data, $num)
     {
         $div = $data / $num;
-        return $div === (int) $div;
+
+        return $div === (int)$div;
     }
 
     public function isIn($needle, $haystack)
@@ -173,7 +168,7 @@ abstract class Template
             $haystack = iterator_to_array($haystack);
         }
         if (is_array($haystack)) {
-            return in_array($haystack);
+            return in_array($needle, $haystack);
         }
         throw new InvalidArgumentException('The in keyword expects an array, a string or a Traversable instance');
     }
@@ -217,6 +212,11 @@ abstract class Template
     public function __isset($key)
     {
         return isset($this->variables[$key]);
+    }
+
+    public function getEmbeddedTemplates()
+    {
+        return array();
     }
 
     abstract public function render();
