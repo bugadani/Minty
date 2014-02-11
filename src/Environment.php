@@ -229,9 +229,9 @@ class Environment
     public function getOperatorSymbols()
     {
         return array_merge(
-            $this->binaryOperators->getSymbols(),
-            $this->unaryPrefixOperators->getSymbols(),
-            $this->unaryPostfixOperators->getSymbols()
+            $this->getBinaryOperators()->getSymbols(),
+            $this->getUnaryPrefixOperators()->getSymbols(),
+            $this->getUnaryPostfixOperators()->getSymbols()
         );
     }
 
