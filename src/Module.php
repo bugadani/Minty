@@ -48,8 +48,11 @@ class Module extends \Miny\Modules\Module
         $autoLoader = $container->get('\\Miny\\AutoLoader');
         $this->setupAutoLoader($autoLoader);
 
-        $options = $this->getConfiguration('options');
-        $container->addConstructorArguments(__NAMESPACE__ . '\\Environment', $options);
+        $module = $this;
+        $container->addAlias(__NAMESPACE__ . '\\Environment', function() use($module) {
+                $options = $this->getConfiguration('options');
+                return new Environment($options);
+            });
         $container->addCallback(
             __NAMESPACE__ . '\\Environment',
             function (Environment $environment, Container $container) {
