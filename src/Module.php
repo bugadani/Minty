@@ -49,7 +49,7 @@ class Module extends \Miny\Modules\Module
         $this->setupAutoLoader($autoLoader);
 
         $options = $this->getConfiguration('options');
-        $container->addConstructorArguments(__NAMESPACE__ . '\\Environment', array($options));
+        $container->addConstructorArguments(__NAMESPACE__ . '\\Environment', $options);
         $container->addCallback(
             __NAMESPACE__ . '\\Environment',
             function (Environment $environment, Container $container) {
