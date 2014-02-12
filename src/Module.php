@@ -23,22 +23,20 @@ class Module extends \Miny\Modules\Module
     public function defaultConfiguration()
     {
         return array(
-            'templating' => array(
-                'options' => array(
-                    'reload'           => false,
-                    'global_variables' => array(),
-                    'cache_namespace'  => 'Application\\Templating\\Cached',
-                    'strict_mode'      => true,
-                    'cache_path'       => 'templates/compiled/%s.php',
-                    'template_path'    => 'templates/%s.tpl',
-                    'autoescape'       => true,
-                    'delimiters'       => array(
-                        'tag'     => array('{', '}'),
-                        'comment' => array('{#', '#}')
-                    )
-                ),
-                'codes'   => array(),
-            )
+            'options' => array(
+                'reload'           => false,
+                'global_variables' => array(),
+                'cache_namespace'  => 'Application\\Templating\\Cached',
+                'strict_mode'      => true,
+                'cache_path'       => 'templates/compiled/%s.php',
+                'template_path'    => 'templates/%s.tpl',
+                'autoescape'       => true,
+                'delimiters'       => array(
+                    'tag'     => array('{', '}'),
+                    'comment' => array('{#', '#}')
+                )
+            ),
+            'codes'   => array()
         );
     }
 
@@ -47,10 +45,11 @@ class Module extends \Miny\Modules\Module
         $container = $app->getContainer();
 
         /** @var $autoLoader AutoLoader */
-        $autoLoader = $container->get('\Miny\AutoLoader');
-        $this->setupAutoloader($autoLoader, $app->getParameterContainer());
+        $autoLoader = $container->get('\\Miny\\AutoLoader');
+        $this->setupAutoLoader($autoLoader);
 
-        $container->addAlias(__NAMESPACE__ . '\\Environment', null, array('@templating:options'));
+        $options = $this->getConfiguration('options');
+        $container->addConstructorArguments(__NAMESPACE__ . '\\Environment', array($options));
         $container->addCallback(
             __NAMESPACE__ . '\\Environment',
             function (Environment $environment, Container $container) {
@@ -98,21 +97,23 @@ class Module extends \Miny\Modules\Module
         );
     }
 
-    private function setupAutoloader(AutoLoader $autoLoader, $options)
+    private function setupAutoLoader(AutoLoader $autoLoader)
     {
-        $cacheDirectoryName = dirname($options['templating']['options']['cache_path']);
+        $cacheDirectoryName = dirname($this->getConfiguration('options:cache_path'));
         if (!is_dir($cacheDirectoryName)) {
             mkdir($cacheDirectoryName);
         }
-        $autoLoader->register('\\' . $options['templating']['options']['cache_namespace'], $cacheDirectoryName);
+        $autoLoader->register(
+            '\\' . $this->getConfiguration('options:cache_namespace'),
+            $cacheDirectoryName
+        );
     }
 
     public function handleResponseCodes(Request $request, Response $response)
     {
         $container  = $this->application->getContainer();
-        $parameters = $this->application->getParameterContainer();
 
-        $handlers = $parameters['templating']['codes'];
+        $handlers = $this->getConfiguration('codes');
         if (!is_array($handlers) || empty($handlers)) {
             return;
         }
@@ -156,14 +157,13 @@ class Module extends \Miny\Modules\Module
     public function handleException(\Exception $e)
     {
         $container  = $this->application->getContainer();
-        $parameters = $this->application->getParameterContainer();
 
-        if (!isset($parameters['templating']['exceptions'])) {
+        if (!$this->hasConfiguration('exceptions')) {
             return;
         }
         /** @var $loader TemplateLoader */
-        $loader = $container->get(__NAMESPACE__ . '\\TemplateLoader');
-        $handlers = $parameters['templating']['exceptions'];
+        $loader   = $container->get(__NAMESPACE__ . '\\TemplateLoader');
+        $handlers = $this->getConfiguration('exceptions');
         if (!is_array($handlers)) {
             $template_name = $handlers;
         } else {
