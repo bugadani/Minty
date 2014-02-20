@@ -11,7 +11,7 @@ namespace Modules\Templating\Extensions;
 
 use Miny\Application\Application;
 use Miny\Application\Dispatcher;
-use Miny\Routing\RouteGenerator;
+use Miny\Router\RouteGenerator;
 use Modules\Templating\Compiler\Functions\MethodFunction;
 use Modules\Templating\Compiler\Functions\SimpleFunction;
 use Modules\Templating\Extension;
