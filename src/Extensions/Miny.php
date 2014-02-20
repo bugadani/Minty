@@ -11,7 +11,7 @@ namespace Modules\Templating\Extensions;
 
 use Miny\Application\Application;
 use Miny\Application\Dispatcher;
-use Miny\Routing\Router;
+use Miny\Routing\RouteGenerator;
 use Modules\Templating\Compiler\Functions\MethodFunction;
 use Modules\Templating\Compiler\Functions\SimpleFunction;
 use Modules\Templating\Extension;
@@ -29,21 +29,24 @@ class Miny extends Extension
     private $dispatcher;
 
     /**
-     * @var Router
+     * @var RouteGenerator
      */
-    private $router;
+    private $routeGenerator;
 
     /**
-     * @param Application $app
-     * @param Dispatcher  $dispatcher
-     * @param Router      $router
+     * @param Application    $app
+     * @param Dispatcher     $dispatcher
+     * @param RouteGenerator $routeGenerator
      */
-    public function __construct(Application $app, Dispatcher $dispatcher, Router $router)
-    {
+    public function __construct(
+        Application $app,
+        Dispatcher $dispatcher,
+        RouteGenerator $routeGenerator
+    ) {
         parent::__construct();
-        $this->application = $app;
-        $this->dispatcher  = $dispatcher;
-        $this->router      = $router;
+        $this->application    = $app;
+        $this->dispatcher     = $dispatcher;
+        $this->routeGenerator = $routeGenerator;
     }
 
     public function getExtensionName()
@@ -66,17 +69,17 @@ class Miny extends Extension
 
     public function routeFunction($route, array $parameters = array())
     {
-        return $this->router->generate($route, $parameters);
+        return $this->routeGenerator->generate($route, $parameters);
     }
 
     public function requestFunction($url, $method = 'GET', array $post = array())
     {
-        $factory = $this->application->getContainer();
+        $container = $this->application->getContainer();
 
-        $main = $factory->get('\\Miny\\HTTP\\Response');
+        $main = $container->get('\\Miny\\HTTP\\Response');
         $main->addContent(ob_get_clean());
 
-        $request  = $factory->get('\\Miny\\HTTP\\Request')->getSubRequest($method, $url, $post);
+        $request  = $container->get('\\Miny\\HTTP\\Request')->getSubRequest($method, $url, $post);
         $response = $this->dispatcher->dispatch($request);
 
         $main->addResponse($response);
