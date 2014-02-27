@@ -66,7 +66,10 @@ class TemplateLoader
 
     private function getPath($file)
     {
-        return sprintf($this->options['template_path'], $file);
+        return sprintf(
+            $this->options['template_path'],
+            $file, $this->options['template_extension']
+        );
     }
 
     private function shouldReload($file, $cached)

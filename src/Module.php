@@ -24,14 +24,15 @@ class Module extends \Miny\Modules\Module
     {
         return array(
             'options' => array(
-                'reload'           => false,
-                'global_variables' => array(),
-                'cache_namespace'  => 'Application\\Templating\\Cached',
-                'strict_mode'      => true,
-                'cache_path'       => 'templates/compiled/%s.php',
-                'template_path'    => 'templates/%s.tpl',
-                'autoescape'       => true,
-                'delimiters'       => array(
+                'reload'             => false,
+                'global_variables'   => array(),
+                'cache_namespace'    => 'Application\\Templating\\Cached',
+                'strict_mode'        => true,
+                'cache_path'         => 'templates/compiled/%s.php',
+                'template_path'      => 'templates/%s.%s',
+                'template_extension' => 'tpl',
+                'autoescape'         => true,
+                'delimiters'         => array(
                     'tag'     => array('{', '}'),
                     'comment' => array('{#', '#}')
                 )
@@ -49,10 +50,12 @@ class Module extends \Miny\Modules\Module
         $this->setupAutoLoader($autoLoader);
 
         $module = $this;
-        $container->addAlias(__NAMESPACE__ . '\\Environment', function() use($module) {
-                $options = $this->getConfiguration('options');
-                return new Environment($options);
-            });
+        $container->addAlias(
+            __NAMESPACE__ . '\\Environment',
+            function () use ($module) {
+                return new Environment($this->getConfiguration('options'));
+            }
+        );
         $container->addCallback(
             __NAMESPACE__ . '\\Environment',
             function (Environment $environment, Container $container) {
@@ -114,7 +117,7 @@ class Module extends \Miny\Modules\Module
 
     public function handleResponseCodes(Request $request, Response $response)
     {
-        $container  = $this->application->getContainer();
+        $container = $this->application->getContainer();
 
         $handlers = $this->getConfiguration('codes');
         if (!is_array($handlers) || empty($handlers)) {
@@ -159,7 +162,7 @@ class Module extends \Miny\Modules\Module
 
     public function handleException(\Exception $e)
     {
-        $container  = $this->application->getContainer();
+        $container = $this->application->getContainer();
 
         if (!$this->hasConfiguration('exceptions')) {
             return;
