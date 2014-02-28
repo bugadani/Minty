@@ -14,6 +14,9 @@ use Modules\Templating\Compiler\Node;
 
 class RootNode extends Node
 {
+    /**
+     * @var Node[]
+     */
     private $children;
 
     public function __construct()

@@ -523,5 +523,6 @@ class Core extends Extension
             }
             return array_diff($data, $without);
         }
+        throw new InvalidArgumentException('Without expects string or array arguments.');
     }
 }

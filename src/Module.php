@@ -64,20 +64,6 @@ class Module extends \Miny\Modules\Module
                 $environment->addExtension($minyExtension);
             }
         );
-
-        $this->ifModule(
-            'Annotation',
-            function () use ($container) {
-                $container->addCallback(
-                    __NAMESPACE__ . '\\ControllerHandler',
-                    function (ControllerHandler $handler, Container $container) {
-                        /** @var $annotation \Modules\Annotation\Annotation */
-                        $annotation = $container->get('\Modules\Annotation\Annotation');
-                        $handler->setAnnotation($annotation);
-                    }
-                );
-            }
-        );
     }
 
     public function eventHandlers()
@@ -86,19 +72,10 @@ class Module extends \Miny\Modules\Module
         /** @var $controllerHandler ControllerHandler */
         $controllerHandler = $container->get(__NAMESPACE__ . '\\ControllerHandler');
 
-        $set_loader = function () use ($container, $controllerHandler) {
-            /** @var $loader TemplateLoader */
-            $loader = $container->get(__NAMESPACE__ . '\\TemplateLoader');
-            $controllerHandler->setTemplateLoader($loader);
-        };
-
         return array(
             'filter_response'      => array($this, 'handleResponseCodes'),
             'uncaught_exception'   => array($this, 'handleException'),
-            'onControllerLoaded'   => array(
-                $set_loader,
-                $controllerHandler
-            ),
+            'onControllerLoaded'   => $controllerHandler,
             'onControllerFinished' => $controllerHandler
         );
     }

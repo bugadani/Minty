@@ -53,6 +53,7 @@ class OutputTag extends Tag
             return $this->isFunctionSafe($env, $node->getFunctionName()->getName());
         } elseif ($node instanceof OperatorNode) {
             if ($node->getOperator() instanceof FilterOperator) {
+                /** @var $filter IdentifierNode|FunctionNode */
                 $filter = $node->getOperand(OperatorNode::OPERAND_RIGHT);
                 if ($filter instanceof IdentifierNode) {
                     $function = $filter->getName();
@@ -71,6 +72,7 @@ class OutputTag extends Tag
                 if ($node->hasOperand(OperatorNode::OPERAND_RIGHT)) {
                     $safe &= $this->isSafe($env, $node->getOperand(OperatorNode::OPERAND_RIGHT));
                 }
+                return $safe;
             }
         }
         return false;

@@ -22,7 +22,8 @@ class TagNode extends Node
     private $data;
 
     /**
-     * @param Tag $tag
+     * @param Tag   $tag
+     * @param array $data
      */
     public function __construct(Tag $tag, array $data = array())
     {

@@ -14,11 +14,19 @@ use Modules\Templating\Compiler\Node;
 
 class FunctionNode extends Node
 {
+    /**
+     * @var IdentifierNode
+     */
     private $function_name;
+
     private $arguments;
+
+    /**
+     * @var Node|null
+     */
     private $object;
 
-    public function __construct(Node $function_name)
+    public function __construct(IdentifierNode $function_name)
     {
         $this->function_name = $function_name;
         $this->arguments     = array();
@@ -30,6 +38,9 @@ class FunctionNode extends Node
         $this->object = $object;
     }
 
+    /**
+     * @return IdentifierNode
+     */
     public function getFunctionName()
     {
         return $this->function_name;

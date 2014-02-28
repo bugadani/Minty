@@ -11,9 +11,6 @@ namespace Modules\Templating\Compiler\Operators;
 
 use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\Exceptions\ParseException;
-use Modules\Templating\Compiler\Functions\CallbackFunction;
-use Modules\Templating\Compiler\Functions\MethodFunction;
-use Modules\Templating\Compiler\Functions\SimpleFunction;
 use Modules\Templating\Compiler\Nodes\FunctionNode;
 use Modules\Templating\Compiler\Nodes\IdentifierNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;

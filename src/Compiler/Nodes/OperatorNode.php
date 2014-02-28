@@ -24,6 +24,10 @@ class OperatorNode extends Node
      * @var Operator
      */
     private $operator;
+
+    /**
+     * @var Node[]
+     */
     private $operands;
 
     public function __construct(Operator $operator)
@@ -42,6 +46,12 @@ class OperatorNode extends Node
         return isset($this->operands[$type]);
     }
 
+    /**
+     * @param $type
+     *
+     * @return Node
+     * @throws SyntaxException
+     */
     public function getOperand($type)
     {
         if (!isset($this->operands[$type])) {

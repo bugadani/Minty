@@ -25,14 +25,15 @@ class Tokenizer
     private $patterns;
     private $in_raw;
     private $punctuation;
+    private $line;
 
     public function __construct(Environment $environment)
     {
-        $blocknames = array();
+        $blockNames = array();
         foreach ($environment->getTags() as $tag) {
             $name = $tag->getTag();
             if ($tag->hasEndingTag()) {
-                $blocknames[] = $name;
+                $blockNames[] = $name;
             }
             $this->tags[$name] = $tag;
         }
@@ -50,7 +51,7 @@ class Tokenizer
             "'(?:\\\\.|[^'\\\\])*'"
         );
 
-        $blocks_pattern  = implode('|', $blocknames);
+        $blocks_pattern  = implode('|', $blockNames);
         $literal_pattern = implode('|', $literals);
 
         $this->patterns = array(
@@ -104,6 +105,7 @@ class Tokenizer
             }
         }
         arsort($operators);
+
         return sprintf('/(%s|[%s ])/i', implode('|', array_keys($operators)), $quote($signs));
     }
 
@@ -202,11 +204,15 @@ class Tokenizer
                 }
 
                 $matches[1][] = array(trim($tag), $offset);
-                $matches[0][] = array($this->delimiters['tag'][0] . $tag . $this->delimiters['tag'][1], $offset);
+                $matches[0][] = array(
+                    $this->delimiters['tag'][0] . $tag . $this->delimiters['tag'][1],
+                    $offset
+                );
                 $tag          = '';
             }
             $tag_just_ended = false;
         }
+
         return $matches;
     }
 
@@ -215,14 +221,18 @@ class Tokenizer
         // We can safely do this because $text contains no tags, thus no strings.
         if (($pos = strpos($text, $this->delimiters['comment'][0])) !== false) {
             $rpos = strrpos($text, $this->delimiters['comment'][1]);
-            $text = substr($text, 0, $pos) . substr($text, $rpos + strlen($this->delimiters['comment'][1]));
+            $text = substr($text, 0, $pos) . substr(
+                    $text,
+                    $rpos + strlen($this->delimiters['comment'][1])
+                );
         }
+
         return $text;
     }
 
     public function tokenize($template)
     {
-        $this->line   = 1;
+        $this->line = 1;
         //init states
         $this->tokens = array();
         $this->in_raw = false;
@@ -262,6 +272,7 @@ class Tokenizer
             throw new SyntaxException($message);
         }
         $this->pushToken(Token::EOF);
+
         return new Stream($this->tokens);
     }
 
@@ -273,10 +284,12 @@ class Tokenizer
             if ($this->in_raw) {
                 if ($type === 'raw') {
                     $this->in_raw = false;
+
                     return true;
                 }
             } else {
                 $this->pushToken(Token::TAG, 'end' . $type);
+
                 return true;
             }
         }
@@ -295,6 +308,11 @@ class Tokenizer
                 $tag_name   = $parts[0];
                 $expression = $parts[1] . $parts[2];
                 break;
+
+            default:
+                $tag_name   = null;
+                $expression = null;
+                break;
         }
 
         if ($tag_name === 'raw') {
@@ -308,6 +326,7 @@ class Tokenizer
             $this->tokenizeExpression($tag);
             $this->pushToken(Token::EXPRESSION_END);
         }
+
         return true;
     }
 
@@ -332,6 +351,7 @@ class Tokenizer
         $this->pushToken(Token::EXPRESSION_START);
         $this->tokenizeExpression($expression);
         $this->pushToken(Token::EXPRESSION_END);
+
         return true;
     }
 

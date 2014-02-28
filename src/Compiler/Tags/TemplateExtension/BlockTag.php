@@ -10,6 +10,7 @@
 namespace Modules\Templating\Compiler\Tags\TemplateExtension;
 
 use Modules\Templating\Compiler\Compiler;
+use Modules\Templating\Compiler\Node;
 use Modules\Templating\Compiler\Nodes\TagNode;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
@@ -32,7 +33,9 @@ class BlockTag extends Tag
     public function compile(Compiler $compiler, array $data)
     {
         $compiler->startTemplate($data['template']);
-        $data['body']->compile($compiler);
+        /** @var $body Node */
+        $body = $data['body'];
+        $body->compile($compiler);
         $template = $compiler->endTemplate();
 
         $compiler->indented('echo $this->%s();', $template);

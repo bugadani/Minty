@@ -31,6 +31,8 @@ class ArrayNode extends Node
         $compiler->add('array(');
         $first = true;
         foreach ($this->data as $item) {
+            /** @var $value Node|null */
+            /** @var $key Node|null */
             list($value, $key) = $item;
             if (!$first) {
                 $compiler->add(', ');

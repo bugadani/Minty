@@ -56,7 +56,7 @@ class IfTag extends Tag
             $compiler
                     ->add(' else {')
                     ->indent()
-                    ->compileNode($branch['body'])
+                    ->compileNode($else['body'])
                     ->outdent()
                     ->indented('}');
         }

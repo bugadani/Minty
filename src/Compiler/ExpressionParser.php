@@ -192,7 +192,7 @@ class ExpressionParser
         //pop sentinel
         array_pop($this->operator_stack);
 
-        // A conditional is marked by '?' (puncturation, not operator) so it breaks the loop above.
+        // A conditional is marked by '?' (punctuation, not operator) so it breaks the loop above.
         $this->parseConditional();
 
         if ($return) {

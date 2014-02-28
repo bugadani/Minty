@@ -9,7 +9,6 @@
 
 namespace Modules\Templating\Compiler;
 
-use InvalidArgumentException;
 use OutOfBoundsException;
 
 abstract class TemplateFunction
@@ -23,8 +22,7 @@ abstract class TemplateFunction
 
     /**
      * @param string $name
-     * @param bool $is_safe
-     * @throws InvalidArgumentException
+     * @param array  $options
      */
     public function __construct($name, array $options = array())
     {

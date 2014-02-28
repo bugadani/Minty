@@ -9,9 +9,6 @@
 
 namespace Modules\Templating\Compiler\Operators;
 
-use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Nodes\OperatorNode;
-
 class ConcatenationOperator extends SimpleBinaryOperator
 {
 
