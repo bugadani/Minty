@@ -68,7 +68,8 @@ class TemplateLoader
     {
         return sprintf(
             $this->options['template_path'],
-            $file, $this->options['template_extension']
+            $file,
+            $this->options['template_extension']
         );
     }
 
@@ -150,7 +151,7 @@ class TemplateLoader
             $this->compileIfNeeded($file);
         }
 
-        $object->set($this->options['global_variables']);
+        $object->set($this->environment->getOption('global_variables'));
 
         return $object;
     }

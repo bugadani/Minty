@@ -75,6 +75,7 @@ class Environment
      */
     public function __construct($options)
     {
+        //debug_print_backtrace();
         $this->extensions            = array();
         $this->functions             = array();
         $this->functionCompilers     = array();
@@ -86,9 +87,19 @@ class Environment
         $this->addExtension(new Core());
     }
 
+    public function addGlobalVariable($name, $value)
+    {
+        $this->options['global_variables'][$name] = $value;
+    }
+
     /**
      * @return array
      */
+    public function getOption($key)
+    {
+        return $this->options[$key];
+    }
+
     public function getOptions()
     {
         return $this->options;

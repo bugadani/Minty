@@ -14,7 +14,6 @@ use Miny\AutoLoader;
 use Miny\Factory\Container;
 use Miny\HTTP\Request;
 use Miny\HTTP\Response;
-use Modules\Templating\Extensions\Miny;
 use UnexpectedValueException;
 
 class Module extends \Miny\Modules\Module
@@ -52,24 +51,18 @@ class Module extends \Miny\Modules\Module
         $module = $this;
         $container->addAlias(
             __NAMESPACE__ . '\\Environment',
-            function () use ($module) {
-                return new Environment($this->getConfiguration('options'));
-            }
-        );
-        $container->addCallback(
-            __NAMESPACE__ . '\\Environment',
-            function (Environment $environment, Container $container) {
-                /** @var $minyExtension Miny */
-                $minyExtension = $container->get(__NAMESPACE__ . '\\Extensions\\Miny');
-                $environment->addExtension($minyExtension);
+            function (Container $container) use ($module) {
+                $env = new Environment($module->getConfiguration('options'));
+                $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Miny'));
+
+                return $env;
             }
         );
     }
 
     public function eventHandlers()
     {
-        $container = $this->application->getContainer();
-        /** @var $controllerHandler ControllerHandler */
+        $container         = $this->application->getContainer();
         $controllerHandler = $container->get(__NAMESPACE__ . '\\ControllerHandler');
 
         return array(
