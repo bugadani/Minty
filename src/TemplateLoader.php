@@ -151,8 +151,13 @@ class TemplateLoader
             $this->compileIfNeeded($file);
         }
 
-        $object->set($this->environment->getOption('global_variables'));
+        $this->setGlobals($object);
 
         return $object;
+    }
+
+    public function setGlobals(Template $template)
+    {
+        $template->set($this->environment->getOption('global_variables'));
     }
 }

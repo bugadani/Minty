@@ -56,6 +56,11 @@ abstract class Template
         return $this->environment;
     }
 
+    public function clean()
+    {
+        $this->variables = array();
+    }
+
     public function set($variables)
     {
         if (!is_array($variables)) {

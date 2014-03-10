@@ -62,6 +62,8 @@ class ListTag extends Tag
                 ->add(');')
                 ->indented('foreach ($list_source as $element) {')
                 ->indent()
+                ->indented('$template->clean();')
+                ->indented('$template->getLoader()->setGlobals($template);')
                 ->indented('$template->set($element);')
                 ->indented('echo $template->render();')
                 ->outdent()
