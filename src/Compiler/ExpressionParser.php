@@ -19,50 +19,76 @@ use Modules\Templating\Compiler\Nodes\IdentifierNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Operators\ConditionalOperator;
 use Modules\Templating\Environment;
+use SplStack;
 
 /**
  * Expression parser is based on the Shunting Yard algorithm by Edsger W. Dijkstra
+ *
  * @link http://www.engr.mun.ca/~theo/Misc/exp_parsing.htm
  */
 class ExpressionParser
 {
     /**
-     * @var Operator[]
+     * @var SplStack
      */
-    private $operator_stack;
+    private $operatorStack;
 
     /**
-     * @var Node[]
+     * @var SplStack
      */
-    private $operand_stack;
+    private $operandStack;
 
     /**
      * @var Stream
      */
     private $stream;
-    private $binary_test;
-    private $unary_postfix_test;
-    private $unary_prefix_test;
-    private $binary_operators;
-    private $unary_prefix_operators;
-    private $unary_postfix_operators;
+
+    /**
+     * @var callable
+     */
+    private $binaryTest;
+
+    /**
+     * @var callable
+     */
+    private $unaryPostfixTest;
+
+    /**
+     * @var callable
+     */
+    private $unaryPrefixTest;
+
+    /**
+     * @var OperatorCollection
+     */
+    private $binaryOperators;
+
+    /**
+     * @var OperatorCollection
+     */
+    private $unaryPrefixOperators;
+
+    /**
+     * @var OperatorCollection
+     */
+    private $unaryPostfixOperators;
 
     public function __construct(Environment $environment)
     {
-        $this->binary_operators        = $environment->getBinaryOperators();
-        $this->unary_prefix_operators  = $environment->getUnaryPrefixOperators();
-        $this->unary_postfix_operators = $environment->getUnaryPostfixOperators();
+        $this->binaryOperators       = $environment->getBinaryOperators();
+        $this->unaryPrefixOperators  = $environment->getUnaryPrefixOperators();
+        $this->unaryPostfixOperators = $environment->getUnaryPostfixOperators();
 
-        $this->binary_test        = array($this->binary_operators, 'isOperator');
-        $this->unary_prefix_test  = array($this->unary_prefix_operators, 'isOperator');
-        $this->unary_postfix_test = array($this->unary_postfix_operators, 'isOperator');
+        $this->binaryTest       = array($this->binaryOperators, 'isOperator');
+        $this->unaryPrefixTest  = array($this->unaryPrefixOperators, 'isOperator');
+        $this->unaryPostfixTest = array($this->unaryPostfixOperators, 'isOperator');
     }
 
     public function parse(Stream $stream)
     {
-        $this->operator_stack = array();
-        $this->operand_stack  = array();
-        $this->stream         = $stream;
+        $this->operatorStack = new SplStack();
+        $this->operandStack  = new SplStack();
+        $this->stream        = $stream;
 
         return $this->parseExpression(true);
     }
@@ -77,37 +103,39 @@ class ExpressionParser
                 $this->stream->expectCurrent(Token::PUNCTUATION, array(',', ')'));
             }
         }
+
         return $arguments;
     }
 
     public function parsePostfixExpression()
     {
         if ($this->stream->nextTokenIf(Token::PUNCTUATION, '(')) {
-            //fn call
-            $operand = array_pop($this->operand_stack);
+            // function call
+            $operand = $this->operandStack->pop();
 
             $node = new FunctionNode($operand);
             $node->addArguments($this->parseArgumentList());
 
-            $this->operand_stack[] = $node;
+            $this->operandStack->push($node);
         } elseif ($this->stream->nextTokenIf(Token::PUNCTUATION, '[')) {
             //array indexing
-            $operand = array_pop($this->operand_stack);
+            $operand = $this->operandStack->pop();
             $index   = $this->parseExpression(true);
 
-            $this->operand_stack[] = new ArrayIndexNode($operand, $index);
+            $this->operandStack->push(new ArrayIndexNode($operand, $index));
         }
-        if ($this->stream->nextTokenIf(Token::OPERATOR, $this->unary_postfix_test)) {
+        // intentional
+        if ($this->stream->nextTokenIf(Token::OPERATOR, $this->unaryPostfixTest)) {
             $token = $this->stream->current();
 
-            $operator = $this->unary_postfix_operators->getOperator($token->getValue());
+            $operator = $this->unaryPostfixOperators->getOperator($token->getValue());
             $this->popOperatorsCompared($operator);
-            $operand  = array_pop($this->operand_stack);
+            $operand = $this->operandStack->pop();
 
             $node = new OperatorNode($operator);
             $node->addOperand(OperatorNode::OPERAND_LEFT, $operand);
 
-            $this->operand_stack[] = $node;
+            $this->operandStack->push($node);
         }
     }
 
@@ -116,12 +144,12 @@ class ExpressionParser
         switch ($token->getType()) {
             case Token::STRING:
             case Token::LITERAL:
-                $this->operand_stack[] = new DataNode($token->getValue());
+                $this->operandStack->push(new DataNode($token->getValue()));
                 break;
 
             case Token::IDENTIFIER:
                 //identifier - handle function calls and array indexing
-                $this->operand_stack[] = new IdentifierNode($token->getValue());
+                $this->operandStack->push(new IdentifierNode($token->getValue()));
                 $this->parsePostfixExpression();
                 break;
         }
@@ -151,7 +179,7 @@ class ExpressionParser
             $this->stream->expectCurrent(Token::PUNCTUATION, array(',', ']'));
         }
         //push array node to operand stack
-        $this->operand_stack[] = $node;
+        $this->operandStack->push($node);
     }
 
     public function parseToken()
@@ -165,12 +193,16 @@ class ExpressionParser
                 $this->parseExpression();
             } elseif ($token->test(Token::PUNCTUATION, '[')) {
                 $this->parseArray();
-            } elseif ($token->test(Token::OPERATOR, $this->unary_prefix_test)) {
+            } elseif ($token->test(Token::OPERATOR, $this->unaryPrefixTest)) {
                 $this->pushUnaryPrefixOperator($token);
                 $return = false;
             } else {
-                $string    = 'Unexpected %s (%s) token found in line %d';
-                $exception = sprintf($string, $token->getTypeString(), $token->getValue(), $token->getLine());
+                $exception = sprintf(
+                    'Unexpected %s (%s) token found in line %d',
+                    $token->getTypeString(),
+                    $token->getValue(),
+                    $token->getLine()
+                );
                 throw new SyntaxException($exception);
             }
         } while (!$return);
@@ -179,24 +211,24 @@ class ExpressionParser
     public function parseExpression($return = false)
     {
         //push sentinel
-        $this->operator_stack[] = null;
+        $this->operatorStack->push(null);
 
         $this->parseToken();
-        while ($this->stream->next()->test(Token::OPERATOR, $this->binary_test)) {
+        while ($this->stream->next()->test(Token::OPERATOR, $this->binaryTest)) {
             $this->pushBinaryOperator($this->stream->current());
             $this->parseToken();
         }
-        while (end($this->operator_stack) !== null) {
+        while ($this->operatorStack->top() !== null) {
             $this->popOperator();
         }
         //pop sentinel
-        array_pop($this->operator_stack);
+        $this->operatorStack->pop();
 
         // A conditional is marked by '?' (punctuation, not operator) so it breaks the loop above.
         $this->parseConditional();
 
         if ($return) {
-            return array_pop($this->operand_stack);
+            return $this->operandStack->pop();
         }
     }
 
@@ -206,7 +238,7 @@ class ExpressionParser
             return;
         }
         $node = new OperatorNode(new ConditionalOperator());
-        $node->addOperand(OperatorNode::OPERAND_LEFT, array_pop($this->operand_stack));
+        $node->addOperand(OperatorNode::OPERAND_LEFT, $this->operandStack->pop());
 
         // Check whether the current expression is a simplified conditional expression (expr1 ?: expr3)
         if (!$this->stream->nextTokenIf(Token::PUNCTUATION, ':')) {
@@ -218,7 +250,7 @@ class ExpressionParser
         $expression_three = $this->parseExpression(true);
         $node->addOperand(OperatorNode::OPERAND_RIGHT, $expression_three);
 
-        $this->operand_stack[] = $node;
+        $this->operandStack->push($node);
     }
 
     public function popOperatorsCompared(Operator $operator)
@@ -230,36 +262,36 @@ class ExpressionParser
 
     public function popOperator()
     {
-        $operator = array_pop($this->operator_stack);
+        $operator = $this->operatorStack->pop();
         $node     = new OperatorNode($operator);
-        $node->addOperand(OperatorNode::OPERAND_RIGHT, array_pop($this->operand_stack));
-        if ($this->binary_operators->exists($operator)) {
-            $node->addOperand(OperatorNode::OPERAND_LEFT, array_pop($this->operand_stack));
+        $node->addOperand(OperatorNode::OPERAND_RIGHT, $this->operandStack->pop());
+        if ($this->binaryOperators->exists($operator)) {
+            $node->addOperand(OperatorNode::OPERAND_LEFT, $this->operandStack->pop());
         }
-        array_push($this->operand_stack, $node);
+        $this->operandStack->push($node);
     }
 
     public function pushBinaryOperator(Token $token)
     {
-        $operator               = $this->binary_operators->getOperator($token->getValue());
+        $operator = $this->binaryOperators->getOperator($token->getValue());
         $this->popOperatorsCompared($operator);
-        $this->operator_stack[] = $operator;
+        $this->operatorStack->push($operator);
     }
 
     public function pushUnaryPrefixOperator(Token $token)
     {
-        $operator               = $this->unary_prefix_operators->getOperator($token->getValue());
+        $operator = $this->unaryPrefixOperators->getOperator($token->getValue());
         $this->popOperatorsCompared($operator);
-        $this->operator_stack[] = $operator;
+        $this->operatorStack->push($operator);
     }
 
     public function compareToStackTop(Operator $operator)
     {
-        $top = end($this->operator_stack);
+        $top = $this->operatorStack->top();
         if ($top === null) {
             return false;
         }
-        if ($this->binary_operators->exists($operator) && $operator === $top) {
+        if ($this->binaryOperators->exists($operator) && $operator === $top) {
             if ($operator->isAssociativity(Operator::LEFT)) {
                 return true;
             } elseif ($operator->isAssociativity(Operator::RIGHT)) {
@@ -273,6 +305,7 @@ class ExpressionParser
                 throw new ParseException($message);
             }
         }
+
         return $top->getPrecedence() >= $operator->getPrecedence();
     }
 }
