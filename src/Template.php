@@ -113,7 +113,7 @@ abstract class Template
 
     public function hasProperty($structure, $key)
     {
-        if (is_array($structure) || $structure instanceof ArrayAccess) {
+        if (is_array($structure)) {
             return (isset($structure[$key]));
         }
         if ($structure instanceof ArrayAccess) {
