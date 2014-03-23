@@ -120,7 +120,7 @@ class Tokenizer
         }
         $pattern        = sprintf('/(%s|["\'])/', implode('|', $pattern_parts));
         $parts          = preg_split($pattern, $template, -1, $flags);
-        $matches        = array();
+        $matches        = array(array(), array());
         $tag_just_ended = false;
         $in_comment     = false;
         $in_tag         = false;
