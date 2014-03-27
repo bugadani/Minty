@@ -138,6 +138,7 @@ class Core extends Extension
             new RangeOperator(9),
             new ExclusiveRangeOperator(9),
         );
+
         return $binary_operators;
     }
 
@@ -151,6 +152,7 @@ class Core extends Extension
             new PlusOperator(13, Operator::RIGHT),
             new NotOperator(12, Operator::RIGHT)
         );
+
         return $operators;
     }
 
@@ -166,6 +168,7 @@ class Core extends Extension
             new PostDecrementOperator(15),
             new PostIncrementOperator(15),
         );
+
         return $operators;
     }
 
@@ -185,6 +188,7 @@ class Core extends Extension
             new OutputTag(),
             new ExtractTag()
         );
+
         return $tags;
     }
 
@@ -243,19 +247,19 @@ class Core extends Extension
 
     public function argumentsFunction(array $args)
     {
-        $arglist = '';
+        $string = '';
         foreach ($args as $name => $value) {
-            $arglist .= ' ' . $name . '="' . $value . '"';
+            $string .= ' ' . $name . '="' . $value . '"';
         }
-        return $arglist;
+
+        return $string;
     }
 
     public function batchFunction($data, $size, $preserve_keys = true, $no_item = null)
     {
         if ($data instanceof Traversable) {
             $data = iterator_to_array($data);
-        }
-        if (!is_array($data)) {
+        } elseif (!is_array($data)) {
             throw new InvalidArgumentException('batch expects an array.');
         }
         $result = array_chunk($data, abs($size), $preserve_keys);
@@ -264,6 +268,7 @@ class Core extends Extension
         }
         $last          = count($result) - 1;
         $result[$last] = array_pad($result[$last], $size, $no_item);
+
         return $result;
     }
 
@@ -274,6 +279,7 @@ class Core extends Extension
             reset($array);
             $element = each($array);
         }
+
         return $element['value'];
     }
 
@@ -292,6 +298,7 @@ class Core extends Extension
         if ($data instanceof Traversable) {
             $data = iterator_to_array($data);
         }
+
         return implode($glue, $data);
     }
 
@@ -314,7 +321,8 @@ class Core extends Extension
     public function linkToFunction($label, $url, array $args = array())
     {
         $args['href'] = $url;
-        return sprintf('<a%s>%s</a>', $this->argumentsFunction($args), $label);
+
+        return '<a' . $this->argumentsFunction($args) . '>' . $label . '</a>';
     }
 
     public function maxFunction()
@@ -326,18 +334,19 @@ class Core extends Extension
                 $max = $value;
             }
         }
+
         return $max;
     }
 
     public function minFunction()
     {
-        $values = func_get_args();
-        $min    = null;
-        foreach ($values as $value) {
+        $min = null;
+        foreach (func_get_args() as $value) {
             if ($value < $min || $min === null) {
                 $min = $value;
             }
         }
+
         return $min;
     }
 
@@ -355,6 +364,7 @@ class Core extends Extension
                 }
             }
         }
+
         return $return;
     }
 
@@ -368,14 +378,13 @@ class Core extends Extension
         }
         if (is_string($data)) {
             $data = str_split($data);
-        }
-        if ($data instanceof Traversable) {
+        } elseif ($data instanceof Traversable) {
             $data = iterator_to_array($data);
+        } else {
+            throw new InvalidArgumentException('Random expects an array, a number or a string');
         }
-        if (is_array($data)) {
-            return $data[array_rand($data)];
-        }
-        throw new InvalidArgumentException('Random expects an array, a number or a string');
+
+        return $data[array_rand($data)];
     }
 
     public function rawFunction($data)
@@ -400,11 +409,11 @@ class Core extends Extension
         }
         if ($data instanceof Traversable) {
             $data = iterator_to_array($data);
+        } elseif (!is_array($data)) {
+            throw new InvalidArgumentException('Reverse expects an array or a string');
         }
-        if (is_array($data)) {
-            return array_reverse($data, $preserve_keys);
-        }
-        throw new InvalidArgumentException('Reverse expects an array or a string');
+
+        return array_reverse($data, $preserve_keys);
     }
 
     public function shuffleFunction($data)
@@ -414,14 +423,12 @@ class Core extends Extension
         }
         if ($data instanceof Traversable) {
             $data = iterator_to_array($data);
+        } elseif (!is_array($data)) {
+            throw new InvalidArgumentException('Shuffle expects an array or a string');
         }
-        if (is_array($data)) {
-            usort($data, function () {
-                return rand() > rand();
-            });
-            return $data;
-        }
-        throw new InvalidArgumentException('Shuffle expects an array or a string');
+        shuffle($data);
+
+        return $data;
     }
 
     public function sliceFunction($data, $start, $length, $preserve_keys = false)
@@ -429,32 +436,33 @@ class Core extends Extension
         if (is_string($data)) {
             if ($length === null) {
                 return substr($data, $start);
-            } else {
-                return substr($data, $start, $length);
             }
+
+            return substr($data, $start, $length);
         }
         if ($data instanceof Traversable) {
             $data = iterator_to_array($data);
-        } if (is_array($data)) {
-            return array_slice($data, $start, $length, $preserve_keys);
+        } elseif (!is_array($data)) {
+            throw new InvalidArgumentException('Slice expects an array or a string');
         }
-        throw new InvalidArgumentException('Slice expects an array or a string');
+
+        return array_slice($data, $start, $length, $preserve_keys);
     }
 
     public function sortFunction($data, $reverse = false)
     {
         if ($data instanceof Traversable) {
             $data = iterator_to_array($data);
+        } elseif (!is_array($data)) {
+            throw new InvalidArgumentException('Sort expects an array');
         }
-        if (is_array($data)) {
-            if ($reverse) {
-                arsort($data);
-            } else {
-                asort($data);
-            }
-            return $data;
+        if ($reverse) {
+            arsort($data);
+        } else {
+            asort($data);
         }
-        throw new InvalidArgumentException('Sort expects an array');
+
+        return $data;
     }
 
     public function spacifyFunction($string, $delimiter = ' ')
@@ -462,6 +470,7 @@ class Core extends Extension
         if (!is_string($string)) {
             throw new InvalidArgumentException('Spacify expects a string.');
         }
+
         return implode($delimiter, str_split($string));
     }
 
@@ -475,6 +484,7 @@ class Core extends Extension
         } elseif ($limit === null) {
             return explode($delimiter, $string);
         }
+
         return explode($delimiter, $string, $limit);
     }
 
@@ -484,6 +494,7 @@ class Core extends Extension
             $string = $this->firstFunction($string, $length);
             $string .= $ellipsis;
         }
+
         return $string;
     }
 
@@ -498,6 +509,7 @@ class Core extends Extension
         if ($raw) {
             return rawurlencode($data);
         }
+
         return urlencode($data);
     }
 
@@ -505,27 +517,27 @@ class Core extends Extension
     {
         if (is_string($data)) {
             if (!is_string($without) && !is_array($without)) {
-                if ($without instanceof Traversable) {
-                    $without = iterator_to_array($without);
-                } else {
+                if (!$without instanceof Traversable) {
                     throw new InvalidArgumentException('Without expects string or array arguments.');
                 }
+                $without = iterator_to_array($without);
             }
+
             return str_replace($without, '', $data);
         }
         if ($data instanceof Traversable) {
             $data = iterator_to_array($data);
+        } elseif (!is_array($data)) {
+            throw new InvalidArgumentException('Without expects string or array arguments.');
         }
-        if (is_array($data)) {
-            if (!is_array($without)) {
-                if ($without instanceof Traversable) {
-                    $without = iterator_to_array($without);
-                } else {
-                    $without = array($without);
-                }
+        if (!is_array($without)) {
+            if ($without instanceof Traversable) {
+                $without = iterator_to_array($without);
+            } else {
+                $without = array($without);
             }
-            return array_diff($data, $without);
         }
-        throw new InvalidArgumentException('Without expects string or array arguments.');
+
+        return array_diff($data, $without);
     }
 }
