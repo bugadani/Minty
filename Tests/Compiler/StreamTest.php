@@ -36,4 +36,13 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($tokens[3], $stream->nextTokenIf(Token::IDENTIFIER, 'd'));
         $this->assertFalse($stream->nextTokenIf(Token::EOF));
     }
+
+    /**
+     * @expectedException \Modules\Templating\Compiler\Exceptions\SyntaxException
+     */
+    public function testThatFailedExpectationThrowsException()
+    {
+        $stream = new Stream(array(new Token(Token::EOF)));
+        $stream->expect(Token::IDENTIFIER);
+    }
 }
