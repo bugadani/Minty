@@ -12,12 +12,13 @@ namespace Modules\Templating;
 use Closure;
 use Miny\Controller\Controller;
 use Modules\Annotation\Annotation;
+use Modules\Annotation\Comment;
 
 class ControllerHandler
 {
     private $templateLoader;
-    private $layoutMap;
-    private $assignedVariables;
+    private $layoutMap = array();
+    private $assignedVariables = array();
     private $currentLayout;
     private $annotation;
 
@@ -31,12 +32,11 @@ class ControllerHandler
     {
         if ($controller instanceof iTemplatingController) {
             $this->layoutMap = $controller->initLayouts();
-        } else {
-            $this->layoutMap = array();
         }
-        $this->assignedVariables = array();
-        // Add templating related methods
-        $controller->addMethods($this, array('assign', 'layout'));
+        if ($controller instanceof Controller) {
+            // Add templating related methods
+            $controller->addMethods($this, array('assign', 'layout'));
+        }
     }
 
     public function onControllerFinished($controller, $action, $controllerReturnValue)
@@ -45,20 +45,7 @@ class ControllerHandler
             return;
         }
         if (!isset($this->currentLayout)) {
-            if (isset($this->layoutMap[$action])) {
-                $this->currentLayout = $this->layoutMap[$action];
-            } elseif (isset($this->annotation)) {
-                if ($controller instanceof Closure) {
-                    $comment = $this->annotation->readFunction($controller);
-                } else {
-                    $comment = $this->annotation->readMethod($controller, $action . 'Action');
-                }
-                if ($comment->has('template')) {
-                    $this->currentLayout = $comment->get('template');
-                } else {
-                    return;
-                }
-            } else {
+            if (!$this->determineCurrentLayout($controller, $action)) {
                 return;
             }
         }
@@ -85,9 +72,44 @@ class ControllerHandler
      */
     protected function shouldNotRenderTemplate($controller, $controllerReturnValue)
     {
-        if($controller instanceof Controller && $controller->getHeaders()->has('location')) {
+        if ($controller instanceof Controller && $controller->getHeaders()->has('location')) {
             return true;
         }
+
         return $controllerReturnValue === false;
+    }
+
+    private function determineCurrentLayout($controller, $action)
+    {
+        if (isset($this->layoutMap[$action])) {
+            $this->currentLayout = $this->layoutMap[$action];
+
+            return true;
+        }
+        if (isset($this->annotation)) {
+            $comment = $this->getControllerActionAnnotations($controller, $action);
+            if ($comment->has('template')) {
+                $this->currentLayout = $comment->get('template');
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param $controller
+     * @param $action
+     *
+     * @return Comment
+     */
+    private function getControllerActionAnnotations($controller, $action)
+    {
+        if ($controller instanceof Closure) {
+            return $this->annotation->readFunction($controller);
+        } else {
+            return $this->annotation->readMethod($controller, $action . 'Action');
+        }
     }
 }

@@ -75,6 +75,9 @@ class TemplateLoader
 
     private function shouldReload($file, $cached)
     {
+        if(!is_file($cached)) {
+            return true;
+        }
         return $this->options['reload'] && (filemtime($file) > filemtime($cached));
     }
 
@@ -87,7 +90,7 @@ class TemplateLoader
             $this->log('File not found: ' . $file);
             throw new RuntimeException('Template file not found: ' . $file);
         }
-        if (is_file($cached) && !$this->shouldReload($file, $cached)) {
+        if (!$this->shouldReload($file, $cached)) {
             return;
         }
 

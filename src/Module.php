@@ -96,10 +96,10 @@ class Module extends \Miny\Modules\Module
         $response_code = $response->getCode();
         foreach ($handlers as $key => $handler) {
             if (!is_array($handler)) {
-                $template_name = $handler;
                 if (!$response->isCode($key)) {
                     continue;
                 }
+                $template_name = $handler;
             } else {
                 if (!isset($handler['codes'])) {
                     if (!isset($handler['code'])) {
@@ -149,15 +149,12 @@ class Module extends \Miny\Modules\Module
                     break;
                 }
             }
+            if (!isset($template_name)) {
+                return;
+            }
         }
-        if (isset($template_name)) {
-            $template = $loader->load($template_name);
-            $template->set(
-                array(
-                    'exception' => $e
-                )
-            );
-            $template->render();
-        }
+        $template = $loader->load($template_name);
+        $template->set(array('exception' => $e));
+        $template->render();
     }
 }

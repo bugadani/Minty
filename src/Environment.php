@@ -93,7 +93,9 @@ class Environment
     }
 
     /**
-     * @return array
+     * @param $key
+     *
+     * @return mixed
      */
     public function getOption($key)
     {
