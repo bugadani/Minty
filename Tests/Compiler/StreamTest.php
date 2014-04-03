@@ -17,4 +17,23 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $stream->prev());
         $this->assertEquals(1, $stream->prev());
     }
+
+    public function testTestFunctions()
+    {
+        $tokens = array(
+            new Token(Token::IDENTIFIER, 'a'),
+            new Token(Token::IDENTIFIER, 'b'),
+            new Token(Token::IDENTIFIER, 'c'),
+            new Token(Token::IDENTIFIER, 'd'),
+            new Token(Token::IDENTIFIER, 'e'),
+        );
+        $stream = new Stream($tokens);
+
+        $this->assertSame($tokens[0], $stream->expect(Token::IDENTIFIER, 'a'));
+        $this->assertSame($tokens[1], $stream->expect(Token::IDENTIFIER, 'b'));
+        $this->assertSame($tokens[2], $stream->expect(Token::IDENTIFIER, 'c'));
+        $this->assertSame($tokens[2], $stream->expectCurrent(Token::IDENTIFIER, 'c'));
+        $this->assertSame($tokens[3], $stream->nextTokenIf(Token::IDENTIFIER, 'd'));
+        $this->assertFalse($stream->nextTokenIf(Token::EOF));
+    }
 }
