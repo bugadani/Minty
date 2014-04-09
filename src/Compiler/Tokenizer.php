@@ -136,11 +136,11 @@ class Tokenizer
                         $in_comment = true;
                     }
                     break;
+
                 case $this->delimiters['comment'][1]:
-                    if ($in_comment) {
-                        $in_comment = false;
-                    }
+                    $in_comment = false;
                     break;
+
                 case $this->delimiters['tag'][0]:
                     if (!$in_comment) {
                         if ($in_raw) {
@@ -153,15 +153,15 @@ class Tokenizer
                         } elseif (!$in_string) {
                             if ($in_tag) {
                                 $tag = '';
-                            } else {
-                                $in_tag = true;
                             }
+                            $in_tag = true;
                             $offset = $off;
                         } else {
                             $tag .= $part;
                         }
                     }
                     break;
+
                 case $this->delimiters['tag'][1]:
                     if ($in_tag) {
                         if (!$in_string) {
@@ -172,26 +172,22 @@ class Tokenizer
                         }
                     }
                     break;
+
                 case '"':
                 case "'":
                     if ($in_tag) {
                         if (!$in_string) {
                             $in_string = $part;
                         } elseif ($part == $in_string) {
-                            if (substr($tag, -1, 1) === '\\') {
-                                $i = 2;
-                                while (substr($tag, -$i, 1) !== '\\') {
-                                    $i++;
-                                }
-                                // odd number of backslashes means that the delimiter is escaped
-                                $in_string = $i % 2 == 1;
-                            } else {
+                            // odd number of backslashes means that the delimiter is escaped
+                            if (strspn(strrev($tag), '\\') % 2 == 0) {
                                 $in_string = false;
                             }
                         }
                         $tag .= $part;
                     }
                     break;
+
                 default:
                     if ($in_tag) {
                         $tag .= $part;
@@ -199,6 +195,7 @@ class Tokenizer
                     break;
             }
             if ($tag_just_ended) {
+                $tag_just_ended = false;
                 if (trim($tag) == 'raw') {
                     $in_raw = true;
                 }
@@ -208,9 +205,9 @@ class Tokenizer
                     $this->delimiters['tag'][0] . $tag . $this->delimiters['tag'][1],
                     $offset
                 );
-                $tag          = '';
+
+                $tag = '';
             }
-            $tag_just_ended = false;
         }
 
         return $matches;
@@ -220,11 +217,9 @@ class Tokenizer
     {
         // We can safely do this because $text contains no tags, thus no strings.
         if (($pos = strpos($text, $this->delimiters['comment'][0])) !== false) {
-            $rpos = strrpos($text, $this->delimiters['comment'][1]);
-            $text = substr($text, 0, $pos) . substr(
-                    $text,
-                    $rpos + strlen($this->delimiters['comment'][1])
-                );
+            $rpos     = strrpos($text, $this->delimiters['comment'][1]);
+            $resumeAt = $rpos + strlen($this->delimiters['comment'][1]);
+            $text     = substr($text, 0, $pos) . substr($text, $resumeAt);
         }
 
         return $text;
@@ -247,7 +242,7 @@ class Tokenizer
 
             $text_lines = substr_count($text, "\n");
 
-            $this->pushToken(Token::TEXT, $this->stripComments($text));
+            $this->pushToken(Token::TEXT, $text);
 
             $cursor = $tag_position;
             $this->line += $text_lines;
@@ -256,7 +251,7 @@ class Tokenizer
 
             if (!$this->processAssignment($tag_expr)) {
                 if (!$this->processTag($tag_expr)) {
-                    $this->pushToken(Token::TEXT, $this->stripComments($tag_expr));
+                    $this->pushToken(Token::TEXT, $tag_expr);
                 }
             }
             $cursor += strlen($tag);
@@ -265,7 +260,7 @@ class Tokenizer
 
         if ($cursor < strlen($template)) {
             $text = substr($template, $cursor);
-            $this->pushToken(Token::TEXT, $this->stripComments($text));
+            $this->pushToken(Token::TEXT, $text);
         }
         if ($this->in_raw) {
             $message = sprintf('Unterminated raw block found in line %d', $this->line);
@@ -416,6 +411,7 @@ class Tokenizer
     public function pushToken($type, $value = null)
     {
         if ($type === Token::TEXT) {
+            $value = $this->stripComments($value);
             if ($value === '') {
                 return;
             }

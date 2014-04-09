@@ -26,12 +26,12 @@ class Parser
     /**
      * @var ExpressionParser
      */
-    private $expression_parser;
+    private $expressionParser;
 
     public function __construct(Environment $environment)
     {
-        $this->expression_parser = new ExpressionParser($environment);
-        $this->tags              = $environment->getTags();
+        $this->expressionParser = new ExpressionParser($environment);
+        $this->tags             = $environment->getTags();
     }
 
     public function parseToken(Stream $stream)
@@ -49,38 +49,31 @@ class Parser
                     throw new ParseException($message);
                 }
                 $stream->next();
-                $parser = $this->tags[$tag];
 
-                return $parser->parse($this, $stream);
+                return $this->tags[$tag]->parse($this, $stream);
 
             case Token::EXPRESSION_START:
-                $parser = $this->tags['output'];
-
-                return $parser->parse($this, $stream);
+                return $this->tags['output']->parse($this, $stream);
 
             default:
-                $pattern = 'Unexpected %s (%s) token found in line %d';
-                $exception = sprintf(
-                    $pattern,
+                throw new SyntaxException(sprintf(
+                    'Unexpected %s (%s) token found in line %d',
                     $token->getTypeString(),
                     $token->getValue(),
                     $token->getLine()
-                );
-                throw new SyntaxException($exception);
+                ));
         }
     }
 
     public function parse(Stream $stream, Closure $end_condition = null)
     {
+        $end_condition = $end_condition ? : function (Stream $stream) {
+            return $stream->next()->test(Token::EOF);
+        };
+
         $root = new RootNode();
-        if ($end_condition === null) {
-            $end_condition = function (Stream $stream) {
-                return $stream->next()->test(Token::EOF);
-            };
-        }
         while (!$end_condition($stream)) {
-            $node = $this->parseToken($stream);
-            $root->addChild($node);
+            $root->addChild($this->parseToken($stream));
         }
 
         return $root;
@@ -88,6 +81,6 @@ class Parser
 
     public function parseExpression(Stream $stream)
     {
-        return $this->expression_parser->parse($stream);
+        return $this->expressionParser->parse($stream);
     }
 }
