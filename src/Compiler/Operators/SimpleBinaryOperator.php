@@ -19,11 +19,11 @@ abstract class SimpleBinaryOperator extends Operator
     public function compile(Compiler $compiler, OperatorNode $node)
     {
         $compiler
-                ->add('(')
-                ->compileNode($node->getOperand(OperatorNode::OPERAND_LEFT))
-                ->add($this->compileOperator())
-                ->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT))
-                ->add(')');
+            ->add('(')
+            ->compileNode($node->getOperand(OperatorNode::OPERAND_LEFT))
+            ->add($this->compileOperator())
+            ->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT))
+            ->add(')');
     }
 
     abstract protected function compileOperator();

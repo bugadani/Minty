@@ -18,7 +18,7 @@ class SimpleFunction extends TemplateFunction
     public function __construct($name, $function = null, array $options = array())
     {
         parent::__construct($name, $options);
-        $this->function_name = $function ?: $name;
+        $this->function_name = $function ? : $name;
     }
 
     public function getFunction()

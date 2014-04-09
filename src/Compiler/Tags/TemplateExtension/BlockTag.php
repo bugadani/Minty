@@ -46,7 +46,7 @@ class BlockTag extends Tag
         $name = $stream->expect(Token::IDENTIFIER)->getValue();
         $stream->expect(Token::EXPRESSION_END);
 
-        $end = function(Stream $stream) {
+        $end = function (Stream $stream) {
             return $stream->next()->test(Token::TAG, 'endblock');
         };
 
@@ -54,6 +54,7 @@ class BlockTag extends Tag
             'template' => $name,
             'body'     => $parser->parse($stream, $end)
         );
+
         return new TagNode($this, $data);
     }
 }

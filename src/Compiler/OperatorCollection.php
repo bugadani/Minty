@@ -17,7 +17,7 @@ class OperatorCollection
     public function __construct()
     {
         $this->operators = array();
-        $this->empty = true;
+        $this->empty     = true;
     }
 
     public function isEmpty()
@@ -33,7 +33,7 @@ class OperatorCollection
     public function addOperator(Operator $operator)
     {
         $this->empty = false;
-        $symbol = $operator->operators();
+        $symbol      = $operator->operators();
         if (is_array($symbol)) {
             foreach ($symbol as $op_symbol) {
                 $this->operators[$op_symbol] = $operator;

@@ -22,14 +22,14 @@ class FunctionCompiler
             $compiler->add($function->getFunction());
         } elseif ($function instanceof MethodFunction) {
             $compiler
-                    ->add('$this->getExtension(')
-                    ->add($compiler->string($function->getExtensionName()))
-                    ->add(')->')
-                    ->add($function->getMethod());
+                ->add('$this->getExtension(')
+                ->add($compiler->string($function->getExtensionName()))
+                ->add(')->')
+                ->add($function->getMethod());
         } elseif ($function instanceof CallbackFunction) {
             $compiler
-                    ->add('$this->')
-                    ->add($function->getFunctionName());
+                ->add('$this->')
+                ->add($function->getFunctionName());
         }
         $compiler->compileArgumentList($arguments);
     }

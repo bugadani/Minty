@@ -34,17 +34,20 @@ class EmbedTag extends Tag
         $embedded = $compiler->addEmbedded($data['template'], $data['body']);
 
         $compiler
-                ->indented('$embedded = new %s($this->getLoader(), $this->getEnvironment());', $embedded)
-                ->indented('$embedded->set(')
-                ->compileData($data['arguments'])
-                ->add(');');
+            ->indented(
+                '$embedded = new %s($this->getLoader(), $this->getEnvironment());',
+                $embedded
+            )
+            ->indented('$embedded->set(')
+            ->compileData($data['arguments'])
+            ->add(');');
 
         $compiler->indented('$embedded->render();');
     }
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $end = function(Stream $stream) {
+        $end  = function (Stream $stream) {
             return $stream->next()->test(Token::TAG, 'endembed');
         };
         $name = $stream->expect(Token::STRING)->getValue();

@@ -119,7 +119,7 @@ class Module extends \Miny\Modules\Module
             }
             break;
         }
-        if(!isset($template_name)) {
+        if (!isset($template_name)) {
             return;
         }
 

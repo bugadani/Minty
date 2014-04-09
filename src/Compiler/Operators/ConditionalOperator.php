@@ -30,18 +30,18 @@ class ConditionalOperator extends Operator
     public function compile(Compiler $compiler, OperatorNode $node)
     {
         $compiler
-                ->add('((')
-                ->compileNode($node->getOperand(OperatorNode::OPERAND_LEFT))
-                ->add(') ?');
+            ->add('((')
+            ->compileNode($node->getOperand(OperatorNode::OPERAND_LEFT))
+            ->add(') ?');
         if ($node->hasOperand(2)) {
             $compiler
-                    ->add(' (')
-                    ->compileNode($node->getOperand(OperatorNode::OPERAND_MIDDLE))
-                    ->add(') ');
+                ->add(' (')
+                ->compileNode($node->getOperand(OperatorNode::OPERAND_MIDDLE))
+                ->add(') ');
         }
         $compiler
-                ->add(': (')
-                ->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT))
-                ->add('))');
+            ->add(': (')
+            ->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT))
+            ->add('))');
     }
 }

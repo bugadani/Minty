@@ -32,6 +32,7 @@ class ParentTag extends Tag
     public function parse(Parser $parser, Stream $stream)
     {
         $stream->prev();
+
         return new TagNode($this);
     }
 

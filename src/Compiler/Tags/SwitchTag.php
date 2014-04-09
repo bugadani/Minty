@@ -33,36 +33,37 @@ class SwitchTag extends Tag
     public function compile(Compiler $compiler, array $array)
     {
         $compiler
-                ->indented('switch(')
-                ->compileNode($array['tested'])
-                ->add(') {')
-                ->indent();
+            ->indented('switch(')
+            ->compileNode($array['tested'])
+            ->add(') {')
+            ->indent();
         foreach ($array['branches'] as $branch) {
             if ($branch['condition'] === null) {
                 $compiler->indented('default:');
             } else {
                 $compiler
-                        ->indented('case ')
-                        ->compileNode($branch['condition'])
-                        ->add(':');
+                    ->indented('case ')
+                    ->compileNode($branch['condition'])
+                    ->add(':');
             }
             $compiler->indent()
-                    ->compileNode($branch['body'])
-                    ->indented('break;')
-                    ->outdent();
+                ->compileNode($branch['body'])
+                ->indented('break;')
+                ->outdent();
         }
         $compiler
-                ->outdent()
-                ->indented('}');
+            ->outdent()
+            ->indented('}');
     }
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $branch = function(Stream $stream) {
+        $branch = function (Stream $stream) {
             $token = $stream->next();
             if ($token->test(Token::EXPRESSION_START)) {
                 return $stream->nextTokenIf(Token::IDENTIFIER, array('else', 'case'));
             }
+
             return $token->test(Token::TAG, 'endswitch');
         };
 
@@ -92,6 +93,7 @@ class SwitchTag extends Tag
             'tested'   => $tested,
             'branches' => $branches
         );
+
         return new TagNode($this, $data);
     }
 }

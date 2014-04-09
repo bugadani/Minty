@@ -26,7 +26,7 @@ class Token
     const TAG              = 10;
     const EOF              = 11;
 
-    private static $strings    = array(
+    private static $strings = array(
         self::EXPRESSION_START => 'EXPRESSION START',
         self::EXPRESSION_END   => 'EXPRESSION END',
         self::BLOCK_START      => 'BLOCK START',
@@ -74,6 +74,7 @@ class Token
                 }
             }
         }
+
         return $this->value === $value;
     }
 
@@ -92,6 +93,7 @@ class Token
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -131,6 +133,7 @@ class Token
         if (isset(self::$strings[$this->type])) {
             return self::$strings[$this->type];
         }
+
         return sprintf('UNKNOWN %s', $this->type);
     }
 }

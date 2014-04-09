@@ -34,6 +34,7 @@ class OutputTag extends Tag
     {
         $data               = array();
         $data['expression'] = $parser->parseExpression($stream);
+
         return new TagNode($this, $data);
     }
 
@@ -42,6 +43,7 @@ class OutputTag extends Tag
         if (!$env->hasFunction($function)) {
             return true;
         }
+
         return $env->getFunction($function)->isSafe();
     }
 
@@ -60,6 +62,7 @@ class OutputTag extends Tag
                 } else {
                     $function = $filter->getFunctionName()->getName();
                 }
+
                 return $this->isFunctionSafe($env, $function);
             } else {
                 $safe = true;
@@ -72,9 +75,11 @@ class OutputTag extends Tag
                 if ($node->hasOperand(OperatorNode::OPERAND_RIGHT)) {
                     $safe &= $this->isSafe($env, $node->getOperand(OperatorNode::OPERAND_RIGHT));
                 }
+
                 return $safe;
             }
         }
+
         return false;
     }
 
@@ -89,6 +94,7 @@ class OutputTag extends Tag
         }
         $return = new FunctionNode(new IdentifierNode('filter'));
         $return->addArgument($node);
+
         return $return;
     }
 
@@ -96,8 +102,8 @@ class OutputTag extends Tag
     {
         $expression = $this->ensureSafe($compiler->getEnvironment(), $data['expression']);
         $compiler
-                ->indented('echo ')
-                ->compileNode($expression)
-                ->add(';');
+            ->indented('echo ')
+            ->compileNode($expression)
+            ->add(';');
     }
 }

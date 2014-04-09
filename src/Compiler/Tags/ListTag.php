@@ -45,30 +45,31 @@ class ListTag extends Tag
         $data               = array();
         $data['template']   = $stream->next()->getValue();
         $data['expression'] = $parser->parseExpression($stream);
+
         return new TagNode($this, $data);
     }
 
     public function compile(Compiler $compiler, array $data)
     {
         $compiler
-                ->indented('$list_source = ')
-                ->compileNode($data['expression'])
-                ->add(';');
+            ->indented('$list_source = ')
+            ->compileNode($data['expression'])
+            ->add(';');
         $compiler
-                ->indented('if(is_array($list_source) || $list_source instanceof \Traversable) {')
-                ->indent()
-                ->indented('$template = $this->getLoader()->load(')
-                ->add($compiler->string($data['template']))
-                ->add(');')
-                ->indented('foreach ($list_source as $element) {')
-                ->indent()
-                ->indented('$template->clean();')
-                ->indented('$template->getLoader()->setGlobals($template);')
-                ->indented('$template->set($element);')
-                ->indented('echo $template->render();')
-                ->outdent()
-                ->indented('}')
-                ->outdent()
-                ->indented('}');
+            ->indented('if(is_array($list_source) || $list_source instanceof \Traversable) {')
+            ->indent()
+            ->indented('$template = $this->getLoader()->load(')
+            ->add($compiler->string($data['template']))
+            ->add(');')
+            ->indented('foreach ($list_source as $element) {')
+            ->indent()
+            ->indented('$template->clean();')
+            ->indented('$template->getLoader()->setGlobals($template);')
+            ->indented('$template->set($element);')
+            ->indented('echo $template->render();')
+            ->outdent()
+            ->indented('}')
+            ->outdent()
+            ->indented('}');
     }
 }

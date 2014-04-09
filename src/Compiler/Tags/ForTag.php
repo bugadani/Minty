@@ -53,49 +53,50 @@ class ForTag extends Tag
         $compiler->indent();
         //TODO
         $compiler
-                ->outdent()
-                ->indented('}')
-                ->indented('$temp = ')
-                ->compileNode($data['source'])
-                ->add(';');
+            ->outdent()
+            ->indented('}')
+            ->indented('$temp = ')
+            ->compileNode($data['source'])
+            ->add(';');
         if (isset($data['else'])) {
             $compiler
-                    ->indented('if(empty($temp)) {')
-                    ->indent()
-                    ->compileNode($data['else'])
-                    ->outdent()
-                    ->indented('} else {')
-                    ->indent();
+                ->indented('if(empty($temp)) {')
+                ->indent()
+                ->compileNode($data['else'])
+                ->outdent()
+                ->indented('} else {')
+                ->indent();
         }
         $compiler->indented('foreach($temp as ');
         if ($data['loop_key'] !== null) {
             $compiler
-                    ->add('$this->' . $data['loop_key'])
-                    ->add(' => ');
+                ->add('$this->' . $data['loop_key'])
+                ->add(' => ');
         }
         $compiler->add('$this->' . $data['loop_variable'])
-                ->add(') {')
-                ->indent()
-                ->compileNode($data['loop'])
-                ->outdent()
-                ->indented('}');
+            ->add(') {')
+            ->indent()
+            ->compileNode($data['loop'])
+            ->outdent()
+            ->indented('}');
         if (isset($data['else'])) {
             $compiler
-                    ->outdent()
-                    ->indented('}');
+                ->outdent()
+                ->indented('}');
         }
     }
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $else = function(Stream $stream) {
+        $else = function (Stream $stream) {
             $token = $stream->next();
             if ($token->test(Token::EXPRESSION_START)) {
                 return $stream->nextTokenIf(Token::IDENTIFIER, 'else');
             }
+
             return $token->test(Token::TAG, 'endfor');
         };
-        $end = function(Stream $stream) {
+        $end  = function (Stream $stream) {
             return $stream->next()->test(Token::TAG, 'endfor');
         };
 
@@ -120,6 +121,7 @@ class ForTag extends Tag
 
             $data['else'] = $parser->parse($stream, $end);
         }
+
         return new TagNode($this, $data);
     }
 }

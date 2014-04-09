@@ -39,6 +39,7 @@ abstract class TemplateFunction
         if (!isset($this->options[$key])) {
             throw new OutOfBoundsException(sprintf('Option %s is not set.', $key));
         }
+
         return $this->options[$key];
     }
 

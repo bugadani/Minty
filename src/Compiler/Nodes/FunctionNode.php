@@ -82,18 +82,18 @@ class FunctionNode extends Node
         if ($this->object !== null) {
             $this->object->compile($compiler);
             $compiler
-                    ->add('->')
-                    ->add($func_name);
+                ->add('->')
+                ->add($func_name);
             $compiler->compileArgumentList($this->arguments);
         } elseif ($environment->hasFunction($func_name)) {
             $function = $environment->getFunction($func_name);
             $environment
-                    ->getFunctionCompiler($function->getOption('compiler'))
-                    ->compile($compiler, $function, $this->arguments);
+                ->getFunctionCompiler($function->getOption('compiler'))
+                ->compile($compiler, $function, $this->arguments);
         } else {
             $compiler
-                    ->add('$this->')
-                    ->add($func_name);
+                ->add('$this->')
+                ->add($func_name);
             $compiler->compileArgumentList($this->arguments);
         }
     }

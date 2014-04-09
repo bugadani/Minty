@@ -26,11 +26,11 @@ class DefaultCompiler extends FunctionCompiler
             throw new InvalidArgumentException('Default function needs two arguments.');
         }
         $compiler->add('(isset(')
-                ->compileNode($arguments[0])
-                ->add(') ? ')
-                ->compileNode($arguments[0])
-                ->add(' : ')
-                ->compileNode($arguments[1])
-                ->add(')');
+            ->compileNode($arguments[0])
+            ->add(') ? ')
+            ->compileNode($arguments[0])
+            ->add(' : ')
+            ->compileNode($arguments[1])
+            ->add(')');
     }
 }

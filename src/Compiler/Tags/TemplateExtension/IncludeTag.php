@@ -49,13 +49,13 @@ class IncludeTag extends Tag
     public function compile(Compiler $compiler, array $data)
     {
         $compiler
-                ->indented('$template = $this->getLoader()->load(')
-                ->compileData($data['template'])
-                ->add(');')
-                ->indented('$template->set(')
-                ->compileData($data['arguments'])
-                ->add(');')
-                ->indented('$template->render();');
+            ->indented('$template = $this->getLoader()->load(')
+            ->compileData($data['template'])
+            ->add(');')
+            ->indented('$template->set(')
+            ->compileData($data['arguments'])
+            ->add(');')
+            ->indented('$template->render();');
     }
 
     public function parse(Parser $parser, Stream $stream)

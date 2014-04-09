@@ -18,7 +18,7 @@ class BitwiseOrOperator extends SimpleBinaryOperator
     {
         return 'b-or';
     }
-    
+
     protected function compileOperator()
     {
         return ' | ';

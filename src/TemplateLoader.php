@@ -75,9 +75,10 @@ class TemplateLoader
 
     private function shouldReload($file, $cached)
     {
-        if(!is_file($cached)) {
+        if (!is_file($cached)) {
             return true;
         }
+
         return $this->options['reload'] && (filemtime($file) > filemtime($cached));
     }
 

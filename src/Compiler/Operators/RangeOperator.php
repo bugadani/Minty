@@ -24,9 +24,9 @@ class RangeOperator extends Operator
     public function compile(Compiler $compiler, OperatorNode $node)
     {
         $compiler->add('range(')
-                ->compileNode($node->getOperand(OperatorNode::OPERAND_LEFT))
-                ->add(', ')
-                ->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT))
-                ->add(')');
+            ->compileNode($node->getOperand(OperatorNode::OPERAND_LEFT))
+            ->add(', ')
+            ->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT))
+            ->add(')');
     }
 }

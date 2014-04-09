@@ -10,11 +10,11 @@
 namespace Modules\Templating\Compiler\Tags;
 
 use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Parser;
-use Modules\Templating\Compiler\Tag;
 use Modules\Templating\Compiler\Nodes\TagNode;
-use Modules\Templating\Compiler\Token;
+use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
+use Modules\Templating\Compiler\Tag;
+use Modules\Templating\Compiler\Token;
 
 class ExtractTag extends Tag
 {
@@ -26,7 +26,7 @@ class ExtractTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $keys   = $parser->parseExpression($stream);
+        $keys = $parser->parseExpression($stream);
         $stream->expectCurrent(Token::IDENTIFIER, 'from');
         $source = $parser->parseExpression($stream);
 
@@ -41,9 +41,9 @@ class ExtractTag extends Tag
     public function compile(Compiler $compiler, array $data)
     {
         $compiler->indented('$this->extract(')
-                ->compileNode($data['source'])
-                ->add(', ')
-                ->compileNode($data['keys'])
-                ->add(');');
+            ->compileNode($data['source'])
+            ->add(', ')
+            ->compileNode($data['keys'])
+            ->add(');');
     }
 }

@@ -46,19 +46,26 @@ class Stream
             return $token;
         }
         $pattern = 'Unexpected %s (%s) found in line %s';
-        $message = sprintf($pattern, $token->getTypeString(), $token->getValue(), $token->getLine());
+        $message = sprintf(
+            $pattern,
+            $token->getTypeString(),
+            $token->getValue(),
+            $token->getLine()
+        );
         throw new SyntaxException($message);
     }
 
     public function expect($type, $value = null)
     {
         $next = $this->next();
+
         return $this->testOrThrow($next, $type, $value);
     }
 
     public function expectCurrent($type, $value = null)
     {
         $current = $this->current();
+
         return $this->testOrThrow($current, $type, $value);
     }
 
@@ -68,6 +75,7 @@ class Stream
             return $this->current();
         }
         $this->prev();
+
         return false;
     }
 }

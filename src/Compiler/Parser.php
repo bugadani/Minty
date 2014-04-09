@@ -50,15 +50,22 @@ class Parser
                 }
                 $stream->next();
                 $parser = $this->tags[$tag];
+
                 return $parser->parse($this, $stream);
 
             case Token::EXPRESSION_START:
                 $parser = $this->tags['output'];
+
                 return $parser->parse($this, $stream);
 
             default:
-                $pattern   = 'Unexpected %s (%s) token found in line %d';
-                $exception = sprintf($pattern, $token->getTypeString(), $token->getValue(), $token->getLine());
+                $pattern = 'Unexpected %s (%s) token found in line %d';
+                $exception = sprintf(
+                    $pattern,
+                    $token->getTypeString(),
+                    $token->getValue(),
+                    $token->getLine()
+                );
                 throw new SyntaxException($exception);
         }
     }
@@ -67,7 +74,7 @@ class Parser
     {
         $root = new RootNode();
         if ($end_condition === null) {
-            $end_condition = function(Stream $stream) {
+            $end_condition = function (Stream $stream) {
                 return $stream->next()->test(Token::EOF);
             };
         }
@@ -75,6 +82,7 @@ class Parser
             $node = $this->parseToken($stream);
             $root->addChild($node);
         }
+
         return $root;
     }
 

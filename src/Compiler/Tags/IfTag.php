@@ -45,30 +45,31 @@ class IfTag extends Tag
             }
 
             $compiler
-                    ->compileNode($branch['condition'])
-                    ->add(') {')
-                    ->indent()
-                    ->compileNode($branch['body'])
-                    ->outdent()
-                    ->indented('}');
+                ->compileNode($branch['condition'])
+                ->add(') {')
+                ->indent()
+                ->compileNode($branch['body'])
+                ->outdent()
+                ->indented('}');
         }
         if ($else !== null) {
             $compiler
-                    ->add(' else {')
-                    ->indent()
-                    ->compileNode($else['body'])
-                    ->outdent()
-                    ->indented('}');
+                ->add(' else {')
+                ->indent()
+                ->compileNode($else['body'])
+                ->outdent()
+                ->indented('}');
         }
     }
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $fork = function(Stream $stream) {
+        $fork = function (Stream $stream) {
             $token = $stream->next();
             if ($token->test(Token::EXPRESSION_START)) {
                 return $stream->nextTokenIf(Token::IDENTIFIER, array('else', 'elseif'));
             }
+
             return $token->test(Token::TAG, 'endif');
         };
 

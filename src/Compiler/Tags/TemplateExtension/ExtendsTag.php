@@ -34,6 +34,7 @@ class ExtendsTag extends Tag
             'template' => $stream->current()->getValue()
         );
         $stream->expect(Token::EXPRESSION_END);
+
         return new TagNode($this, $data);
     }
 

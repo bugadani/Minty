@@ -10,11 +10,11 @@
 namespace Modules\Templating\Compiler\Tags;
 
 use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Parser;
-use Modules\Templating\Compiler\Tag;
 use Modules\Templating\Compiler\Nodes\TagNode;
-use Modules\Templating\Compiler\Token;
+use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
+use Modules\Templating\Compiler\Tag;
+use Modules\Templating\Compiler\Token;
 
 class AssignTag extends Tag
 {
@@ -29,7 +29,8 @@ class AssignTag extends Tag
         $data                  = array();
         $data['variable_name'] = $stream->current()->getValue();
         $stream->expect(Token::EXPRESSION_START);
-        $data['value_node']    = $parser->parseExpression($stream);
+        $data['value_node'] = $parser->parseExpression($stream);
+
         return new TagNode($this, $data);
     }
 
@@ -39,8 +40,8 @@ class AssignTag extends Tag
         $value_node = $data['value_node'];
 
         $compiler
-                ->indented('$this->%s = ', $var)
-                ->compileNode($value_node)
-                ->add(';');
+            ->indented('$this->%s = ', $var)
+            ->compileNode($value_node)
+            ->add(';');
     }
 }

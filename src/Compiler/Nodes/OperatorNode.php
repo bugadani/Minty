@@ -57,6 +57,7 @@ class OperatorNode extends Node
         if (!isset($this->operands[$type])) {
             throw new SyntaxException('Operator has a missing operand.');
         }
+
         return $this->operands[$type];
     }
 
