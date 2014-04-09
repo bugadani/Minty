@@ -101,33 +101,38 @@ class Module extends \Miny\Modules\Module
                 }
                 $template_name = $handler;
             } else {
-                if (!isset($handler['codes'])) {
-                    if (!isset($handler['code'])) {
-                        throw new UnexpectedValueException('Response code handler must contain key "code" or "codes".');
+                if (isset($handler['codes'])) {
+                    if (!in_array($response_code, $handler['codes'])) {
+                        continue;
                     }
+                } elseif (isset($handler['code'])) {
                     if (!$response->isCode($handler['code'])) {
                         continue;
                     }
-                } elseif (!in_array($response_code, $handler['codes'])) {
-                    continue;
+                } else {
+                    throw new UnexpectedValueException('Response code handler must contain key "code" or "codes".');
                 }
                 if (!isset($handler['template'])) {
                     throw new UnexpectedValueException('Response code handler must specify a template.');
                 }
                 $template_name = $handler['template'];
             }
-            /** @var $loader TemplateLoader */
-            $loader   = $container->get(__NAMESPACE__ . '\\TemplateLoader');
-            $template = $loader->load($template_name);
-            $template->set(
-                array(
-                    'request'  => $request,
-                    'response' => $response
-                )
-            );
-            $template->render();
             break;
         }
+        if(!isset($template_name)) {
+            return;
+        }
+
+        /** @var $loader TemplateLoader */
+        $loader   = $container->get(__NAMESPACE__ . '\\TemplateLoader');
+        $template = $loader->load($template_name);
+        $template->set(
+            array(
+                'request'  => $request,
+                'response' => $response
+            )
+        );
+        $template->render();
     }
 
     public function handleException(\Exception $e)
