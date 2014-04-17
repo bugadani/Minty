@@ -32,10 +32,9 @@ class OutputTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $data               = array();
-        $data['expression'] = $parser->parseExpression($stream);
-
-        return new TagNode($this, $data);
+        return new TagNode($this, array(
+            'expression' => $parser->parseExpression($stream)
+        ));
     }
 
     public function isFunctionSafe(Environment $env, $function)
@@ -85,8 +84,7 @@ class OutputTag extends Tag
 
     public function ensureSafe(Environment $env, Node $node)
     {
-        $options = $env->getOptions();
-        if ($options['autoescape'] === false) {
+        if ($env->getOption('autoescape') === false) {
             return true;
         }
         if ($this->isSafe($env, $node)) {

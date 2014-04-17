@@ -45,8 +45,8 @@ class Parser
             case Token::TAG:
                 $tag = $token->getValue();
                 if (!isset($this->tags[$tag])) {
-                    $message = sprintf('Unknown %s tag found in line %s', $tag, $token->getLine());
-                    throw new ParseException($message);
+                    $line = $token->getLine();
+                    throw new ParseException("Unknown {$tag} tag found in line {$line}");
                 }
                 $stream->next();
 
@@ -56,24 +56,24 @@ class Parser
                 return $this->tags['output']->parse($this, $stream);
 
             default:
-                throw new SyntaxException(sprintf(
-                    'Unexpected %s (%s) token found in line %d',
-                    $token->getTypeString(),
-                    $token->getValue(),
-                    $token->getLine()
-                ));
+                $type  = $token->getTypeString();
+                $value = $token->getValue();
+                $line  = $token->getLine();
+                throw new SyntaxException("Unexpected {$type} ({$value}) token found in line {$line}");
         }
     }
 
     public function parse(Stream $stream, Closure $end_condition = null)
     {
-        $end_condition = $end_condition ? : function (Stream $stream) {
-            return $stream->next()->test(Token::EOF);
-        };
-
         $root = new RootNode();
-        while (!$end_condition($stream)) {
-            $root->addChild($this->parseToken($stream));
+        if ($end_condition) {
+            while (!$end_condition($stream)) {
+                $root->addChild($this->parseToken($stream));
+            }
+        } else {
+            while (!$stream->next()->test(Token::EOF)) {
+                $root->addChild($this->parseToken($stream));
+            }
         }
 
         return $root;

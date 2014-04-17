@@ -38,8 +38,7 @@ class Tokenizer
             $this->tags[$name] = $tag;
         }
 
-        $options          = $environment->getOptions();
-        $this->delimiters = $options['delimiters'];
+        $this->delimiters = $environment->getOption('delimiters');
 
         $literals = array(
             'true',
@@ -276,14 +275,13 @@ class Tokenizer
         $match = array();
         if (preg_match($this->patterns['closing_tag'], $tag, $match)) {
             $type = $match[1];
-            if ($this->in_raw) {
-                if ($type === 'raw') {
-                    $this->in_raw = false;
-
-                    return true;
-                }
-            } else {
+            if (!$this->in_raw) {
                 $this->pushToken(Token::TAG, 'end' . $type);
+
+                return true;
+            }
+            if ($type === 'raw') {
+                $this->in_raw = false;
 
                 return true;
             }
@@ -366,10 +364,10 @@ class Tokenizer
     {
         if (is_numeric($literal)) {
             $this->pushToken(Token::LITERAL, $literal);
-        } elseif (substr($literal, 0, 1) === '"') {
+        } elseif ($literal[0] === '"' || $literal[0] === "'") {
             $this->pushToken(Token::STRING, substr($literal, 1, -1));
-        } elseif (substr($literal, 0, 1) === "'") {
-            $this->pushToken(Token::STRING, substr($literal, 1, -1));
+        } elseif ($literal[0] === ':') {
+            $this->pushToken(Token::STRING, ltrim($literal, ':'));
         } else {
             switch (strtolower($literal)) {
                 case 'null':
@@ -381,9 +379,6 @@ class Tokenizer
                     break;
                 case 'false':
                     $this->pushToken(Token::LITERAL, false);
-                    break;
-                default:
-                    $this->pushToken(Token::STRING, ltrim($literal, ':'));
                     break;
             }
         }
