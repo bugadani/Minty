@@ -33,8 +33,7 @@ class FilterOperator extends Operator
             array_unshift($arguments, $data);
             $function_node->setArguments($arguments);
         } elseif ($function_node instanceof IdentifierNode) {
-            $function_node = new FunctionNode($function_node);
-            $function_node->addArgument($data);
+            $function_node = new FunctionNode($function_node->getName(), array($data));
         } else {
             throw new ParseException('Invalid filter node.');
         }

@@ -80,23 +80,6 @@ class Token
 
     public function test($type, $value = null)
     {
-        if (is_array($type)) {
-            foreach ($type as $args) {
-                if (is_array($args)) {
-                    $token = array_shift($args);
-                    $value = array_shift($args);
-                } else {
-                    $token = $args;
-                    $value = null;
-                }
-                if ($this->test($token, $value)) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         if ($this->type !== $type) {
             return false;
         }

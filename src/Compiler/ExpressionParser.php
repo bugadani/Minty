@@ -107,22 +107,24 @@ class ExpressionParser
         return $arguments;
     }
 
-    public function parsePostfixExpression()
+    public function parsePostfixExpression($identifier)
     {
         if ($this->stream->nextTokenIf(Token::PUNCTUATION, '(')) {
             // function call
-            $operand = $this->operandStack->pop();
-
-            $node = new FunctionNode($operand);
-            $node->addArguments($this->parseArgumentList());
+            $node = new FunctionNode($identifier, $this->parseArgumentList());
 
             $this->operandStack->push($node);
-        } elseif ($this->stream->nextTokenIf(Token::PUNCTUATION, '[')) {
+
+            return;
+        }
+        $operand = new IdentifierNode($identifier);
+        if ($this->stream->nextTokenIf(Token::PUNCTUATION, '[')) {
             //array indexing
-            $operand = $this->operandStack->pop();
-            $index   = $this->parseExpression(true);
+            $index = $this->parseExpression(true);
 
             $this->operandStack->push(new ArrayIndexNode($operand, $index));
+        } else {
+            $this->operandStack->push($operand);
         }
         // intentional
         if ($this->stream->nextTokenIf(Token::OPERATOR, $this->unaryPostfixTest)) {
@@ -136,22 +138,6 @@ class ExpressionParser
             $node->addOperand(OperatorNode::OPERAND_LEFT, $operand);
 
             $this->operandStack->push($node);
-        }
-    }
-
-    public function parseDataToken(Token $token)
-    {
-        switch ($token->getType()) {
-            case Token::STRING:
-            case Token::LITERAL:
-                $this->operandStack->push(new DataNode($token->getValue()));
-                break;
-
-            case Token::IDENTIFIER:
-                //identifier - handle function calls and array indexing
-                $this->operandStack->push(new IdentifierNode($token->getValue()));
-                $this->parsePostfixExpression();
-                break;
         }
     }
 
@@ -187,8 +173,10 @@ class ExpressionParser
         do {
             $return = true;
             $token  = $this->stream->next();
-            if ($token->isDataType()) {
-                $this->parseDataToken($token);
+            if ($token->test(Token::STRING) || $token->test(Token::LITERAL)) {
+                $this->operandStack->push(new DataNode($token->getValue()));
+            } elseif ($token->test(Token::IDENTIFIER)) {
+                $this->parsePostfixExpression($token->getValue());
             } elseif ($token->test(Token::PUNCTUATION, '(')) {
                 $this->parseExpression();
             } elseif ($token->test(Token::PUNCTUATION, '[')) {
@@ -197,13 +185,12 @@ class ExpressionParser
                 $this->pushUnaryPrefixOperator($token);
                 $return = false;
             } else {
-                $exception = sprintf(
+                throw new SyntaxException(sprintf(
                     'Unexpected %s (%s) token found in line %d',
                     $token->getTypeString(),
                     $token->getValue(),
                     $token->getLine()
-                );
-                throw new SyntaxException($exception);
+                ));
             }
         } while (!$return);
     }
@@ -294,16 +281,16 @@ class ExpressionParser
         if ($this->binaryOperators->exists($operator) && $operator === $top) {
             if ($operator->isAssociativity(Operator::LEFT)) {
                 return true;
-            } elseif ($operator->isAssociativity(Operator::RIGHT)) {
-                return false;
-            } else {
-                $symbols = $operator->operators();
-                if (is_array($symbols)) {
-                    $symbols = implode(', ', $symbols);
-                }
-                $message = sprintf('Binary operator %s is not associative.', $symbols);
-                throw new ParseException($message);
             }
+            if ($operator->isAssociativity(Operator::RIGHT)) {
+                return false;
+            }
+
+            $symbols = $operator->operators();
+            if (is_array($symbols)) {
+                $symbols = implode(', ', $symbols);
+            }
+            throw new ParseException("Binary operator {$symbols} is not associative.");
         }
 
         return $top->getPrecedence() >= $operator->getPrecedence();

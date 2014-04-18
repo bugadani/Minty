@@ -25,34 +25,49 @@ class Stream
         reset($this->tokens);
     }
 
+    /**
+     * @return Token
+     */
     public function current()
     {
         return current($this->tokens);
     }
 
+    /**
+     * @return Token
+     */
     public function prev()
     {
         return prev($this->tokens);
     }
 
+    /**
+     * @return Token
+     */
     public function next()
     {
         return next($this->tokens);
     }
 
+    /**
+     * @param Token $token
+     * @param       $type
+     * @param       $value
+     *
+     * @throws Exceptions\SyntaxException
+     * @return Token
+     */
     private function testOrThrow(Token $token, $type, $value)
     {
         if ($token->test($type, $value)) {
             return $token;
         }
-        $pattern = 'Unexpected %s (%s) found in line %s';
-        $message = sprintf(
-            $pattern,
+        throw new SyntaxException(sprintf(
+            'Unexpected %s (%s) found in line %s',
             $token->getTypeString(),
             $token->getValue(),
             $token->getLine()
-        );
-        throw new SyntaxException($message);
+        ));
     }
 
     public function expect($type, $value = null)

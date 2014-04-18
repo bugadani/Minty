@@ -15,7 +15,7 @@ use Modules\Templating\Compiler\Node;
 class FunctionNode extends Node
 {
     /**
-     * @var IdentifierNode
+     * @var string
      */
     private $function_name;
 
@@ -26,10 +26,10 @@ class FunctionNode extends Node
      */
     private $object;
 
-    public function __construct(IdentifierNode $function_name)
+    public function __construct($function_name, array $arguments = array())
     {
         $this->function_name = $function_name;
-        $this->arguments     = array();
+        $this->arguments     = $arguments;
         $this->object        = null;
     }
 
@@ -39,30 +39,11 @@ class FunctionNode extends Node
     }
 
     /**
-     * @return IdentifierNode
+     * @return string
      */
     public function getFunctionName()
     {
         return $this->function_name;
-    }
-
-    public function setFunctionName($function_name)
-    {
-        $this->function_name = $function_name;
-    }
-
-    public function addArgument($argument, $prepend = false)
-    {
-        if ($prepend) {
-            array_unshift($this->arguments, $argument);
-        } else {
-            $this->arguments[] = $argument;
-        }
-    }
-
-    public function addArguments(array $arguments)
-    {
-        $this->arguments = array_merge($arguments, $this->arguments);
     }
 
     public function setArguments(array $arguments)
@@ -77,23 +58,22 @@ class FunctionNode extends Node
 
     public function compile(Compiler $compiler)
     {
-        $func_name   = $this->function_name->getName();
         $environment = $compiler->getEnvironment();
         if ($this->object !== null) {
             $this->object->compile($compiler);
             $compiler
                 ->add('->')
-                ->add($func_name);
+                ->add($this->function_name);
             $compiler->compileArgumentList($this->arguments);
-        } elseif ($environment->hasFunction($func_name)) {
-            $function = $environment->getFunction($func_name);
+        } elseif ($environment->hasFunction($this->function_name)) {
+            $function = $environment->getFunction($this->function_name);
             $environment
                 ->getFunctionCompiler($function->getOption('compiler'))
                 ->compile($compiler, $function, $this->arguments);
         } else {
             $compiler
                 ->add('$this->')
-                ->add($func_name);
+                ->add($this->function_name);
             $compiler->compileArgumentList($this->arguments);
         }
     }

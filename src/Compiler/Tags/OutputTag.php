@@ -50,36 +50,38 @@ class OutputTag extends Tag
     {
         if ($node instanceof DataNode) {
             return true;
-        } elseif ($node instanceof FunctionNode) {
-            return $this->isFunctionSafe($env, $node->getFunctionName()->getName());
-        } elseif ($node instanceof OperatorNode) {
-            if ($node->getOperator() instanceof FilterOperator) {
-                /** @var $filter IdentifierNode|FunctionNode */
-                $filter = $node->getOperand(OperatorNode::OPERAND_RIGHT);
-                if ($filter instanceof IdentifierNode) {
-                    $function = $filter->getName();
-                } else {
-                    $function = $filter->getFunctionName()->getName();
-                }
-
-                return $this->isFunctionSafe($env, $function);
+        }
+        if ($node instanceof FunctionNode) {
+            return $this->isFunctionSafe($env, $node->getFunctionName());
+        }
+        if (!$node instanceof OperatorNode) {
+            return false;
+        }
+        if ($node->getOperator() instanceof FilterOperator) {
+            /** @var $filter IdentifierNode|FunctionNode */
+            $filter = $node->getOperand(OperatorNode::OPERAND_RIGHT);
+            if ($filter instanceof IdentifierNode) {
+                $function = $filter->getName();
             } else {
-                $safe = true;
-                if ($node->hasOperand(OperatorNode::OPERAND_LEFT)) {
-                    $safe &= $this->isSafe($env, $node->getOperand(OperatorNode::OPERAND_LEFT));
-                }
-                if ($node->hasOperand(OperatorNode::OPERAND_MIDDLE)) {
-                    $safe &= $this->isSafe($env, $node->getOperand(OperatorNode::OPERAND_MIDDLE));
-                }
-                if ($node->hasOperand(OperatorNode::OPERAND_RIGHT)) {
-                    $safe &= $this->isSafe($env, $node->getOperand(OperatorNode::OPERAND_RIGHT));
-                }
-
-                return $safe;
+                $function = $filter->getFunctionName();
             }
+
+            return $this->isFunctionSafe($env, $function);
+        } else {
+            $safe = true;
+            if ($node->hasOperand(OperatorNode::OPERAND_LEFT)) {
+                $safe &= $this->isSafe($env, $node->getOperand(OperatorNode::OPERAND_LEFT));
+            }
+            if ($node->hasOperand(OperatorNode::OPERAND_MIDDLE)) {
+                $safe &= $this->isSafe($env, $node->getOperand(OperatorNode::OPERAND_MIDDLE));
+            }
+            if ($node->hasOperand(OperatorNode::OPERAND_RIGHT)) {
+                $safe &= $this->isSafe($env, $node->getOperand(OperatorNode::OPERAND_RIGHT));
+            }
+
+            return $safe;
         }
 
-        return false;
     }
 
     public function ensureSafe(Environment $env, Node $node)
@@ -90,10 +92,8 @@ class OutputTag extends Tag
         if ($this->isSafe($env, $node)) {
             return $node;
         }
-        $return = new FunctionNode(new IdentifierNode('filter'));
-        $return->addArgument($node);
 
-        return $return;
+        return new FunctionNode('filter', array($node));
     }
 
     public function compile(Compiler $compiler, array $data)
