@@ -10,40 +10,15 @@
 namespace Modules\Templating\Compiler\Nodes;
 
 use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Node;
 
-class FunctionNode extends Node
+class FunctionNode extends IdentifierNode
 {
-    /**
-     * @var string
-     */
-    private $function_name;
-
     private $arguments;
-
-    /**
-     * @var Node|null
-     */
-    private $object;
 
     public function __construct($function_name, array $arguments = array())
     {
-        $this->function_name = $function_name;
-        $this->arguments     = $arguments;
-        $this->object        = null;
-    }
-
-    public function setObject(Node $object)
-    {
-        $this->object = $object;
-    }
-
-    /**
-     * @return string
-     */
-    public function getFunctionName()
-    {
-        return $this->function_name;
+        parent::__construct($function_name);
+        $this->setArguments($arguments);
     }
 
     public function setArguments(array $arguments)
@@ -59,22 +34,19 @@ class FunctionNode extends Node
     public function compile(Compiler $compiler)
     {
         $environment = $compiler->getEnvironment();
-        if ($this->object !== null) {
-            $this->object->compile($compiler);
-            $compiler
-                ->add('->')
-                ->add($this->function_name);
-            $compiler->compileArgumentList($this->arguments);
-        } elseif ($environment->hasFunction($this->function_name)) {
-            $function = $environment->getFunction($this->function_name);
-            $environment
-                ->getFunctionCompiler($function->getOption('compiler'))
-                ->compile($compiler, $function, $this->arguments);
-        } else {
-            $compiler
-                ->add('$this->')
-                ->add($this->function_name);
-            $compiler->compileArgumentList($this->arguments);
+
+        if (!$this->getObject()) {
+            $name = $this->getName();
+            if ($environment->hasFunction($name)) {
+                $function = $environment->getFunction($name);
+                $environment
+                    ->getFunctionCompiler($function->getOption('compiler'))
+                    ->compile($compiler, $function, $this->arguments);
+
+                return;
+            }
         }
+        parent::compile($compiler);
+        $compiler->compileArgumentList($this->arguments);
     }
 }

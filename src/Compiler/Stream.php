@@ -70,6 +70,12 @@ class Stream
         ));
     }
 
+    /**
+     * @param $type
+     * @param $value
+     *
+     * @return Token
+     */
     public function expect($type, $value = null)
     {
         $next = $this->next();
@@ -77,6 +83,12 @@ class Stream
         return $this->testOrThrow($next, $type, $value);
     }
 
+    /**
+     * @param $type
+     * @param $value
+     *
+     * @return Token
+     */
     public function expectCurrent($type, $value = null)
     {
         $current = $this->current();
@@ -84,6 +96,12 @@ class Stream
         return $this->testOrThrow($current, $type, $value);
     }
 
+    /**
+     * @param $type
+     * @param $value
+     *
+     * @return bool|Token
+     */
     public function nextTokenIf($type, $value = null)
     {
         if ($this->next()->test($type, $value)) {

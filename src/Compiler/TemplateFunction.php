@@ -29,7 +29,7 @@ abstract class TemplateFunction
         $this->name    = $name;
         $defaults      = array(
             'is_safe'  => false,
-            'compiler' => __NAMESPACE__ . '\FunctionCompiler'
+            'compiler' => __NAMESPACE__ . '\\FunctionCompiler'
         );
         $this->options = array_merge($defaults, $options);
     }
@@ -37,7 +37,7 @@ abstract class TemplateFunction
     public function getOption($key)
     {
         if (!isset($this->options[$key])) {
-            throw new OutOfBoundsException(sprintf('Option %s is not set.', $key));
+            throw new OutOfBoundsException("Option {$key} is not set.");
         }
 
         return $this->options[$key];

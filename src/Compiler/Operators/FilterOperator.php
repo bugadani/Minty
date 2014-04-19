@@ -26,17 +26,17 @@ class FilterOperator extends Operator
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
-        $data          = $node->getOperand(OperatorNode::OPERAND_LEFT);
-        $function_node = $node->getOperand(OperatorNode::OPERAND_RIGHT);
-        if ($function_node instanceof FunctionNode) {
-            $arguments = $function_node->getArguments();
+        $data   = $node->getOperand(OperatorNode::OPERAND_LEFT);
+        $filter = $node->getOperand(OperatorNode::OPERAND_RIGHT);
+        if ($filter instanceof FunctionNode) {
+            $arguments = $filter->getArguments();
             array_unshift($arguments, $data);
-            $function_node->setArguments($arguments);
-        } elseif ($function_node instanceof IdentifierNode) {
-            $function_node = new FunctionNode($function_node->getName(), array($data));
+            $filter->setArguments($arguments);
+        } elseif ($filter instanceof IdentifierNode) {
+            $filter = new FunctionNode($filter->getName(), array($data));
         } else {
             throw new ParseException('Invalid filter node.');
         }
-        $function_node->compile($compiler);
+        $filter->compile($compiler);
     }
 }

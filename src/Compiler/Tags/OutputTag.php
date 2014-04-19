@@ -52,7 +52,7 @@ class OutputTag extends Tag
             return true;
         }
         if ($node instanceof FunctionNode) {
-            return $this->isFunctionSafe($env, $node->getFunctionName());
+            return $this->isFunctionSafe($env, $node->getName());
         }
         if (!$node instanceof OperatorNode) {
             return false;
@@ -60,13 +60,8 @@ class OutputTag extends Tag
         if ($node->getOperator() instanceof FilterOperator) {
             /** @var $filter IdentifierNode|FunctionNode */
             $filter = $node->getOperand(OperatorNode::OPERAND_RIGHT);
-            if ($filter instanceof IdentifierNode) {
-                $function = $filter->getName();
-            } else {
-                $function = $filter->getFunctionName();
-            }
 
-            return $this->isFunctionSafe($env, $function);
+            return $this->isFunctionSafe($env, $filter->getName());
         } else {
             $safe = true;
             if ($node->hasOperand(OperatorNode::OPERAND_LEFT)) {

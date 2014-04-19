@@ -16,9 +16,27 @@ class IdentifierNode extends Node
 {
     private $name;
 
+    /**
+     * @var Node|null
+     */
+    private $object;
+
     public function __construct($name)
     {
         $this->name = $name;
+    }
+
+    public function setObject(Node $object)
+    {
+        $this->object = $object;
+    }
+
+    /**
+     * @return Node|null
+     */
+    public function getObject()
+    {
+        return $this->object;
     }
 
     public function getName()
@@ -28,7 +46,13 @@ class IdentifierNode extends Node
 
     public function compile(Compiler $compiler)
     {
-        $compiler->add('$this->');
-        $compiler->add($this->name);
+        if($this->object) {
+            $this->getObject()->compile($compiler);
+        } else {
+            $compiler->add('$this');
+        }
+        $compiler
+            ->add('->')
+            ->add($this->name);
     }
 }
