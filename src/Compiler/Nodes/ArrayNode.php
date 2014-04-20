@@ -40,10 +40,10 @@ class ArrayNode extends Node
                 $first = false;
             }
             if ($key !== null) {
-                $key->compile($compiler);
+                $compiler->compileNode($key);
                 $compiler->add(' => ');
             }
-            $value->compile($compiler);
+            $compiler->compileNode($value);
         }
         $compiler->add(')');
     }

@@ -23,10 +23,11 @@ class NotContainsOperator extends Operator
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
-        $compiler->add('!$this->isIn(');
-        $node->getOperand(OperatorNode::OPERAND_LEFT)->compile($compiler);
-        $compiler->add(', ');
-        $node->getOperand(OperatorNode::OPERAND_RIGHT)->compile($compiler);
-        $compiler->add(')');
+        $compiler
+            ->add('!$this->isIn(')
+            ->compileNode($node->getOperand(OperatorNode::OPERAND_LEFT))
+            ->add(', ')
+            ->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT))
+            ->add(')');
     }
 }

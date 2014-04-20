@@ -51,7 +51,7 @@ class ForTag extends Tag
     {
         $compiler->indented('if (isset($temp)) {');
         $compiler->indent();
-        //TODO
+        //TODO: save $temp to a temporary stack to support nested for loops
         $compiler
             ->outdent()
             ->indented('}')

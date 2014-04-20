@@ -13,7 +13,7 @@ use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Operator;
 
-class NotMatchesOperator extends Operator
+class NotMatchesOperator extends MatchesOperator
 {
 
     public function operators()
@@ -23,10 +23,7 @@ class NotMatchesOperator extends Operator
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
-        $compiler->add('!preg_match(');
-        $node->getOperand(OperatorNode::OPERAND_LEFT)->compile($compiler);
-        $compiler->add(', ');
-        $node->getOperand(OperatorNode::OPERAND_RIGHT)->compile($compiler);
-        $compiler->add(')');
+        $compiler->add('!');
+        parent::compile($compiler, $node);
     }
 }

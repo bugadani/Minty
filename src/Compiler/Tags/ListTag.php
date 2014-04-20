@@ -42,11 +42,10 @@ class ListTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $data               = array();
-        $data['template']   = $stream->next()->getValue();
-        $data['expression'] = $parser->parseExpression($stream);
-
-        return new TagNode($this, $data);
+        return new TagNode($this, array(
+            'template'   => $stream->next()->getValue(),
+            'expression' => $parser->parseExpression($stream)
+        ));
     }
 
     public function compile(Compiler $compiler, array $data)
@@ -55,6 +54,7 @@ class ListTag extends Tag
             ->indented('$list_source = ')
             ->compileNode($data['expression'])
             ->add(';');
+
         $compiler
             ->indented('if(is_array($list_source) || $list_source instanceof \Traversable) {')
             ->indent()

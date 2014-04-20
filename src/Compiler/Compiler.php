@@ -12,6 +12,7 @@ namespace Modules\Templating\Compiler;
 use BadMethodCallException;
 use Modules\Templating\Compiler\Nodes\RootNode;
 use Modules\Templating\Environment;
+use Traversable;
 
 class Compiler
 {
@@ -69,12 +70,13 @@ class Compiler
     public function newline()
     {
         $this->output .= "\n";
+
+        return $this;
     }
 
     public function indented($string)
     {
-        $args = func_get_args();
-        array_shift($args);
+        $args = array_slice(func_get_args(), 1);
         $this->output .= "\n";
         $this->output .= str_repeat(' ', $this->indentation * 4);
         $this->output .= vsprintf($string, $args);
@@ -99,14 +101,15 @@ class Compiler
         $this->add('(');
         $first = true;
         foreach ($arguments as $argument) {
-            if ($first) {
-                $first = false;
-            } else {
+            if (!$first) {
                 $this->add(', ');
+            } else {
+                $first = false;
             }
             $this->compileData($argument);
         }
-        $this->add(')');
+
+        return $this->add(')');
     }
 
     public function compileData($data)
@@ -139,7 +142,7 @@ class Compiler
         } elseif ($data === null) {
             $this->add('null');
         } elseif ($data instanceof Node) {
-            $data->compile($this);
+            $this->compileNode($data);
         } else {
             $this->add($this->string($data));
         }
@@ -205,14 +208,10 @@ class Compiler
 
     public function compileNode(Node $node, $indentation = null)
     {
-        if ($indentation !== null) {
-            $old_indentation   = $this->indentation;
-            $this->indentation = $indentation;
-            $node->compile($this);
-            $this->indentation = $old_indentation;
-        } else {
-            $node->compile($this);
-        }
+        $old_indentation   = $this->indentation;
+        $this->indentation = $indentation ? : $this->indentation;
+        $node->compile($this);
+        $this->indentation = $old_indentation;
 
         return $this;
     }

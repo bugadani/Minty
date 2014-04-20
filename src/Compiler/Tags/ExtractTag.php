@@ -30,12 +30,10 @@ class ExtractTag extends Tag
         $stream->expectCurrent(Token::IDENTIFIER, 'from');
         $source = $parser->parseExpression($stream);
 
-        $data = array(
+        return new TagNode($this, array(
             'source' => $source,
             'keys'   => $keys
-        );
-
-        return new TagNode($this, $data);
+        ));
     }
 
     public function compile(Compiler $compiler, array $data)

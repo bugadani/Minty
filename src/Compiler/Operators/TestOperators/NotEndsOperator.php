@@ -13,7 +13,7 @@ use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Operator;
 
-class NotEndsOperator extends Operator
+class NotEndsOperator extends EndsOperator
 {
 
     public function operators()
@@ -23,10 +23,7 @@ class NotEndsOperator extends Operator
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
-        $compiler->add('!$this->endsWith(');
-        $node->getOperand(OperatorNode::OPERAND_LEFT)->compile($compiler);
-        $compiler->add(', ');
-        $node->getOperand(OperatorNode::OPERAND_RIGHT)->compile($compiler);
-        $compiler->add(')');
+        $compiler->add('!');
+        parent::compile($compiler, $node);
     }
 }

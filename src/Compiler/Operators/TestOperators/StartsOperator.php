@@ -18,15 +18,16 @@ class StartsOperator extends Operator
 
     public function operators()
     {
-        return array('does not start with', 'not starts with');
+        return 'starts with';
     }
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
-        $compiler->add('!$this->startsWith(');
-        $node->getOperand(OperatorNode::OPERAND_LEFT)->compile($compiler);
-        $compiler->add(', ');
-        $node->getOperand(OperatorNode::OPERAND_RIGHT)->compile($compiler);
-        $compiler->add(')');
+        $compiler
+            ->add('$this->startsWith(')
+            ->compileNode($node->getOperand(OperatorNode::OPERAND_LEFT))
+            ->add(', ')
+            ->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT))
+            ->add(')');
     }
 }

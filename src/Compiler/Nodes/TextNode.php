@@ -23,8 +23,9 @@ class TextNode extends Node
 
     public function compile(Compiler $compiler)
     {
-        $compiler->indented('echo ');
-        $compiler->add($compiler->string($this->text));
-        $compiler->add(';');
+        $compiler
+            ->indented('echo ')
+            ->add($compiler->string($this->text))
+            ->add(';');
     }
 }
