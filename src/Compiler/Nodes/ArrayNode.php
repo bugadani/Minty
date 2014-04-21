@@ -14,12 +14,7 @@ use Modules\Templating\Compiler\Node;
 
 class ArrayNode extends Node
 {
-    private $data;
-
-    public function __construct()
-    {
-        $this->data = array();
-    }
+    private $data = array();
 
     public function add(Node $value, Node $key = null)
     {

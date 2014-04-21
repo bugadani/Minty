@@ -23,8 +23,9 @@ class PlusOperator extends Operator
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
-        $compiler->add('(+');
-        $node->getOperand(OperatorNode::OPERAND_RIGHT)->compile($compiler);
-        $compiler->add(')');
+        $compiler
+            ->add('(+')
+            ->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT))
+            ->add(')');
     }
 }

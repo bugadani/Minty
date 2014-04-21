@@ -9,11 +9,9 @@
 
 namespace Modules\Templating\Compiler\Operators\UnaryOperators;
 
-use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Nodes\OperatorNode;
-use Modules\Templating\Compiler\Operator;
+use Modules\Templating\Compiler\Operators\FunctionOperator;
 
-class EmptyOperator extends Operator
+class EmptyOperator extends FunctionOperator
 {
 
     public function operators()
@@ -21,10 +19,8 @@ class EmptyOperator extends Operator
         return 'is empty';
     }
 
-    public function compile(Compiler $compiler, OperatorNode $node)
+    protected function getFunctionName()
     {
-        $compiler->add('$this->isEmpty(');
-        $node->getOperand(OperatorNode::OPERAND_LEFT)->compile($compiler);
-        $compiler->add(')');
+        return '$this->isEmpty';
     }
 }

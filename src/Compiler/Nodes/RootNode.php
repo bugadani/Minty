@@ -17,12 +17,7 @@ class RootNode extends Node
     /**
      * @var Node[]
      */
-    private $children;
-
-    public function __construct()
-    {
-        $this->children = array();
-    }
+    private $children = array();
 
     public function addChild(Node $node)
     {
@@ -32,7 +27,7 @@ class RootNode extends Node
     public function compile(Compiler $compiler)
     {
         foreach ($this->children as $node) {
-            $node->compile($compiler);
+            $compiler->compileNode($node);
         }
     }
 }

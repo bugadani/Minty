@@ -9,11 +9,9 @@
 
 namespace Modules\Templating\Compiler\Operators\TestOperators;
 
-use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Nodes\OperatorNode;
-use Modules\Templating\Compiler\Operator;
+use Modules\Templating\Compiler\Operators\FunctionOperator;
 
-class DivisibleByOperator extends Operator
+class DivisibleByOperator extends FunctionOperator
 {
 
     public function operators()
@@ -21,13 +19,8 @@ class DivisibleByOperator extends Operator
         return 'is divisible by';
     }
 
-    public function compile(Compiler $compiler, OperatorNode $node)
+    protected function getFunctionName()
     {
-        $compiler
-            ->add('$this->isDivisibleBy(')
-            ->compileNode($node->getOperand(OperatorNode::OPERAND_LEFT))
-            ->add(', ')
-            ->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT))
-            ->add(')');
+        return '$this->isDivisibleBy';
     }
 }

@@ -21,9 +21,8 @@ class NotEndsOperator extends EndsOperator
         return array('not ends with', 'does not end with');
     }
 
-    public function compile(Compiler $compiler, OperatorNode $node)
+    protected function getFunctionName()
     {
-        $compiler->add('!');
-        parent::compile($compiler, $node);
+        return '!' . parent::getFunctionName();
     }
 }

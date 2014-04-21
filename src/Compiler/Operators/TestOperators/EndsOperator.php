@@ -9,11 +9,9 @@
 
 namespace Modules\Templating\Compiler\Operators\TestOperators;
 
-use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Nodes\OperatorNode;
-use Modules\Templating\Compiler\Operator;
+use Modules\Templating\Compiler\Operators\FunctionOperator;
 
-class EndsOperator extends Operator
+class EndsOperator extends FunctionOperator
 {
 
     public function operators()
@@ -21,13 +19,8 @@ class EndsOperator extends Operator
         return 'ends with';
     }
 
-    public function compile(Compiler $compiler, OperatorNode $node)
+    protected function getFunctionName()
     {
-        $compiler
-            ->add('$this->endsWith(')
-            ->compileNode($node->getOperand(OperatorNode::OPERAND_LEFT))
-            ->add(', ')
-            ->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT))
-            ->add(')');
+        return '$this->endsWith';
     }
 }

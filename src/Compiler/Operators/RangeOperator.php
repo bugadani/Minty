@@ -13,7 +13,7 @@ use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Operator;
 
-class RangeOperator extends Operator
+class RangeOperator extends FunctionOperator
 {
 
     public function operators()
@@ -21,12 +21,8 @@ class RangeOperator extends Operator
         return '..';
     }
 
-    public function compile(Compiler $compiler, OperatorNode $node)
+    protected function getFunctionName()
     {
-        $compiler->add('range(')
-            ->compileNode($node->getOperand(OperatorNode::OPERAND_LEFT))
-            ->add(', ')
-            ->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT))
-            ->add(')');
+        return 'range';
     }
 }

@@ -9,11 +9,9 @@
 
 namespace Modules\Templating\Compiler\Operators\ArithmeticOperators;
 
-use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Nodes\OperatorNode;
-use Modules\Templating\Compiler\Operator;
+use Modules\Templating\Compiler\Operators\FunctionOperator;
 
-class ExponentialOperator extends Operator
+class ExponentialOperator extends FunctionOperator
 {
 
     public function operators()
@@ -21,12 +19,8 @@ class ExponentialOperator extends Operator
         return array('^', '**');
     }
 
-    public function compile(Compiler $compiler, OperatorNode $node)
+    protected function getFunctionName()
     {
-        $compiler->add('pow(');
-        $node->getOperand(OperatorNode::OPERAND_LEFT)->compile($compiler);
-        $compiler->add(', ');
-        $node->getOperand(OperatorNode::OPERAND_RIGHT)->compile($compiler);
-        $compiler->add(')');
+        return 'pow';
     }
 }

@@ -21,9 +21,8 @@ class NotDivisibleByOperator extends DivisibleByOperator
         return 'is not divisible by';
     }
 
-    public function compile(Compiler $compiler, OperatorNode $node)
+    public function getFunctionName()
     {
-        $compiler->add('!');
-        parent::compile($compiler, $node);
+        return '!' . parent::getFunctionName();
     }
 }

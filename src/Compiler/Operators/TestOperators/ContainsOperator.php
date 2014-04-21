@@ -9,11 +9,9 @@
 
 namespace Modules\Templating\Compiler\Operators\TestOperators;
 
-use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Nodes\OperatorNode;
-use Modules\Templating\Compiler\Operator;
+use Modules\Templating\Compiler\Operators\FunctionOperator;
 
-class ContainsOperator extends Operator
+class ContainsOperator extends FunctionOperator
 {
 
     public function operators()
@@ -21,13 +19,8 @@ class ContainsOperator extends Operator
         return array('in', 'contains');
     }
 
-    public function compile(Compiler $compiler, OperatorNode $node)
+    protected function getFunctionName()
     {
-        $compiler
-            ->add('$this->isIn(')
-            ->compileNode($node->getOperand(OperatorNode::OPERAND_LEFT))
-            ->add(', ')
-            ->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT))
-            ->add(')');
+        return '$this->isIn';
     }
 }

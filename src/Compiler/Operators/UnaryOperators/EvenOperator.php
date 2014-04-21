@@ -23,8 +23,9 @@ class EvenOperator extends Operator
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
-        $compiler->add('(');
-        $node->getOperand(OperatorNode::OPERAND_LEFT)->compile($compiler);
-        $compiler->add(' % 2 == 0)');
+        $compiler
+            ->add('(')
+            ->compileNode($node->getOperand(OperatorNode::OPERAND_LEFT))
+            ->add(' % 2 == 0)');
     }
 }

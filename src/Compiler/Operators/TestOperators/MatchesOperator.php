@@ -9,11 +9,9 @@
 
 namespace Modules\Templating\Compiler\Operators\TestOperators;
 
-use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Nodes\OperatorNode;
-use Modules\Templating\Compiler\Operator;
+use Modules\Templating\Compiler\Operators\FunctionOperator;
 
-class MatchesOperator extends Operator
+class MatchesOperator extends FunctionOperator
 {
 
     public function operators()
@@ -21,13 +19,8 @@ class MatchesOperator extends Operator
         return array('matches', 'is like');
     }
 
-    public function compile(Compiler $compiler, OperatorNode $node)
+    protected function getFunctionName()
     {
-        $compiler
-            ->add('preg_match(')
-            ->compileNode($node->getOperand(OperatorNode::OPERAND_LEFT))
-            ->add(', ')
-            ->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT))
-            ->add(')');
+        return 'preg_match';
     }
 }

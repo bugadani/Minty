@@ -28,12 +28,11 @@ class OperatorNode extends Node
     /**
      * @var Node[]
      */
-    private $operands;
+    private $operands = array();
 
     public function __construct(Operator $operator)
     {
         $this->operator = $operator;
-        $this->operands = array();
     }
 
     public function addOperand($type, Node $value = null)

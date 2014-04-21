@@ -13,7 +13,7 @@ use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Operator;
 
-class NotContainsOperator extends Operator
+class NotContainsOperator extends ContainsOperator
 {
 
     public function operators()
@@ -21,13 +21,8 @@ class NotContainsOperator extends Operator
         return array('not in', 'not contains', 'does not contain');
     }
 
-    public function compile(Compiler $compiler, OperatorNode $node)
+    protected function getFunctionName()
     {
-        $compiler
-            ->add('!$this->isIn(')
-            ->compileNode($node->getOperand(OperatorNode::OPERAND_LEFT))
-            ->add(', ')
-            ->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT))
-            ->add(')');
+        return '!' . parent::getFunctionName();
     }
 }

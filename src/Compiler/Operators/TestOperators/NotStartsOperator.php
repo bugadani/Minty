@@ -21,9 +21,8 @@ class NotStartsOperator extends StartsOperator
         return array('does not start with', 'not starts with');
     }
 
-    public function compile(Compiler $compiler, OperatorNode $node)
+    protected function getFunctionName()
     {
-        $compiler->add('!');
-        parent::compile($compiler, $node);
+        return '!' . parent::getFunctionName();
     }
 }

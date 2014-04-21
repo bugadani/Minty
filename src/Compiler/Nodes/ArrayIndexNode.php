@@ -25,9 +25,10 @@ class ArrayIndexNode extends Node
 
     public function compile(Compiler $compiler)
     {
-        $this->identifier->compile($compiler);
-        $compiler->add('[');
-        $this->key->compile($compiler);
-        $compiler->add(']');
+        $compiler
+            ->compileNode($this->identifier)
+            ->add('[')
+            ->compileNode($this->key)
+            ->add(']');
     }
 }
