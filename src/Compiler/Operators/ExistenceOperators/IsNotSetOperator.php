@@ -10,12 +10,7 @@
 namespace Modules\Templating\Compiler\Operators\ExistenceOperators;
 
 use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Nodes\ArrayIndexNode;
-use Modules\Templating\Compiler\Nodes\FunctionNode;
-use Modules\Templating\Compiler\Nodes\IdentifierNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
-use Modules\Templating\Compiler\Operator;
-use Modules\Templating\Compiler\Operators\PropertyAccessOperator;
 
 class IsNotSetOperator extends IsSetOperator
 {

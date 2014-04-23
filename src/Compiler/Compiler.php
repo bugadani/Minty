@@ -12,7 +12,6 @@ namespace Modules\Templating\Compiler;
 use BadMethodCallException;
 use Modules\Templating\Compiler\Nodes\RootNode;
 use Modules\Templating\Environment;
-use Traversable;
 
 class Compiler
 {

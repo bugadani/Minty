@@ -72,8 +72,10 @@ class ControllerHandler
      */
     protected function shouldNotRenderTemplate($controller, $controllerReturnValue)
     {
-        if ($controller instanceof Controller && $controller->getHeaders()->has('location')) {
-            return true;
+        if ($controller instanceof Controller) {
+            if ($controller->getHeaders()->has('location')) {
+                return true;
+            }
         }
 
         return $controllerReturnValue === false;

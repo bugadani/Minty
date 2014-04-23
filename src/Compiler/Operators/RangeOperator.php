@@ -9,10 +9,6 @@
 
 namespace Modules\Templating\Compiler\Operators;
 
-use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Nodes\OperatorNode;
-use Modules\Templating\Compiler\Operator;
-
 class RangeOperator extends FunctionOperator
 {
 

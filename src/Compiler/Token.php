@@ -49,11 +49,11 @@ class Token
     private $value;
     private $line;
 
-    public function __construct($type, $value = null, $lineno = 0)
+    public function __construct($type, $value = null, $line = 0)
     {
         $this->type  = $type;
         $this->value = $value;
-        $this->line  = $lineno;
+        $this->line  = $line;
     }
 
     private function checkValue($value)

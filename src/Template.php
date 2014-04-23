@@ -161,7 +161,7 @@ abstract class Template
     {
         $div = $data / $num;
 
-        return $div === (int)$div;
+        return $div === (int) $div;
     }
 
     public function isIn($needle, $haystack)
