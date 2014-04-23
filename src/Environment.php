@@ -23,7 +23,7 @@ class Environment
     /**
      * @var Tag[]
      */
-    private $tags;
+    private $tags = array();
 
     /**
      * @var OperatorCollection
@@ -43,7 +43,7 @@ class Environment
     /**
      * @var TemplateFunction[]
      */
-    private $functions;
+    private $functions = array();
 
     /**
      * @var array
@@ -53,12 +53,12 @@ class Environment
     /**
      * @var Extension[]
      */
-    private $extensions;
+    private $extensions = array();
 
     /**
      * @var FunctionCompiler[]
      */
-    private $functionCompilers;
+    private $functionCompilers = array();
 
     /**
      * @var Tokenizer
@@ -73,13 +73,8 @@ class Environment
     /**
      * @param array $options
      */
-    public function __construct($options)
+    public function __construct(array $options)
     {
-        //debug_print_backtrace();
-        $this->extensions            = array();
-        $this->functions             = array();
-        $this->functionCompilers     = array();
-        $this->tags                  = array();
         $this->binaryOperators       = new OperatorCollection();
         $this->unaryPrefixOperators  = new OperatorCollection();
         $this->unaryPostfixOperators = new OperatorCollection();
@@ -133,7 +128,7 @@ class Environment
     public function getExtension($name)
     {
         if (!isset($this->extensions[$name])) {
-            throw new CompileException('Extension not found: ' . $name);
+            throw new CompileException("Extension not found: {$name}");
         }
 
         return $this->extensions[$name];
@@ -148,7 +143,7 @@ class Environment
     public function getFunction($name)
     {
         if (!isset($this->functions[$name])) {
-            throw new CompileException('Function not found: ' . $name);
+            throw new CompileException("Function not found: {$name}");
         }
 
         return $this->functions[$name];
