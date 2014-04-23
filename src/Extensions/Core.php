@@ -21,6 +21,7 @@ use Modules\Templating\Compiler\Operators\ArithmeticOperators\ExponentialOperato
 use Modules\Templating\Compiler\Operators\ArithmeticOperators\MultiplicationOperator;
 use Modules\Templating\Compiler\Operators\ArithmeticOperators\RemainderOperator;
 use Modules\Templating\Compiler\Operators\ArithmeticOperators\SubtractionOperator;
+use Modules\Templating\Compiler\Operators\FalseCoalescingOperator;
 use Modules\Templating\Compiler\Operators\BitwiseOperators\BitwiseAndOperator;
 use Modules\Templating\Compiler\Operators\BitwiseOperators\BitwiseNotOperator;
 use Modules\Templating\Compiler\Operators\BitwiseOperators\BitwiseOrOperator;
@@ -132,6 +133,7 @@ class Core extends Extension
             new StartsOperator(8, Operator::NONE),
             new DivisibleByOperator(8, Operator::NONE),
             //other
+            new FalseCoalescingOperator(1),
             new ConcatenationOperator(10),
             new PropertyAccessOperator(16),
             new FilterOperator(11),
