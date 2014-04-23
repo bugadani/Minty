@@ -15,7 +15,7 @@ use Modules\Templating\Environment;
 class Tokenizer
 {
     private $tokens;
-    private $operators;
+    private $operators = array();
     private $delimiters;
 
     /**
@@ -63,7 +63,6 @@ class Tokenizer
 
     private function fetchOperators(Environment $environment)
     {
-        $this->operators = array();
         foreach ($environment->getOperatorSymbols() as $operator) {
 
             if (!is_array($operator)) {
@@ -262,8 +261,7 @@ class Tokenizer
             $this->pushToken(Token::TEXT, $text);
         }
         if ($this->in_raw) {
-            $message = sprintf('Unterminated raw block found in line %d', $this->line);
-            throw new SyntaxException($message);
+            throw new SyntaxException("Unterminated raw block found in line {$this->line}");
         }
         $this->pushToken(Token::EOF);
 

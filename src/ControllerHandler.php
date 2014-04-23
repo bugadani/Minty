@@ -93,6 +93,16 @@ class ControllerHandler
 
                 return true;
             }
+
+            if ($controller instanceof Controller) {
+                $comment = $this->annotation->readClass($controller);
+                if ($comment->has('templateDir')) {
+                    $templateDir         = $comment->get('templateDir');
+                    $this->currentLayout = rtrim($templateDir, '/') . '/' . $action;
+
+                    return true;
+                }
+            }
         }
 
         return false;
