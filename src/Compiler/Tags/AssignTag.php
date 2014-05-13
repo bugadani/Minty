@@ -15,6 +15,7 @@ use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
 use Modules\Templating\Compiler\Tag;
 use Modules\Templating\Compiler\Token;
+use Modules\Templating\Compiler\Tokenizer;
 
 class AssignTag extends Tag
 {
@@ -23,6 +24,14 @@ class AssignTag extends Tag
     {
         return 'assign';
     }
+
+    public function tokenizeExpression(Tokenizer $tokenizer, $expression)
+    {
+        list($identifier, $expression) = explode(':', $expression);
+        $tokenizer->pushToken(Token::IDENTIFIER, $identifier);
+        parent::tokenizeExpression($tokenizer, $expression);
+    }
+
 
     public function parse(Parser $parser, Stream $stream)
     {

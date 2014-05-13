@@ -54,7 +54,7 @@ class Tokenizer
         $literal_pattern = implode('|', $literals);
 
         $this->patterns = array(
-            'assignment'  => '/(.*?)\s*:\s*(.*?)$/ADsu',
+            'assignment'  => '/((?:[a-zA-Z])+[a-zA-Z0-9\_]*)\s*:\s*(.*?)$/ADsu',
             'closing_tag' => sprintf('/end(%s|raw)/Ai', $blocks_pattern),
             'operator'    => $this->getOperatorPattern($environment),
             'literal'     => sprintf('/(%s)/i', $literal_pattern)
@@ -247,10 +247,8 @@ class Tokenizer
 
             $tag_expr = $matches[1][$position][0];
 
-            if (!$this->processAssignment($tag_expr)) {
-                if (!$this->processTag($tag_expr)) {
-                    $this->pushToken(Token::TEXT, $tag_expr);
-                }
+            if (!$this->processTag($tag_expr)) {
+                $this->pushToken(Token::TEXT, $tag_expr);
             }
             $cursor += strlen($tag);
             $this->line += substr_count($tag, "\n");
@@ -288,22 +286,34 @@ class Tokenizer
         if ($this->in_raw) {
             return false;
         }
-        $parts = preg_split('/([ (])/', $tag, 2, PREG_SPLIT_DELIM_CAPTURE);
-        switch (count($parts)) {
-            case 1:
-                $tag_name   = $parts[0];
-                $expression = null;
-                break;
 
-            case 3:
-                $tag_name   = $parts[0];
-                $expression = $parts[1] . $parts[2];
-                break;
+        $match = array();
+        if (preg_match($this->patterns['assignment'], $tag, $match)) {
+            list(, $identifier, $expr) = $match;
 
-            default:
-                $tag_name   = null;
-                $expression = null;
-                break;
+            if (!preg_match($this->patterns['literal'], $identifier)) {
+                $tag_name   = 'assign';
+                $expression = $identifier . ':' . $expr;
+            }
+        }
+        if (!isset($tag_name)) {
+            $parts = preg_split('/([ (])/', $tag, 2, PREG_SPLIT_DELIM_CAPTURE);
+            switch (count($parts)) {
+                case 1:
+                    $tag_name   = $parts[0];
+                    $expression = null;
+                    break;
+
+                case 3:
+                    $tag_name   = $parts[0];
+                    $expression = $parts[1] . $parts[2];
+                    break;
+
+                default:
+                    $tag_name   = null;
+                    $expression = null;
+                    break;
+            }
         }
 
         if ($tag_name === 'raw') {
@@ -317,31 +327,6 @@ class Tokenizer
             $this->tokenizeExpression($tag);
             $this->pushToken(Token::EXPRESSION_END);
         }
-
-        return true;
-    }
-
-    private function processAssignment($tag)
-    {
-        $match = array();
-        if (!preg_match($this->patterns['assignment'], $tag, $match)) {
-            return false;
-        }
-        $identifier = $match[1];
-        $expression = $match[2];
-
-        if (!preg_match('/^([a-zA-Z])+[a-zA-Z0-9\_]*$/i', $identifier)) {
-            return false;
-        }
-        if (preg_match($this->patterns['literal'], $identifier)) {
-            return false;
-        }
-
-        $this->pushToken(Token::TAG, 'assign');
-        $this->pushToken(Token::IDENTIFIER, $identifier);
-        $this->pushToken(Token::EXPRESSION_START);
-        $this->tokenizeExpression($expression);
-        $this->pushToken(Token::EXPRESSION_END);
 
         return true;
     }
