@@ -60,16 +60,20 @@ class Parser
         }
     }
 
-    public function parse(Stream $stream, Closure $end_condition = null)
+    public function parse(Stream $stream, Closure $endCondition = null)
     {
         $root = new RootNode();
-        if ($end_condition) {
-            while (!$end_condition($stream)) {
-                $root->addChild($this->parseToken($stream));
+        if ($endCondition) {
+            while (!$endCondition($stream)) {
+                $node = $this->parseToken($stream);
+                $node->setParent($root);
+                $root->addChild($node);
             }
         } else {
             while (!$stream->next()->test(Token::EOF)) {
-                $root->addChild($this->parseToken($stream));
+                $node = $this->parseToken($stream);
+                $node->setParent($root);
+                $root->addChild($node);
             }
         }
 

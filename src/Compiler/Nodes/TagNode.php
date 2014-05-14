@@ -19,6 +19,10 @@ class TagNode extends Node
      * @var Tag
      */
     private $tag;
+
+    /**
+     * @var array
+     */
     private $data;
 
     /**

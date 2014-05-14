@@ -42,4 +42,6 @@ abstract class Tag
     }
 
     abstract public function parse(Parser $parser, Stream $stream);
+
+    abstract public function compile(Compiler $compiler, array $data);
 }
