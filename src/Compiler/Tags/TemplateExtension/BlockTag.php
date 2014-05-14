@@ -43,18 +43,20 @@ class BlockTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $name = $stream->expect(Token::IDENTIFIER)->getValue();
+        $node = new TagNode($this, array(
+            'template' => $stream->expect(Token::IDENTIFIER)->getValue()
+        ));
         $stream->expect(Token::EXPRESSION_END);
 
-        $end = function (Stream $stream) {
-            return $stream->next()->test(Token::TAG, 'endblock');
-        };
-
-        $data = array(
-            'template' => $name,
-            'body'     => $parser->parse($stream, $end)
+        $bodyNode = $parser->parse(
+            $stream,
+            function (Stream $stream) {
+                return $stream->next()->test(Token::TAG, 'endblock');
+            }
         );
+        $bodyNode->setParent($node);
+        $node->addData('body', $bodyNode);
 
-        return new TagNode($this, $data);
+        return $node;
     }
 }

@@ -47,10 +47,9 @@ class EmbedTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $end  = function (Stream $stream) {
-            return $stream->next()->test(Token::TAG, 'endembed');
-        };
-        $name = $stream->expect(Token::STRING)->getValue();
+        $node = new TagNode($this, array(
+            'template'  => $stream->expect(Token::STRING)->getValue()
+        ));
 
         if ($stream->nextTokenIf(Token::IDENTIFIER, 'using')) {
             $arguments = $parser->parseExpression($stream);
@@ -58,12 +57,17 @@ class EmbedTag extends Tag
             $arguments = array();
         }
 
-        $data = array(
-            'template'  => $name,
-            'body'      => $parser->parse($stream, $end),
-            'arguments' => $arguments
+        $bodyNode = $parser->parse(
+            $stream,
+            function (Stream $stream) {
+                return $stream->next()->test(Token::TAG, 'endembed');
+            }
         );
+        $bodyNode->setParent($node);
 
-        return new TagNode($this, $data);
+        $node->addData('arguments', $arguments);
+        $node->addData('body', $bodyNode);
+
+        return $node;
     }
 }

@@ -73,12 +73,17 @@ class IfTag extends Tag
             return $token->test(Token::TAG, 'endif');
         };
 
-        $branches  = array();
         $condition = $parser->parseExpression($stream);
+        $node = new TagNode($this);
+
         do {
-            $branches[] = array(
-                'condition' => $condition,
-                'body'      => $parser->parse($stream, $fork)
+            $bodyNode = $parser->parse($stream, $fork);
+            $bodyNode->setParent($node);
+            $node->addData(null,
+                array(
+                    'condition' => $condition,
+                    'body'      => $bodyNode
+                )
             );
             if ($stream->current()->test(Token::IDENTIFIER, 'else')) {
                 $stream->expect(Token::EXPRESSION_END);
@@ -89,6 +94,6 @@ class IfTag extends Tag
             }
         } while (!$stream->current()->test(Token::TAG, 'endif'));
 
-        return new TagNode($this, $branches);
+        return $node;
     }
 }

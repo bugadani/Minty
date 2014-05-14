@@ -27,15 +27,14 @@ class ExtendsTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
+        $node = new TagNode($this);
         if (!$stream->expect(Token::STRING)) {
             throw new ParseException('Extends tag requires a string parameter');
         }
-        $data = array(
-            'template' => $stream->current()->getValue()
-        );
+        $node->addData('template', $stream->current()->getValue());
         $stream->expect(Token::EXPRESSION_END);
 
-        return new TagNode($this, $data);
+        return $node;
     }
 
     public function compile(Compiler $compiler, array $data)

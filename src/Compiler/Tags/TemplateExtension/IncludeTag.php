@@ -69,11 +69,9 @@ class IncludeTag extends Tag
             $arguments = array();
         }
 
-        $data = array(
+        return new TagNode($this, array(
             'template'  => $name,
             'arguments' => $arguments
-        );
-
-        return new TagNode($this, $data);
+        ));
     }
 }

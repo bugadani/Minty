@@ -121,21 +121,26 @@ class ForTag extends Tag
         } else {
             $key = null;
         }
+
         $stream->expect(Token::IDENTIFIER, 'in');
-        $data = array(
+        $node = new TagNode($this, array(
             'loop_variable' => $loop_var,
             'loop_key'      => $key,
             'source'        => $parser->parseExpression($stream),
-        );
+        ));
 
-        $data['loop'] = $parser->parse($stream, $else);
+        $bodyNode = $parser->parse($stream, $else);
+        $bodyNode->setParent($node);
+        $node->addData('loop', $bodyNode);
 
         if ($stream->current()->test(Token::IDENTIFIER, 'else')) {
             $stream->expect(Token::EXPRESSION_END);
 
-            $data['else'] = $parser->parse($stream, $end);
+            $elseNode = $parser->parse($stream, $end);
+            $elseNode->setParent($node);
+            $node->addData('else', $elseNode);
         }
 
-        return new TagNode($this, $data);
+        return $node;
     }
 }

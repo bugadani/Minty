@@ -72,6 +72,10 @@ class SwitchTag extends Tag
         $stream->expect(Token::EXPRESSION_START);
         $stream->next();
 
+        $node = new TagNode($this, array(
+            'tested' => $tested
+        ));
+
         $branches = array();
         while (!$stream->current()->test(Token::TAG, 'endswitch')) {
 
@@ -84,16 +88,15 @@ class SwitchTag extends Tag
                 throw new SyntaxException('Switch expects a case or else tag first.');
             }
 
+            $branchNode = $parser->parse($stream, $branch);
+            $branchNode->setParent($node);
             $branches[] = array(
                 'condition' => $condition,
-                'body'      => $parser->parse($stream, $branch)
+                'body'      => $branchNode
             );
         }
-        $data = array(
-            'tested'   => $tested,
-            'branches' => $branches
-        );
 
-        return new TagNode($this, $data);
+        $node->addData('branches', $branches);
+        return $node;
     }
 }
