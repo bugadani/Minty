@@ -49,10 +49,14 @@ class ForTag extends Tag
 
     public function compile(Compiler $compiler, array $data)
     {
-        $compiler->indented('if (isset($temp)) {');
-        $compiler->indent();
-        //TODO: save $temp to a temporary stack to support nested for loops
-        $compiler
+        $compiler->indented('if (isset($temp)) {')
+            ->indent()
+            ->indented('if (!isset($stack)) {')
+            ->indent()
+            ->indented('$stack = array();')
+            ->outdent()
+            ->indented('}')
+            ->indented('$stack[] = $temp;')
             ->outdent()
             ->indented('}')
             ->indented('$temp = ')
@@ -84,6 +88,16 @@ class ForTag extends Tag
                 ->outdent()
                 ->indented('}');
         }
+        $compiler->indented('if (isset($stack)) {')
+            ->indent()
+            ->indented('$temp = array_pop($stack);')
+            ->indented('if (empty($stack)) {')
+            ->indent()
+            ->indented('unset($stack);')
+            ->outdent()
+            ->indented('}')
+            ->outdent()
+            ->indented('}');
     }
 
     public function parse(Parser $parser, Stream $stream)
