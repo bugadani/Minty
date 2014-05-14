@@ -35,6 +35,15 @@ class TagNode extends Node
         $this->data = $data;
     }
 
+    public function addData($key, $value)
+    {
+        if ($key === null) {
+            $this->data[] = $value;
+        } else {
+            $this->data[$key] = $value;
+        }
+    }
+
     public function compile(Compiler $compiler)
     {
         $this->tag->compile($compiler, $this->data);
