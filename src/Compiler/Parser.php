@@ -52,9 +52,6 @@ class Parser
 
                 return $this->tags[$tag]->parse($this, $stream);
 
-            case Token::EXPRESSION_START:
-                return $this->tags['output']->parse($this, $stream);
-
             default:
                 $type  = $token->getTypeString();
                 $value = $token->getValue();

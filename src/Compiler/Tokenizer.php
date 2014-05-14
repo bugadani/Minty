@@ -22,10 +22,17 @@ class Tokenizer
      * @var Tag[]
      */
     private $tags;
+
+    /**
+     * @var Tag[]
+     */
+    private $patternBasedTags = array();
+
     private $patterns;
-    private $in_raw;
+    private $inRaw;
     private $punctuation;
     private $line;
+    private $fallbackTagName;
 
     public function __construct(Environment $environment)
     {
@@ -35,10 +42,16 @@ class Tokenizer
             if ($tag->hasEndingTag()) {
                 $blockNames[] = $name;
             }
-            $this->tags[$name] = $tag;
+            if ($tag->isPatternBased()) {
+                $this->patternBasedTags[$name] = $tag;
+
+            } else {
+                $this->tags[$name] = $tag;
+            }
         }
 
-        $this->delimiters = $environment->getOption('delimiters');
+        $this->delimiters      = $environment->getOption('delimiters');
+        $this->fallbackTagName = $environment->getOption('fallback_tag');
 
         $literals = array(
             'true',
@@ -54,7 +67,6 @@ class Tokenizer
         $literal_pattern = implode('|', $literals);
 
         $this->patterns = array(
-            'assignment'  => '/((?:[a-zA-Z])+[a-zA-Z0-9\_]*)\s*:\s*(.*?)$/ADsu',
             'closing_tag' => sprintf('/end(%s|raw)/Ai', $blocks_pattern),
             'operator'    => $this->getOperatorPattern($environment),
             'literal'     => sprintf('/(%s)/i', $literal_pattern)
@@ -228,7 +240,7 @@ class Tokenizer
         $this->line = 1;
         //init states
         $this->tokens = array();
-        $this->in_raw = false;
+        $this->inRaw = false;
 
         $matches = $this->findTags($template);
         $cursor  = 0;
@@ -258,7 +270,7 @@ class Tokenizer
             $text = substr($template, $cursor);
             $this->pushToken(Token::TEXT, $text);
         }
-        if ($this->in_raw) {
+        if ($this->inRaw) {
             throw new SyntaxException("Unterminated raw block found in line {$this->line}");
         }
         $this->pushToken(Token::EOF);
@@ -271,62 +283,65 @@ class Tokenizer
         $match = array();
         if (preg_match($this->patterns['closing_tag'], $tag, $match)) {
             $type = $match[1];
-            if (!$this->in_raw) {
+            if (!$this->inRaw) {
                 $this->pushToken(Token::TAG, 'end' . $type);
 
                 return true;
             }
             if ($type === 'raw') {
-                $this->in_raw = false;
+                $this->inRaw = false;
 
                 return true;
             }
         }
 
-        if ($this->in_raw) {
+        if ($this->inRaw) {
             return false;
         }
 
-        $match = array();
-        if (preg_match($this->patterns['assignment'], $tag, $match)) {
-            list(, $identifier, $expr) = $match;
+        foreach ($this->patternBasedTags as $tag_name => $unnamedTag) {
+            if ($unnamedTag->matches($tag)) {
+                $this->pushToken(Token::TAG, $tag_name);
+                $unnamedTag->tokenize($this, $tag);
 
-            if (!preg_match($this->patterns['literal'], $identifier)) {
-                $tag_name   = 'assign';
-                $expression = $identifier . ':' . $expr;
+                return true;
             }
         }
-        if (!isset($tag_name)) {
-            $parts = preg_split('/([ (])/', $tag, 2, PREG_SPLIT_DELIM_CAPTURE);
-            switch (count($parts)) {
-                case 1:
-                    $tag_name   = $parts[0];
-                    $expression = null;
-                    break;
 
-                case 3:
-                    $tag_name   = $parts[0];
-                    $expression = $parts[1] . $parts[2];
-                    break;
+        $parts = preg_split('/([ (])/', $tag, 2, PREG_SPLIT_DELIM_CAPTURE);
+        switch (count($parts)) {
+            case 1:
+                $tag_name   = $parts[0];
+                $expression = null;
+                break;
 
-                default:
-                    $tag_name   = null;
-                    $expression = null;
-                    break;
-            }
+            case 3:
+                $tag_name   = $parts[0];
+                $expression = $parts[1] . $parts[2];
+                break;
+
+            default:
+                $tag_name   = null;
+                $expression = $tag;
+                break;
         }
 
         if ($tag_name === 'raw') {
-            $this->in_raw = true;
-        } elseif (isset($this->tags[$tag_name])) {
-            $tag = $this->tags[$tag_name];
-            $this->pushToken(Token::TAG, $tag_name);
-            $tag->tokenizeExpression($this, $expression);
-        } else {
-            $this->pushToken(Token::EXPRESSION_START);
-            $this->tokenizeExpression($tag);
-            $this->pushToken(Token::EXPRESSION_END);
+            $this->inRaw = true;
+
+            return true;
         }
+
+        if (!isset($tag_name) || !isset($this->tags[$tag_name])) {
+            $tag_name   = $this->fallbackTagName;
+            $expression = $tag;
+        }
+        if (!isset($this->tags[$tag_name])) {
+            throw new SyntaxException("Unknown tag {$tag_name} in line {$this->line}");
+        }
+        $tag = $this->tags[$tag_name];
+        $tag->addNameToken($this);
+        $tag->tokenize($this, $expression);
 
         return true;
     }
@@ -383,8 +398,6 @@ class Tokenizer
             }
         }
     }
-
-    //Utilities
 
     public function pushToken($type, $value = null)
     {

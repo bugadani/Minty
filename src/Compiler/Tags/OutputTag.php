@@ -20,6 +20,7 @@ use Modules\Templating\Compiler\Operators\FilterOperator;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
 use Modules\Templating\Compiler\Tag;
+use Modules\Templating\Compiler\Token;
 use Modules\Templating\Environment;
 
 class OutputTag extends Tag
@@ -32,6 +33,8 @@ class OutputTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
+        $stream->expectCurrent(Token::EXPRESSION_START);
+
         return new TagNode($this, array(
             'expression' => $parser->parseExpression($stream)
         ));

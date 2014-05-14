@@ -21,7 +21,6 @@ use Modules\Templating\Compiler\Operators\ArithmeticOperators\ExponentialOperato
 use Modules\Templating\Compiler\Operators\ArithmeticOperators\MultiplicationOperator;
 use Modules\Templating\Compiler\Operators\ArithmeticOperators\RemainderOperator;
 use Modules\Templating\Compiler\Operators\ArithmeticOperators\SubtractionOperator;
-use Modules\Templating\Compiler\Operators\FalseCoalescingOperator;
 use Modules\Templating\Compiler\Operators\BitwiseOperators\BitwiseAndOperator;
 use Modules\Templating\Compiler\Operators\BitwiseOperators\BitwiseNotOperator;
 use Modules\Templating\Compiler\Operators\BitwiseOperators\BitwiseOrOperator;
@@ -40,6 +39,7 @@ use Modules\Templating\Compiler\Operators\ConcatenationOperator;
 use Modules\Templating\Compiler\Operators\ExclusiveRangeOperator;
 use Modules\Templating\Compiler\Operators\ExistenceOperators\IsNotSetOperator;
 use Modules\Templating\Compiler\Operators\ExistenceOperators\IsSetOperator;
+use Modules\Templating\Compiler\Operators\FalseCoalescingOperator;
 use Modules\Templating\Compiler\Operators\FilterOperator;
 use Modules\Templating\Compiler\Operators\LogicOperators\AndOperator;
 use Modules\Templating\Compiler\Operators\LogicOperators\NotOperator;
@@ -68,6 +68,9 @@ use Modules\Templating\Compiler\Operators\UnaryOperators\PostIncrementOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PreDecrementOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PreIncrementOperator;
 use Modules\Templating\Compiler\Tags\AssignTag;
+use Modules\Templating\Compiler\Tags\CaseTag;
+use Modules\Templating\Compiler\Tags\ElseIfTag;
+use Modules\Templating\Compiler\Tags\ElseTag;
 use Modules\Templating\Compiler\Tags\ExtractTag;
 use Modules\Templating\Compiler\Tags\ForTag;
 use Modules\Templating\Compiler\Tags\IfTag;
@@ -188,7 +191,10 @@ class Core extends Extension
             new IfTag(),
             new AssignTag(),
             new OutputTag(),
-            new ExtractTag()
+            new ExtractTag(),
+            new ElseTag(),
+            new ElseIfTag(),
+            new CaseTag()
         );
 
         return $tags;

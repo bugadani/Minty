@@ -25,7 +25,7 @@ class IncludeTag extends Tag
         return 'include';
     }
 
-    public function tokenizeExpression(Tokenizer $tokenizer, $expression)
+    public function tokenize(Tokenizer $tokenizer, $expression)
     {
         $tokenizer->pushToken(Token::EXPRESSION_START, $this->getTag());
 

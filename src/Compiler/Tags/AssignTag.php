@@ -19,17 +19,47 @@ use Modules\Templating\Compiler\Tokenizer;
 
 class AssignTag extends Tag
 {
+    private $pattern = '/((?:[a-zA-Z])+[a-zA-Z0-9\_]*)\s*:\s*(.*?)$/ADsu';
 
     public function getTag()
     {
         return 'assign';
     }
 
-    public function tokenizeExpression(Tokenizer $tokenizer, $expression)
+    public function isPatternBased()
+    {
+        return true;
+    }
+
+    public function matches($tag)
+    {
+        $match = array();
+        if (!preg_match($this->pattern, $tag, $match)) {
+            return false;
+        }
+
+        $literalPattern = implode(
+            '|',
+            array(
+                'true',
+                'false',
+                'null',
+                ':[a-zA-Z]+[a-zA-Z_\-0-9]*',
+                '(?<!\w)\d+(?:\.\d+)?',
+                '"(?:\\\\.|[^"\\\\])*"',
+                "'(?:\\\\.|[^'\\\\])*'"
+            )
+        );
+
+        return !preg_match("/{$literalPattern}/i", $match[1]);
+    }
+
+
+    public function tokenize(Tokenizer $tokenizer, $expression)
     {
         list($identifier, $expression) = explode(':', $expression);
         $tokenizer->pushToken(Token::IDENTIFIER, $identifier);
-        parent::tokenizeExpression($tokenizer, $expression);
+        parent::tokenize($tokenizer, $expression);
     }
 
 
