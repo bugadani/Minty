@@ -38,22 +38,15 @@ class AssignTag extends Tag
             return false;
         }
 
-        $literalPattern = implode(
-            '|',
+        return !in_array(
+            $match[1],
             array(
                 'true',
                 'false',
-                'null',
-                ':[a-zA-Z]+[a-zA-Z_\-0-9]*',
-                '(?<!\w)\d+(?:\.\d+)?',
-                '"(?:\\\\.|[^"\\\\])*"',
-                "'(?:\\\\.|[^'\\\\])*'"
+                'null'
             )
         );
-
-        return !preg_match("/{$literalPattern}/i", $match[1]);
     }
-
 
     public function tokenize(Tokenizer $tokenizer, $expression)
     {
@@ -61,7 +54,6 @@ class AssignTag extends Tag
         $tokenizer->pushToken(Token::IDENTIFIER, $identifier);
         parent::tokenize($tokenizer, $expression);
     }
-
 
     public function parse(Parser $parser, Stream $stream)
     {

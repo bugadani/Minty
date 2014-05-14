@@ -240,7 +240,7 @@ class Tokenizer
         $this->line = 1;
         //init states
         $this->tokens = array();
-        $this->inRaw = false;
+        $this->inRaw  = false;
 
         $matches = $this->findTags($template);
         $cursor  = 0;
