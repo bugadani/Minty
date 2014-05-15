@@ -11,6 +11,7 @@ namespace Modules\Templating;
 
 use Miny\Log\Log;
 use Modules\Templating\Compiler\Compiler;
+use Modules\Templating\Compiler\NodeTreeOptimizer;
 use RuntimeException;
 
 class TemplateLoader
@@ -26,6 +27,11 @@ class TemplateLoader
     private $compiler;
 
     /**
+     * @var NodeTreeOptimizer
+     */
+    private $nodeTreeOptimizer;
+
+    /**
      * @var Environment
      */
     private $environment;
@@ -36,16 +42,22 @@ class TemplateLoader
     private $log;
 
     /**
-     * @param Environment $environment
-     * @param Compiler    $compiler
-     * @param Log|null    $log
+     * @param Environment       $environment
+     * @param Compiler          $compiler
+     * @param NodeTreeOptimizer $nodeTreeOptimizer
+     * @param Log|null          $log
      */
-    public function __construct(Environment $environment, Compiler $compiler, Log $log = null)
-    {
-        $this->compiler    = $compiler;
-        $this->options     = $environment->getOptions();
-        $this->environment = $environment;
-        $this->log         = $log;
+    public function __construct(
+        Environment $environment,
+        Compiler $compiler,
+        NodeTreeOptimizer $nodeTreeOptimizer,
+        Log $log = null
+    ) {
+        $this->compiler          = $compiler;
+        $this->nodeTreeOptimizer = $nodeTreeOptimizer;
+        $this->options           = $environment->getOptions();
+        $this->environment       = $environment;
+        $this->log               = $log;
     }
 
     protected function log($message)
@@ -117,6 +129,9 @@ class TemplateLoader
         $contents = file_get_contents($file);
         $stream   = $this->environment->getTokenizer()->tokenize($contents);
         $node     = $this->environment->getParser()->parse($stream);
+
+        $this->nodeTreeOptimizer->optimize($node);
+
         $compiled = $this->compiler->compile($node, $class);
         $cacheDir = dirname($cached);
         if (!is_dir($cacheDir)) {

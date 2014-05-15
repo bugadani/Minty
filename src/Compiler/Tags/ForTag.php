@@ -49,20 +49,26 @@ class ForTag extends Tag
 
     public function compile(Compiler $compiler, array $data)
     {
-        $compiler->indented('if (isset($temp)) {')
-            ->indent()
-            ->indented('if (!isset($stack)) {')
-            ->indent()
-            ->indented('$stack = array();')
-            ->outdent()
-            ->indented('}')
-            ->indented('$stack[] = $temp;')
-            ->outdent()
-            ->indented('}')
+        if ($data['save_temp_var']) {
+            $compiler
+                ->indented('if (isset($temp)) {')
+                ->indent();
+
+            if ($data['create_stack']) {
+                $compiler->indented('$stack = array();');
+            }
+
+            $compiler
+                ->indented('$stack[] = $temp;')
+                ->outdent()
+                ->indented('}');
+        }
+        $compiler
             ->indented('$temp = ')
             ->compileNode($data['source'])
             ->add(';');
-        if (isset($data['else'])) {
+
+        if (isset($data['else']) && count($data['else']->getChildren()) > 0) {
             $compiler
                 ->indented('if(empty($temp)) {')
                 ->indent()
@@ -71,13 +77,15 @@ class ForTag extends Tag
                 ->indented('} else {')
                 ->indent();
         }
+
         $compiler->indented('foreach($temp as ');
         if ($data['loop_key'] !== null) {
             $compiler
                 ->add('$this->' . $data['loop_key'])
                 ->add(' => ');
         }
-        $compiler->add('$this->' . $data['loop_variable'])
+        $compiler
+            ->add('$this->' . $data['loop_variable'])
             ->add(') {')
             ->indent()
             ->compileNode($data['loop'])
@@ -88,16 +96,12 @@ class ForTag extends Tag
                 ->outdent()
                 ->indented('}');
         }
-        $compiler->indented('if (isset($stack)) {')
-            ->indent()
-            ->indented('$temp = array_pop($stack);')
-            ->indented('if (empty($stack)) {')
-            ->indent()
-            ->indented('unset($stack);')
-            ->outdent()
-            ->indented('}')
-            ->outdent()
-            ->indented('}');
+        if ($data['save_temp_var']) {
+            $compiler->indented('$temp = array_pop($stack);');
+            if ($data['create_stack']) {
+                $compiler->indented('unset($stack);');
+            }
+        }
     }
 
     public function parse(Parser $parser, Stream $stream)
@@ -126,6 +130,8 @@ class ForTag extends Tag
         $node = new TagNode($this, array(
             'loop_variable' => $loop_var,
             'loop_key'      => $key,
+            'save_temp_var' => true,
+            'create_stack'  => true,
             'source'        => $parser->parseExpression($stream),
         ));
 

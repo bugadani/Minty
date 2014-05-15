@@ -14,6 +14,7 @@ use Miny\AutoLoader;
 use Miny\Factory\Container;
 use Miny\HTTP\Request;
 use Miny\HTTP\Response;
+use Modules\Templating\Compiler\NodeTreeOptimizer;
 use UnexpectedValueException;
 
 class Module extends \Miny\Modules\Module
@@ -35,6 +36,9 @@ class Module extends \Miny\Modules\Module
                 'delimiters'         => array(
                     'tag'     => array('{', '}'),
                     'comment' => array('{#', '#}')
+                ),
+                'optimizers'         => array(
+                    '\\Modules\\Templating\\Compiler\\Optimizers\\ForLoopOptimizer'
                 )
             ),
             'codes'   => array()
@@ -57,6 +61,17 @@ class Module extends \Miny\Modules\Module
                 $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Miny'));
 
                 return $env;
+            }
+        );
+
+        $container->addAlias(
+            __NAMESPACE__ . '\\Compiler\\NodeTreeOptimizer',
+            function (Container $container) use ($module) {
+                $nodeTreeOptimizer = new NodeTreeOptimizer();
+                $options           = $module->getConfiguration('options');
+                foreach ($options['optimizers'] as $optimizer) {
+                    $nodeTreeOptimizer->addOptimizer($container->get($optimizer));
+                }
             }
         );
     }
