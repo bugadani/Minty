@@ -17,11 +17,17 @@ abstract class Node
     private $parent;
 
     /**
+     * @var Node[]
+     */
+    private $children = array();
+
+    /**
      * @param Node $parent
      */
-    public function setParent($parent)
+    public function setParent(Node $parent)
     {
         $this->parent = $parent;
+        $parent->addChild($this);
     }
 
     /**
@@ -30,6 +36,22 @@ abstract class Node
     public function getParent()
     {
         return $this->parent;
+    }
+
+    /**
+     * @param Node $node
+     */
+    public function addChild(Node $node)
+    {
+        $this->children[] = $node;
+    }
+
+    /**
+     * @return Node[]
+     */
+    public function getChildren()
+    {
+        return $this->children;
     }
 
     abstract public function compile(Compiler $compiler);

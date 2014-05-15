@@ -14,19 +14,9 @@ use Modules\Templating\Compiler\Node;
 
 class RootNode extends Node
 {
-    /**
-     * @var Node[]
-     */
-    private $children = array();
-
-    public function addChild(Node $node)
-    {
-        $this->children[] = $node;
-    }
-
     public function compile(Compiler $compiler)
     {
-        foreach ($this->children as $node) {
+        foreach ($this->getChildren() as $node) {
             $compiler->compileNode($node);
         }
     }

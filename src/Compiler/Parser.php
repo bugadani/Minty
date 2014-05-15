@@ -67,13 +67,11 @@ class Parser
             while (!$endCondition($stream)) {
                 $node = $this->parseToken($stream);
                 $node->setParent($root);
-                $root->addChild($node);
             }
         } else {
             while (!$stream->next()->test(Token::EOF)) {
                 $node = $this->parseToken($stream);
                 $node->setParent($root);
-                $root->addChild($node);
             }
         }
 
