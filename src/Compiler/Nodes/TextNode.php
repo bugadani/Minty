@@ -21,6 +21,11 @@ class TextNode extends Node
         $this->text = $text;
     }
 
+    public function getText()
+    {
+        return $this->text;
+    }
+
     public function compile(Compiler $compiler)
     {
         $compiler

@@ -35,6 +35,14 @@ class TagNode extends Node
         $this->data = $data;
     }
 
+    /**
+     * @return Tag
+     */
+    public function getTag()
+    {
+        return $this->tag;
+    }
+
     public function addData($key, $value)
     {
         if ($key === null) {
@@ -42,6 +50,20 @@ class TagNode extends Node
         } else {
             $this->data[$key] = $value;
         }
+    }
+
+    public function getData($key = null)
+    {
+        if ($key === null) {
+            return $this->data;
+        }
+
+        return $this->data[$key];
+    }
+
+    public function hasData($key)
+    {
+        return isset($this->data[$key]);
     }
 
     public function compile(Compiler $compiler)
