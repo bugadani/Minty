@@ -73,6 +73,7 @@ class AssignTag extends Tag
     public function compile(Compiler $compiler, array $data)
     {
         $compiler
+            ->indented('')
             ->compileNode($data['variable_name'])
             ->add(' = ')
             ->compileNode($data['value_node'])
