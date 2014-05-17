@@ -36,7 +36,7 @@ class ParentTag extends Tag
         return new TagNode($this);
     }
 
-    public function compile(Compiler $compiler, array $data)
+    public function compile(Compiler $compiler, TagNode $node)
     {
         $compiler->indented('echo parent::%s();', $compiler->getCurrentTemplate());
     }

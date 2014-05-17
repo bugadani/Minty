@@ -30,14 +30,15 @@ class SwitchTag extends Tag
         return 'switch';
     }
 
-    public function compile(Compiler $compiler, array $array)
+    public function compile(Compiler $compiler, TagNode $node)
     {
+        $data = $node->getData();
         $compiler
             ->indented('switch(')
-            ->compileNode($array['tested'])
+            ->compileNode($data['tested'])
             ->add(') {')
             ->indent();
-        foreach ($array['branches'] as $branch) {
+        foreach ($data['branches'] as $branch) {
             if ($branch['condition'] === null) {
                 $compiler->indented('default:');
             } else {
@@ -97,6 +98,7 @@ class SwitchTag extends Tag
         }
 
         $node->addData('branches', $branches);
+
         return $node;
     }
 }

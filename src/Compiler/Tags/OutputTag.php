@@ -94,8 +94,9 @@ class OutputTag extends Tag
         return new FunctionNode('filter', array($node));
     }
 
-    public function compile(Compiler $compiler, array $data)
+    public function compile(Compiler $compiler, TagNode $node)
     {
+        $data = $node->getData();
         $expression = $this->ensureSafe($compiler->getEnvironment(), $data['expression']);
         $compiler
             ->indented('echo ')

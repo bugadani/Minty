@@ -47,8 +47,9 @@ class ForTag extends Tag
         $tokenizer->pushToken(Token::EXPRESSION_END);
     }
 
-    public function compile(Compiler $compiler, array $data)
+    public function compile(Compiler $compiler, TagNode $node)
     {
+        $data = $node->getData();
         if ($data['save_temp_var']) {
             $compiler
                 ->indented('if (isset($temp)) {')

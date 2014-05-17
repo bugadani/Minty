@@ -30,8 +30,9 @@ class BlockTag extends Tag
         return 'block';
     }
 
-    public function compile(Compiler $compiler, array $data)
+    public function compile(Compiler $compiler, TagNode $node)
     {
+        $data = $node->getData();
         $compiler->startTemplate($data['template']);
         /** @var $body Node */
         $body = $data['body'];

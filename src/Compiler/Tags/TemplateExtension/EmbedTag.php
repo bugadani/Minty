@@ -29,8 +29,9 @@ class EmbedTag extends Tag
         return 'embed';
     }
 
-    public function compile(Compiler $compiler, array $data)
+    public function compile(Compiler $compiler, TagNode $node)
     {
+        $data = $node->getData();
         $embedded = $compiler->addEmbedded($data['template'], $data['body']);
 
         $compiler

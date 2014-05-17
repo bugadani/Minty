@@ -68,6 +68,6 @@ class TagNode extends Node
 
     public function compile(Compiler $compiler)
     {
-        $this->tag->compile($compiler, $this->data);
+        $this->tag->compile($compiler, $this);
     }
 }

@@ -70,8 +70,9 @@ class AssignTag extends Tag
         ));
     }
 
-    public function compile(Compiler $compiler, array $data)
+    public function compile(Compiler $compiler, TagNode $node)
     {
+        $data = $node->getData();
         $compiler
             ->indented('')
             ->compileNode($data['variable_name'])

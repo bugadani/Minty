@@ -29,8 +29,9 @@ class IfTag extends Tag
         return 'if';
     }
 
-    public function compile(Compiler $compiler, array $data)
+    public function compile(Compiler $compiler, TagNode $node)
     {
+        $data = $node->getData();
         $first = true;
         $else  = null;
         foreach ($data as $branch) {

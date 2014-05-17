@@ -46,8 +46,9 @@ class IncludeTag extends Tag
         }
     }
 
-    public function compile(Compiler $compiler, array $data)
+    public function compile(Compiler $compiler, TagNode $node)
     {
+        $data = $node->getData();
         $compiler
             ->indented('$template = $this->getLoader()->load(')
             ->compileData($data['template'])

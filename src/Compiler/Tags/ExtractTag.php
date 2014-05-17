@@ -36,8 +36,9 @@ class ExtractTag extends Tag
         ));
     }
 
-    public function compile(Compiler $compiler, array $data)
+    public function compile(Compiler $compiler, TagNode $node)
     {
+        $data = $node->getData();
         $compiler->indented('$this->extract(')
             ->compileNode($data['source'])
             ->add(', ')

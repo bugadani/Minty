@@ -10,6 +10,7 @@
 namespace Modules\Templating\Compiler\Tags;
 
 use Modules\Templating\Compiler\Compiler;
+use Modules\Templating\Compiler\Nodes\TagNode;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
 use Modules\Templating\Compiler\Tag;
@@ -28,7 +29,7 @@ abstract class MetaTag extends Tag
 
     }
 
-    public function compile(Compiler $compiler, array $data)
+    public function compile(Compiler $compiler, TagNode $node)
     {
     }
 }

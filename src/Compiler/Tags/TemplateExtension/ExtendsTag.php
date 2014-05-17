@@ -37,8 +37,9 @@ class ExtendsTag extends Tag
         return $node;
     }
 
-    public function compile(Compiler $compiler, array $data)
+    public function compile(Compiler $compiler, TagNode $node)
     {
+        $data = $node->getData();
         $compiler->setExtendedTemplate($data['template']);
     }
 }
