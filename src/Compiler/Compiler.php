@@ -172,6 +172,8 @@ class Compiler
     {
         $this->template_stack[] = $template . 'Template';
         $this->addOutputStack();
+
+        return $this;
     }
 
     public function endTemplate()
