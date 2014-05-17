@@ -84,6 +84,11 @@ class ExpressionParser
         $this->unaryPostfixTest = array($this->unaryPostfixOperators, 'isOperator');
     }
 
+    /**
+     * @param Stream $stream
+     *
+     * @return Node|null
+     */
     public function parse(Stream $stream)
     {
         $this->operatorStack = new SplStack();
@@ -195,6 +200,11 @@ class ExpressionParser
         } while (!$return);
     }
 
+    /**
+     * @param bool $return
+     *
+     * @return Node|null
+     */
     public function parseExpression($return = false)
     {
         //push sentinel

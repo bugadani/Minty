@@ -78,6 +78,11 @@ class Parser
         return $root;
     }
 
+    /**
+     * @param Stream $stream
+     *
+     * @return Node
+     */
     public function parseExpression(Stream $stream)
     {
         return $this->expressionParser->parse($stream);
