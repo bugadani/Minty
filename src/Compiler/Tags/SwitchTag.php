@@ -38,6 +38,7 @@ class SwitchTag extends Tag
             ->compileNode($data['tested'])
             ->add(') {')
             ->indent();
+
         foreach ($data['branches'] as $branch) {
             if ($branch['condition'] === null) {
                 $compiler->indented('default:');
@@ -69,8 +70,11 @@ class SwitchTag extends Tag
         };
 
         $tested = $parser->parseExpression($stream);
-        $stream->expect(Token::TEXT);
-        $stream->expect(Token::EXPRESSION_START);
+        if($stream->next()->test(Token::TEXT)) {
+            $stream->expect(Token::EXPRESSION_START);
+        } else {
+            $stream->expectCurrent(Token::EXPRESSION_START);
+        }
         $stream->next();
 
         $node = new TagNode($this, array(
@@ -82,6 +86,7 @@ class SwitchTag extends Tag
 
             if ($stream->current()->test(Token::IDENTIFIER, 'case')) {
                 $condition = $parser->parseExpression($stream);
+                $condition->setParent($node);
             } elseif ($stream->current()->test(Token::IDENTIFIER, 'else')) {
                 $stream->expect(Token::EXPRESSION_END);
                 $condition = null;
