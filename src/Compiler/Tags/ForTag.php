@@ -33,15 +33,15 @@ class ForTag extends Tag
     public function tokenize(Tokenizer $tokenizer, $expression)
     {
         $tokenizer->pushToken(Token::EXPRESSION_START, $this->getTag());
+
         list($vars, $source) = explode(' in ', $expression, 2);
         if (strpos($vars, ':') !== false) {
-            list($key, $var) = explode(':', $vars, 2);
+            list($key, $vars) = explode(':', $vars, 2);
             $tokenizer->pushToken(Token::IDENTIFIER, trim($key));
             $tokenizer->pushToken(Token::PUNCTUATION, ':');
-            $tokenizer->pushToken(Token::IDENTIFIER, trim($var));
-        } else {
-            $tokenizer->pushToken(Token::IDENTIFIER, trim($vars));
         }
+        $tokenizer->pushToken(Token::IDENTIFIER, trim($vars));
+
         $tokenizer->pushToken(Token::IDENTIFIER, 'in');
         $tokenizer->tokenizeExpression($source);
         $tokenizer->pushToken(Token::EXPRESSION_END);
@@ -63,34 +63,39 @@ class ForTag extends Tag
                 ->outdent()
                 ->indented('}');
         }
-        $compiler
-            ->indented('$temp = ')
-            ->compileNode($data['source'])
-            ->add(';');
 
         if (isset($data['else']) && count($data['else']->getChildren()) > 0) {
             $compiler
+                ->indented('$temp = ')
+                ->compileNode($data['source'])
+                ->add(';')
                 ->indented('if(empty($temp)) {')
                 ->indent()
                 ->compileNode($data['else'])
                 ->outdent()
                 ->indented('} else {')
-                ->indent();
+                ->indent()
+                ->indented('foreach($temp as ');
+        } else {
+            $compiler->indented('foreach(')
+                ->compileNode($data['source'])
+                ->add(' as ');
         }
 
-        $compiler->indented('foreach($temp as ');
         if ($data['loop_key'] !== null) {
             $compiler
-                ->add('$this->' . $data['loop_key'])
+                ->compileNode($data['loop_key'])
                 ->add(' => ');
         }
+
         $compiler
-            ->add('$this->' . $data['loop_variable'])
+            ->compileNode($data['loop_variable'])
             ->add(') {')
             ->indent()
             ->compileNode($data['loop'])
             ->outdent()
             ->indented('}');
+
         if (isset($data['else'])) {
             $compiler
                 ->outdent()
@@ -118,15 +123,15 @@ class ForTag extends Tag
             return $stream->next()->test(Token::TAG, 'endfor');
         };
 
-        $loop_var = $stream->next()->getValue();
-        if ($stream->nextTokenIf(Token::PUNCTUATION, ':')) {
+        $loop_var = $parser->parseExpression($stream);
+        if ($stream->current()->test(Token::PUNCTUATION, ':')) {
             $key      = $loop_var;
-            $loop_var = $stream->next()->getValue();
+            $loop_var = $parser->parseExpression($stream);
         } else {
             $key = null;
         }
 
-        $stream->expect(Token::IDENTIFIER, 'in');
+        $stream->expectCurrent(Token::IDENTIFIER, 'in');
         $node = new TagNode($this, array(
             'loop_variable' => $loop_var,
             'loop_key'      => $key,
