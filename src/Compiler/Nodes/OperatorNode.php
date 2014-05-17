@@ -25,11 +25,6 @@ class OperatorNode extends Node
      */
     private $operator;
 
-    /**
-     * @var Node[]
-     */
-    private $operands = array();
-
     public function __construct(Operator $operator)
     {
         $this->operator = $operator;
@@ -37,12 +32,12 @@ class OperatorNode extends Node
 
     public function addOperand($type, Node $value = null)
     {
-        $this->operands[$type] = $value;
+        $this->addChild($value, $type);
     }
 
     public function hasOperand($type)
     {
-        return isset($this->operands[$type]);
+        return $this->hasChild($type);
     }
 
     /**
@@ -53,11 +48,11 @@ class OperatorNode extends Node
      */
     public function getOperand($type)
     {
-        if (!isset($this->operands[$type])) {
+        if (!$this->hasChild($type)) {
             throw new SyntaxException('Operator has a missing operand.');
         }
 
-        return $this->operands[$type];
+        return $this->getChild($type);
     }
 
     public function getOperator()

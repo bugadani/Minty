@@ -40,10 +40,15 @@ abstract class Node
 
     /**
      * @param Node $node
+     * @param null $key
      */
-    public function addChild(Node $node)
+    public function addChild(Node $node, $key = null)
     {
-        $this->children[] = $node;
+        if ($key === null) {
+            $this->children[] = $node;
+        } else {
+            $this->children[$key] = $node;
+        }
     }
 
     /**
@@ -52,6 +57,16 @@ abstract class Node
     public function getChildren()
     {
         return $this->children;
+    }
+
+    public function hasChild($key)
+    {
+        return isset($this->children[$key]);
+    }
+
+    public function getChild($key)
+    {
+        return $this->children[$key];
     }
 
     abstract public function compile(Compiler $compiler);
