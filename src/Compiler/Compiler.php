@@ -77,7 +77,7 @@ class Compiler
     {
         $args = array_slice(func_get_args(), 1);
         $this->output .= "\n";
-        $this->output .= str_repeat(' ', $this->indentation * 4);
+        $this->output .= str_repeat('    ', $this->indentation);
         $this->output .= vsprintf($string, $args);
 
         return $this;
