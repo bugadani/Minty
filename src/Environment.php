@@ -300,7 +300,7 @@ class Environment
     public function getNodeTreeOptimizer()
     {
         if (!isset($this->nodeTreeOptimizer)) {
-            $this->nodeTreeOptimizer = new NodeTreeOptimizer($this->nodeOptimizers);
+            $this->nodeTreeOptimizer = new NodeTreeOptimizer($this->getNodeOptimizers());
         }
 
         return $this->nodeTreeOptimizer;
@@ -308,11 +308,13 @@ class Environment
 
     public function getNodeOptimizers()
     {
-        if(empty($this->nodeOptimizers)) {
+        if (empty($this->nodeOptimizers)) {
             foreach ($this->extensions as $ext) {
                 $ext->registerNodeOptimizers($this);
             }
         }
+
+        return $this->nodeOptimizers;
     }
 
     public function addNodeOptimizer(NodeOptimizer $optimizer)
