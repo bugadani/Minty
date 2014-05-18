@@ -44,14 +44,16 @@ class ForLoopOptimizer extends NodeVisitor
     public function leaveNode(Node $node)
     {
         if (!$node instanceof TagNode) {
-            return;
+            return true;
         }
         if (!$node->getTag() instanceof ForTag) {
-            return;
+            return true;
         }
         array_pop($this->stack);
         if (array_pop($this->counterStack) === $this->counter) {
             $node->addData('save_temp_var', false);
         }
+
+        return true;
     }
 }

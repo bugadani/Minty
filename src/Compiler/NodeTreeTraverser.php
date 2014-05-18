@@ -53,10 +53,12 @@ class NodeTreeTraverser
     {
         $visitor->enterNode($node);
 
-        foreach ($node->getChildren() as $child) {
-            $this->visitNode($child, $visitor);
+        foreach ($node->getChildren() as $key => $child) {
+            if(!$this->visitNode($child, $visitor)) {
+                $node->removeChild($key);
+            }
         }
 
-        $visitor->leaveNode($node);
+        return $visitor->leaveNode($node);
     }
 }

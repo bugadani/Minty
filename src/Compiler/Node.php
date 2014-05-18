@@ -69,5 +69,11 @@ abstract class Node
         return $this->children[$key];
     }
 
+    public function removeChild($key)
+    {
+        unset($this->children[$key]->parent);
+        unset($this->children[$key]);
+    }
+
     abstract public function compile(Compiler $compiler);
 }
