@@ -10,6 +10,7 @@
 namespace Modules\Templating\Compiler\Tags;
 
 use Modules\Templating\Compiler\Compiler;
+use Modules\Templating\Compiler\Nodes\RootNode;
 use Modules\Templating\Compiler\Nodes\TagNode;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
@@ -31,35 +32,28 @@ class IfTag extends Tag
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        $data = $node->getData();
         $first = true;
         $else  = null;
-        foreach ($data as $branch) {
+        foreach ($node->getChildren() as $branch) {
             if ($first) {
                 $compiler->indented('if(');
                 $first = false;
-            } elseif ($branch['condition'] === null) {
-                $else = $branch;
+            } elseif (!$branch->hasChild('condition')) {
+                $else = $branch->getChild('body');
                 continue;
             } else {
                 $compiler->add(' elseif(');
             }
 
             $compiler
-                ->compileNode($branch['condition'])
-                ->add(') {')
-                ->indent()
-                ->compileNode($branch['body'])
-                ->outdent()
-                ->indented('}');
+                ->compileNode($branch->getChild('condition'))
+                ->add(') ')
+                ->bracketed($branch->getChild('body'));
         }
         if ($else !== null) {
             $compiler
-                ->add(' else {')
-                ->indent()
-                ->compileNode($else['body'])
-                ->outdent()
-                ->indented('}');
+                ->add(' else ')
+                ->bracketed($else);
         }
     }
 
@@ -74,19 +68,17 @@ class IfTag extends Tag
             return $token->test(Token::TAG, 'endif');
         };
 
-        $node = new TagNode($this);
+        $node      = new TagNode($this);
         $condition = $parser->parseExpression($stream);
-        $condition->setParent($node);
 
         do {
-            $bodyNode = $parser->parse($stream, $fork);
-            $bodyNode->setParent($node);
-            $node->addData(null,
-                array(
-                    'condition' => $condition,
-                    'body'      => $bodyNode
-                )
-            );
+            $branchNode = $node->addChild(new RootNode());
+
+            if ($condition !== null) {
+                $branchNode->addChild($condition, 'condition');
+            }
+            $branchNode->addChild($parser->parse($stream, $fork), 'body');
+
             if ($stream->current()->test(Token::IDENTIFIER, 'else')) {
                 $stream->expect(Token::EXPRESSION_END);
                 $condition = null;

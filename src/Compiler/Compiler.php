@@ -83,6 +83,31 @@ class Compiler
         return $this;
     }
 
+    public function openBracket()
+    {
+        $this->add(' {');
+        $this->indent();
+
+        return $this;
+    }
+
+    public function closeBracket()
+    {
+        $this->outdent();
+        $this->indented('}');
+
+        return $this;
+    }
+
+    public function bracketed(Node $node)
+    {
+        $this->openBracket();
+        $this->compileNode($node);
+        $this->closeBracket();
+
+        return $this;
+    }
+
     public function add($string)
     {
         $this->output .= $string;

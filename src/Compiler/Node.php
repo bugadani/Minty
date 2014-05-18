@@ -41,6 +41,8 @@ abstract class Node
     /**
      * @param Node $node
      * @param null $key
+     *
+     * @return Node
      */
     public function addChild(Node $node, $key = null)
     {
@@ -49,6 +51,8 @@ abstract class Node
         } else {
             $this->children[$key] = $node;
         }
+
+        return $node;
     }
 
     /**

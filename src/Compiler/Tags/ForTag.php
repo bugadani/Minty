@@ -52,8 +52,8 @@ class ForTag extends Tag
         $data = $node->getData();
         if ($data['save_temp_var']) {
             $compiler
-                ->indented('if (isset($temp)) {')
-                ->indent();
+                ->indented('if (isset($temp))')
+                ->openBracket();
 
             if ($data['create_stack']) {
                 $compiler->indented('$stack = array();');
@@ -61,46 +61,41 @@ class ForTag extends Tag
 
             $compiler
                 ->indented('$stack[] = $temp;')
-                ->outdent()
-                ->indented('}');
+                ->closeBracket();
         }
 
-        if (isset($data['else']) && count($data['else']->getChildren()) > 0) {
+        if ($node->hasChild('else')) {
             $compiler
                 ->indented('$temp = ')
-                ->compileNode($data['source'])
+                ->compileNode($node->getChild('source'))
                 ->add(';')
-                ->indented('if(empty($temp)) {')
-                ->indent()
-                ->compileNode($data['else'])
-                ->outdent()
-                ->indented('} else {')
-                ->indent()
-                ->indented('foreach($temp as ');
+                ->indented('if(empty($temp))')
+                ->bracketed($node->getChild('else'))
+                ->add(' else')
+                ->openBracket()
+                ->indented('foreach($temp');
         } else {
-            $compiler->indented('foreach(')
-                ->compileNode($data['source'])
-                ->add(' as ');
+            $compiler
+                ->indented('foreach(')
+                ->compileNode($node->getChild('source'));
         }
 
-        if ($data['loop_key'] !== null) {
+        $compiler->add(' as ');
+
+        if ($node->hasChild('loop_key')) {
             $compiler
-                ->compileNode($data['loop_key'])
+                ->compileNode($node->getChild('loop_key'))
                 ->add(' => ');
         }
 
         $compiler
-            ->compileNode($data['loop_variable'])
-            ->add(') {')
-            ->indent()
-            ->compileNode($data['loop'])
-            ->outdent()
-            ->indented('}');
+            ->compileNode($node->getChild('loop_variable'))
+            ->add(') ')
+            ->bracketed($node->getChild('loop_body'));
 
-        if (isset($data['else'])) {
-            $compiler
-                ->outdent()
-                ->indented('}');
+        if ($node->hasChild('else')) {
+            //bracket opened in line 75
+            $compiler->closeBracket();
         }
         if ($data['save_temp_var']) {
             $compiler->indented('$temp = array_pop($stack);');
@@ -124,33 +119,26 @@ class ForTag extends Tag
             return $stream->next()->test(Token::TAG, 'endfor');
         };
 
+        $node = new TagNode($this, array(
+            'save_temp_var' => true,
+            'create_stack'  => true
+        ));
+
         $loop_var = $parser->parseExpression($stream);
         if ($stream->current()->test(Token::PUNCTUATION, ':')) {
-            $key      = $loop_var;
+            $node->addChild($loop_var, 'loop_key');
             $loop_var = $parser->parseExpression($stream);
-        } else {
-            $key = null;
         }
 
         $stream->expectCurrent(Token::IDENTIFIER, 'in');
-        $node = new TagNode($this, array(
-            'loop_variable' => $loop_var,
-            'loop_key'      => $key,
-            'save_temp_var' => true,
-            'create_stack'  => true,
-            'source'        => $parser->parseExpression($stream),
-        ));
 
-        $bodyNode = $parser->parse($stream, $else);
-        $bodyNode->setParent($node);
-        $node->addData('loop', $bodyNode);
+        $node->addChild($parser->parseExpression($stream), 'source');
+        $node->addChild($loop_var, 'loop_variable');
+        $node->addChild($parser->parse($stream, $else), 'loop_body');
 
         if ($stream->current()->test(Token::IDENTIFIER, 'else')) {
             $stream->expect(Token::EXPRESSION_END);
-
-            $elseNode = $parser->parse($stream, $end);
-            $elseNode->setParent($node);
-            $node->addData('else', $elseNode);
+            $node->addChild($parser->parse($stream, $end), 'else');
         }
 
         return $node;
