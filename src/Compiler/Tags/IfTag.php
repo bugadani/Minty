@@ -74,8 +74,9 @@ class IfTag extends Tag
             return $token->test(Token::TAG, 'endif');
         };
 
-        $condition = $parser->parseExpression($stream);
         $node = new TagNode($this);
+        $condition = $parser->parseExpression($stream);
+        $condition->setParent($node);
 
         do {
             $bodyNode = $parser->parse($stream, $fork);

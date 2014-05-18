@@ -10,7 +10,6 @@
 namespace Modules\Templating\Compiler\Tags\TemplateExtension;
 
 use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Node;
 use Modules\Templating\Compiler\Nodes\TagNode;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
@@ -32,12 +31,10 @@ class BlockTag extends Tag
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        $data = $node->getData();
-        $compiler->startTemplate($data['template']);
-        /** @var $body Node */
-        $body = $data['body'];
-        $body->compile($compiler);
-        $template = $compiler->endTemplate();
+        $template = $compiler
+            ->startTemplate($node->getData('template'))
+            ->compileNode($node->getChild('body'))
+            ->endTemplate();
 
         $compiler->indented('echo $this->%s();', $template);
     }
@@ -55,8 +52,7 @@ class BlockTag extends Tag
                 return $stream->next()->test(Token::TAG, 'endblock');
             }
         );
-        $bodyNode->setParent($node);
-        $node->addData('body', $bodyNode);
+        $node->addChild($bodyNode, 'body');
 
         return $node;
     }

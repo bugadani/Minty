@@ -26,23 +26,22 @@ class ExtractTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $keys = $parser->parseExpression($stream);
-        $stream->expectCurrent(Token::IDENTIFIER, 'from');
-        $source = $parser->parseExpression($stream);
+        $node = new TagNode($this);
 
-        return new TagNode($this, array(
-            'source' => $source,
-            'keys'   => $keys
-        ));
+        $node->addChild($parser->parseExpression($stream), 'keys');
+        $stream->expectCurrent(Token::IDENTIFIER, 'from');
+        $node->addChild($parser->parseExpression($stream), 'source');
+
+        return $node;
     }
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        $data = $node->getData();
-        $compiler->indented('$this->extract(')
-            ->compileNode($data['source'])
+        $compiler
+            ->indented('$this->extract(')
+            ->compileNode($node->getChild('source'))
             ->add(', ')
-            ->compileNode($data['keys'])
+            ->compileNode($node->getChild('keys'))
             ->add(');');
     }
 }

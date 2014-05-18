@@ -31,16 +31,13 @@ class EmbedTag extends Tag
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        $data = $node->getData();
-        $embedded = $compiler->addEmbedded($data['template'], $data['body']);
-
         $compiler
             ->indented(
                 '$embedded = new %s($this->getLoader(), $this->getEnvironment());',
-                $embedded
+                $compiler->addEmbedded($node->getData('template'), $node->getChild('body'))
             )
             ->indented('$embedded->set(')
-            ->compileData($data['arguments'])
+            ->compileData($node->getData('arguments'))
             ->add(');');
 
         $compiler->indented('$embedded->render();');
@@ -49,25 +46,24 @@ class EmbedTag extends Tag
     public function parse(Parser $parser, Stream $stream)
     {
         $node = new TagNode($this, array(
-            'template'  => $stream->expect(Token::STRING)->getValue()
+            'template' => $stream->expect(Token::STRING)->getValue()
         ));
 
         if ($stream->nextTokenIf(Token::IDENTIFIER, 'using')) {
-            $arguments = $parser->parseExpression($stream);
+            $node->addData('arguments', $parser->parseExpression($stream));
         } else {
-            $arguments = array();
+            $node->addData('arguments', array());
         }
 
-        $bodyNode = $parser->parse(
-            $stream,
-            function (Stream $stream) {
-                return $stream->next()->test(Token::TAG, 'endembed');
-            }
+        $node->addChild(
+            $parser->parse(
+                $stream,
+                function (Stream $stream) {
+                    return $stream->next()->test(Token::TAG, 'endembed');
+                }
+            ),
+            'body'
         );
-        $bodyNode->setParent($node);
-
-        $node->addData('arguments', $arguments);
-        $node->addData('body', $bodyNode);
 
         return $node;
     }

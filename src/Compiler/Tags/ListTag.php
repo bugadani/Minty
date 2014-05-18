@@ -42,25 +42,27 @@ class ListTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        return new TagNode($this, array(
-            'template'   => $stream->next()->getValue(),
-            'expression' => $parser->parseExpression($stream)
+        $node = new TagNode($this, array(
+            'template'   => $stream->next()->getValue()
         ));
+
+        $node->addChild($parser->parseExpression($stream), 'expression');
+
+        return $node;
     }
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        $data = $node->getData();
         $compiler
             ->indented('$list_source = ')
-            ->compileNode($data['expression'])
+            ->compileNode($node->getChild('expression'))
             ->add(';');
 
         $compiler
             ->indented('if(is_array($list_source) || $list_source instanceof \Traversable) {')
             ->indent()
             ->indented('$template = $this->getLoader()->load(')
-            ->add($compiler->string($data['template']))
+            ->add($compiler->string($node->getData('template')))
             ->add(');')
             ->indented('foreach ($list_source as $element) {')
             ->indent()

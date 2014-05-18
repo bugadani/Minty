@@ -30,49 +30,42 @@ class IncludeTag extends Tag
         $tokenizer->pushToken(Token::EXPRESSION_START, $this->getTag());
 
         if (!strpos($expression, 'using')) {
-            $template = $expression;
+            $tokenizer->tokenizeExpression($expression);
         } else {
             list($template, $source) = explode('using', $expression);
-        }
-        $tokenizer->tokenizeExpression($template);
-        $tokenizer->pushToken(Token::EXPRESSION_END);
-
-        if (isset($source)) {
-            $tokenizer->pushToken(Token::IDENTIFIER, 'using');
-
-            $tokenizer->pushToken(Token::EXPRESSION_START);
-            $tokenizer->tokenizeExpression($source);
+            $tokenizer->tokenizeExpression($template);
             $tokenizer->pushToken(Token::EXPRESSION_END);
+            $tokenizer->pushToken(Token::EXPRESSION_START, 'using');
+            $tokenizer->tokenizeExpression($source);
         }
+
+        $tokenizer->pushToken(Token::EXPRESSION_END);
     }
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        $data = $node->getData();
         $compiler
             ->indented('$template = $this->getLoader()->load(')
-            ->compileData($data['template'])
+            ->compileData($node->getData('template'))
             ->add(');')
             ->indented('$template->set(')
-            ->compileData($data['arguments'])
+            ->compileData($node->getData('arguments'))
             ->add(');')
             ->indented('$template->render();');
     }
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $name = $parser->parseExpression($stream);
+        $node = new TagNode($this, array(
+            'template'  => $parser->parseExpression($stream)
+        ));
 
-        if ($stream->nextTokenIf(Token::IDENTIFIER, 'using')) {
-            $stream->expect(Token::EXPRESSION_START);
-            $arguments = $parser->parseExpression($stream);
+        if ($stream->nextTokenIf(Token::EXPRESSION_START, 'using')) {
+            $node->addData('arguments', $parser->parseExpression($stream));
         } else {
-            $arguments = array();
+            $node->addData('arguments', array());
         }
 
-        return new TagNode($this, array(
-            'template'  => $name,
-            'arguments' => $arguments
-        ));
+        return $node;
     }
 }

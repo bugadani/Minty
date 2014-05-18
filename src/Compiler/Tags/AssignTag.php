@@ -60,24 +60,22 @@ class AssignTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $name = $parser->parseExpression($stream);
-        $stream->expect(Token::EXPRESSION_START);
-        $node = $parser->parseExpression($stream);
+        $tagNode = new TagNode($this);
 
-        return new TagNode($this, array(
-            'variable_name' => $name,
-            'value_node'    => $node
-        ));
+        $tagNode->addChild($parser->parseExpression($stream), 'name');
+        $stream->expect(Token::EXPRESSION_START);
+        $tagNode->addChild($parser->parseExpression($stream), 'value');
+
+        return $tagNode;
     }
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        $data = $node->getData();
         $compiler
             ->indented('')
-            ->compileNode($data['variable_name'])
+            ->compileNode($node->getChild('name'))
             ->add(' = ')
-            ->compileNode($data['value_node'])
+            ->compileNode($node->getChild('value'))
             ->add(';');
     }
 }

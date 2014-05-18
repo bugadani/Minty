@@ -35,9 +35,10 @@ class OutputTag extends Tag
     {
         $stream->expectCurrent(Token::EXPRESSION_START);
 
-        return new TagNode($this, array(
-            'expression' => $parser->parseExpression($stream)
-        ));
+        $node = new TagNode($this);
+        $node->addChild($parser->parseExpression($stream), 'expression');
+
+        return $node;
     }
 
     public function isFunctionSafe(Environment $env, $function)
@@ -96,11 +97,11 @@ class OutputTag extends Tag
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        $data = $node->getData();
-        $expression = $this->ensureSafe($compiler->getEnvironment(), $data['expression']);
         $compiler
             ->indented('echo ')
-            ->compileNode($expression)
+            ->compileNode(
+                $this->ensureSafe($compiler->getEnvironment(), $node->getChild('expression'))
+            )
             ->add(';');
     }
 }
