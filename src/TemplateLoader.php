@@ -11,7 +11,7 @@ namespace Modules\Templating;
 
 use Miny\Log\Log;
 use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\NodeTreeOptimizer;
+use Modules\Templating\Compiler\NodeTreeTraverser;
 use RuntimeException;
 
 class TemplateLoader
@@ -122,7 +122,7 @@ class TemplateLoader
         $stream   = $this->environment->getTokenizer()->tokenize($contents);
         $node     = $this->environment->getParser()->parse($stream);
 
-        $this->environment->getNodeTreeOptimizer()->optimize($node);
+        $this->environment->getNodeTreeTraverser()->traverse($node);
 
         $compiled = $this->compiler->compile($node, $class);
         $cacheDir = dirname($cached);

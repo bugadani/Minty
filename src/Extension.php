@@ -9,7 +9,7 @@
 
 namespace Modules\Templating;
 
-use Modules\Templating\Compiler\NodeOptimizer;
+use Modules\Templating\Compiler\NodeVisitor;
 use Modules\Templating\Compiler\Operator;
 use Modules\Templating\Compiler\OperatorCollection;
 use Modules\Templating\Compiler\Tag;
@@ -62,10 +62,10 @@ abstract class Extension
         }
     }
 
-    public function registerNodeOptimizers(Environment $env)
+    public function registerNodeVisitors(Environment $env)
     {
         foreach($this->getNodeOptimizers() as $optimizer) {
-            $env->addNodeOptimizer($optimizer);
+            $env->addNodeVisitor($optimizer);
         }
     }
 
@@ -110,7 +110,7 @@ abstract class Extension
     }
 
     /**
-     * @return NodeOptimizer
+     * @return NodeVisitor
      */
     public function getNodeOptimizers()
     {

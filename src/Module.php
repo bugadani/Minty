@@ -14,7 +14,7 @@ use Miny\AutoLoader;
 use Miny\Factory\Container;
 use Miny\HTTP\Request;
 use Miny\HTTP\Response;
-use Modules\Templating\Compiler\NodeTreeOptimizer;
+use Modules\Templating\Compiler\NodeTreeTraverser;
 use UnexpectedValueException;
 
 class Module extends \Miny\Modules\Module

@@ -9,7 +9,7 @@
 
 namespace Modules\Templating\Compiler;
 
-abstract class NodeOptimizer
+abstract class NodeVisitor
 {
 
     abstract public function getPriority();

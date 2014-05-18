@@ -11,8 +11,8 @@ namespace Modules\Templating;
 
 use Modules\Templating\Compiler\Exceptions\CompileException;
 use Modules\Templating\Compiler\FunctionCompiler;
-use Modules\Templating\Compiler\NodeOptimizer;
-use Modules\Templating\Compiler\NodeTreeOptimizer;
+use Modules\Templating\Compiler\NodeVisitor;
+use Modules\Templating\Compiler\NodeTreeTraverser;
 use Modules\Templating\Compiler\OperatorCollection;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Tag;
@@ -73,14 +73,14 @@ class Environment
     private $parser;
 
     /**
-     * @var NodeOptimizer[]
+     * @var NodeVisitor[]
      */
-    private $nodeOptimizers = array();
+    private $nodeVisitors = array();
 
     /**
-     * @var NodeTreeOptimizer
+     * @var NodeTreeTraverser
      */
-    private $nodeTreeOptimizer;
+    private $nodeTreeTraverser;
 
     /**
      * @param array $options
@@ -295,30 +295,30 @@ class Environment
     }
 
     /**
-     * @return NodeTreeOptimizer
+     * @return NodeTreeTraverser
      */
-    public function getNodeTreeOptimizer()
+    public function getNodeTreeTraverser()
     {
-        if (!isset($this->nodeTreeOptimizer)) {
-            $this->nodeTreeOptimizer = new NodeTreeOptimizer($this->getNodeOptimizers());
+        if (!isset($this->nodeTreeTraverser)) {
+            $this->nodeTreeTraverser = new NodeTreeTraverser($this->getNodeVisitors());
         }
 
-        return $this->nodeTreeOptimizer;
+        return $this->nodeTreeTraverser;
     }
 
-    public function getNodeOptimizers()
+    public function getNodeVisitors()
     {
-        if (empty($this->nodeOptimizers)) {
+        if (empty($this->nodeVisitors)) {
             foreach ($this->extensions as $ext) {
-                $ext->registerNodeOptimizers($this);
+                $ext->registerNodeVisitors($this);
             }
         }
 
-        return $this->nodeOptimizers;
+        return $this->nodeVisitors;
     }
 
-    public function addNodeOptimizer(NodeOptimizer $optimizer)
+    public function addNodeVisitor(NodeVisitor $visitor)
     {
-        $this->nodeOptimizers[] = $optimizer;
+        $this->nodeVisitors[] = $visitor;
     }
 }
