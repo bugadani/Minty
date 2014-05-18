@@ -16,7 +16,9 @@ use Modules\Templating\Compiler\Tags\ForTag;
 
 class ForLoopOptimizer extends NodeOptimizer
 {
-    private static $forClass = 'Modules\\Templating\\Compiler\\Tags\\ForTag';
+    private $stack = array();
+    private $counterStack = array();
+    private $counter = 0;
 
     public function getPriority()
     {
@@ -25,24 +27,31 @@ class ForLoopOptimizer extends NodeOptimizer
 
     public function enterNode(Node $node)
     {
-        if(!$node instanceof TagNode) {
+        if (!$node instanceof TagNode) {
             return;
         }
         if (!$node->getTag() instanceof ForTag) {
             return;
         }
-        //If there are no child for tags, we don't need to save the temporary variable
-        if(!$this->nodeHasChild($node, self::$forClass)) {
-            $node->addData('save_temp_var', false);
-        }
-        //If there are parent for tags, the stack is already created
-        if($this->nodeHasParent($node, self::$forClass)) {
+        if (!empty($this->stack)) {
             $node->addData('create_stack', false);
         }
+        ++$this->counter;
+        $this->counterStack[] = $this->counter;
+        $this->stack[]        = $node;
     }
 
     public function leaveNode(Node $node)
     {
-
+        if (!$node instanceof TagNode) {
+            return;
+        }
+        if (!$node->getTag() instanceof ForTag) {
+            return;
+        }
+        array_pop($this->stack);
+        if (array_pop($this->counterStack) === $this->counter) {
+            $node->addData('save_temp_var', false);
+        }
     }
 }
