@@ -18,7 +18,12 @@ class ForLoopOptimizer extends NodeOptimizer
 {
     private static $forClass = 'Modules\\Templating\\Compiler\\Tags\\ForTag';
 
-    public function optimize(Node $node)
+    public function getPriority()
+    {
+        return 1;
+    }
+
+    public function enterNode(Node $node)
     {
         if(!$node instanceof TagNode) {
             return;
@@ -36,8 +41,8 @@ class ForLoopOptimizer extends NodeOptimizer
         }
     }
 
-    public function getPriority()
+    public function leaveNode(Node $node)
     {
-        return 1;
+
     }
 }

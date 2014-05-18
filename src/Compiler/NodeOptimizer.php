@@ -32,7 +32,9 @@ abstract class NodeOptimizer
     }
 
     abstract public function getPriority();
-    abstract public function optimize(Node $node);
+
+    abstract public function enterNode(Node $node);
+    abstract public function leaveNode(Node $node);
 
     private function nodeHasChildByClassName(Node $node, $class)
     {

@@ -51,9 +51,12 @@ class NodeTreeOptimizer
      */
     private function visitNode(Node $node, NodeOptimizer $optimizer)
     {
-        $optimizer->optimize($node);
+        $optimizer->enterNode($node);
+
         foreach ($node->getChildren() as $child) {
             $this->visitNode($child, $optimizer);
         }
+
+        $optimizer->leaveNode($node);
     }
 }
