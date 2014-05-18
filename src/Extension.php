@@ -112,7 +112,7 @@ abstract class Extension
     /**
      * @return NodeOptimizer
      */
-    private function getNodeOptimizers()
+    public function getNodeOptimizers()
     {
         return array();
     }

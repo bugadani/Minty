@@ -14,6 +14,7 @@ use Countable;
 use InvalidArgumentException;
 use Modules\Templating\Compiler\Functions\MethodFunction;
 use Modules\Templating\Compiler\Functions\SimpleFunction;
+use Modules\Templating\Compiler\NodeOptimizer;
 use Modules\Templating\Compiler\Operator;
 use Modules\Templating\Compiler\Operators\ArithmeticOperators\AdditionOperator;
 use Modules\Templating\Compiler\Operators\ArithmeticOperators\DivisionOperator;
@@ -67,6 +68,7 @@ use Modules\Templating\Compiler\Operators\UnaryOperators\PostDecrementOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PostIncrementOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PreDecrementOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PreIncrementOperator;
+use Modules\Templating\Compiler\Optimizers\ForLoopOptimizer;
 use Modules\Templating\Compiler\Tags\AssignTag;
 use Modules\Templating\Compiler\Tags\CaseTag;
 use Modules\Templating\Compiler\Tags\ElseIfTag;
@@ -252,6 +254,17 @@ class Core extends Extension
             new SimpleFunction('wordwrap'),
         );
     }
+
+    public function getNodeOptimizers()
+    {
+        $optimizers = array(
+            new ForLoopOptimizer()
+        );
+
+        return $optimizers;
+    }
+
+
 
     /* Helper functions */
 
