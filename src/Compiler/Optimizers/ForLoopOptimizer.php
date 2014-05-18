@@ -35,4 +35,9 @@ class ForLoopOptimizer extends NodeOptimizer
             $node->addData('create_stack', false);
         }
     }
+
+    public function getPriority()
+    {
+        return 1;
+    }
 }

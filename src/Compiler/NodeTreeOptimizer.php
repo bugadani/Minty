@@ -18,24 +18,32 @@ class NodeTreeOptimizer
 
     public function addOptimizer(NodeOptimizer $optimizer)
     {
-        $this->optimizers[] = $optimizer;
+        $priority = $optimizer->getPriority();
+        if(!isset($this->optimizers[$priority])) {
+            $this->optimizers[$priority] = array();
+        }
+        $this->optimizers[$priority][] = $optimizer;
     }
 
     public function optimize(Node $node)
     {
-        $this->runOptimizers($node);
-        foreach($node->getChildren() as $child) {
-            $this->optimize($child);
+        ksort($this->optimizers);
+        foreach ($this->optimizers as $optimizers) {
+            foreach($optimizers as $optimizer) {
+                $this->visitNode($node, $optimizer);
+            }
         }
     }
 
     /**
-     * @param Node $node
+     * @param Node          $node
+     * @param NodeOptimizer $optimizer
      */
-    private function runOptimizers(Node $node)
+    private function visitNode(Node $node, NodeOptimizer $optimizer)
     {
-        foreach ($this->optimizers as $optimizer) {
-            $optimizer->optimize($node);
+        $optimizer->optimize($node);
+        foreach ($node->getChildren() as $child) {
+            $this->visitNode($child, $optimizer);
         }
     }
 }

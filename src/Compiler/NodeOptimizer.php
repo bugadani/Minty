@@ -31,6 +31,7 @@ abstract class NodeOptimizer
         throw new \InvalidArgumentException('$parent must be a string or a callback');
     }
 
+    abstract public function getPriority();
     abstract public function optimize(Node $node);
 
     private function nodeHasChildByClassName(Node $node, $class)
