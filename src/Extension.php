@@ -9,6 +9,7 @@
 
 namespace Modules\Templating;
 
+use Modules\Templating\Compiler\NodeOptimizer;
 use Modules\Templating\Compiler\Operator;
 use Modules\Templating\Compiler\OperatorCollection;
 use Modules\Templating\Compiler\Tag;
@@ -61,6 +62,13 @@ abstract class Extension
         }
     }
 
+    public function registerNodeOptimizers(Environment $env)
+    {
+        foreach($this->getNodeOptimizers() as $optimizer) {
+            $env->addNodeOptimizer($optimizer);
+        }
+    }
+
     /**
      * @return TemplateFunction[]
      */
@@ -97,6 +105,14 @@ abstract class Extension
      * @return Tag[]
      */
     public function getTags()
+    {
+        return array();
+    }
+
+    /**
+     * @return NodeOptimizer
+     */
+    private function getNodeOptimizers()
     {
         return array();
     }

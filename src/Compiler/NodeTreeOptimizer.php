@@ -16,10 +16,20 @@ class NodeTreeOptimizer
      */
     private $optimizers = array();
 
+    /**
+     * @param NodeOptimizer[] $optimizers
+     */
+    public function __construct(array $optimizers = array())
+    {
+        foreach($optimizers as $optimizer) {
+            $this->addOptimizer($optimizer);
+        }
+    }
+
     public function addOptimizer(NodeOptimizer $optimizer)
     {
         $priority = $optimizer->getPriority();
-        if(!isset($this->optimizers[$priority])) {
+        if (!isset($this->optimizers[$priority])) {
             $this->optimizers[$priority] = array();
         }
         $this->optimizers[$priority][] = $optimizer;
@@ -29,7 +39,7 @@ class NodeTreeOptimizer
     {
         ksort($this->optimizers);
         foreach ($this->optimizers as $optimizers) {
-            foreach($optimizers as $optimizer) {
+            foreach ($optimizers as $optimizer) {
                 $this->visitNode($node, $optimizer);
             }
         }

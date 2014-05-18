@@ -27,11 +27,6 @@ class TemplateLoader
     private $compiler;
 
     /**
-     * @var NodeTreeOptimizer
-     */
-    private $nodeTreeOptimizer;
-
-    /**
      * @var Environment
      */
     private $environment;
@@ -44,17 +39,14 @@ class TemplateLoader
     /**
      * @param Environment       $environment
      * @param Compiler          $compiler
-     * @param NodeTreeOptimizer $nodeTreeOptimizer
      * @param Log|null          $log
      */
     public function __construct(
         Environment $environment,
         Compiler $compiler,
-        NodeTreeOptimizer $nodeTreeOptimizer,
         Log $log = null
     ) {
         $this->compiler          = $compiler;
-        $this->nodeTreeOptimizer = $nodeTreeOptimizer;
         $this->options           = $environment->getOptions();
         $this->environment       = $environment;
         $this->log               = $log;
@@ -130,7 +122,7 @@ class TemplateLoader
         $stream   = $this->environment->getTokenizer()->tokenize($contents);
         $node     = $this->environment->getParser()->parse($stream);
 
-        $this->nodeTreeOptimizer->optimize($node);
+        $this->environment->getNodeTreeOptimizer()->optimize($node);
 
         $compiled = $this->compiler->compile($node, $class);
         $cacheDir = dirname($cached);

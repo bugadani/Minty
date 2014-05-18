@@ -11,6 +11,8 @@ namespace Modules\Templating;
 
 use Modules\Templating\Compiler\Exceptions\CompileException;
 use Modules\Templating\Compiler\FunctionCompiler;
+use Modules\Templating\Compiler\NodeOptimizer;
+use Modules\Templating\Compiler\NodeTreeOptimizer;
 use Modules\Templating\Compiler\OperatorCollection;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Tag;
@@ -69,6 +71,16 @@ class Environment
      * @var Parser
      */
     private $parser;
+
+    /**
+     * @var NodeOptimizer[]
+     */
+    private $nodeOptimizers = array();
+
+    /**
+     * @var NodeTreeOptimizer
+     */
+    private $nodeTreeOptimizer;
 
     /**
      * @param array $options
@@ -280,5 +292,31 @@ class Environment
         }
 
         return $this->parser;
+    }
+
+    /**
+     * @return NodeTreeOptimizer
+     */
+    public function getNodeTreeOptimizer()
+    {
+        if (!isset($this->nodeTreeOptimizer)) {
+            $this->nodeTreeOptimizer = new NodeTreeOptimizer($this->nodeOptimizers);
+        }
+
+        return $this->nodeTreeOptimizer;
+    }
+
+    public function getNodeOptimizers()
+    {
+        if(empty($this->nodeOptimizers)) {
+            foreach ($this->extensions as $ext) {
+                $ext->registerNodeOptimizers($this);
+            }
+        }
+    }
+
+    public function addNodeOptimizer(NodeOptimizer $optimizer)
+    {
+        $this->nodeOptimizers[] = $optimizer;
     }
 }
