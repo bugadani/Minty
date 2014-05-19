@@ -33,6 +33,7 @@ class Tokenizer
     private $punctuation;
     private $line;
     private $fallbackTagName;
+    private $blockEndPrefix;
 
     public function __construct(Environment $environment)
     {
@@ -51,7 +52,7 @@ class Tokenizer
 
         $this->delimiters      = $environment->getOption('delimiters');
         $this->fallbackTagName = $environment->getOption('fallback_tag');
-        $block_end_prefix      = $environment->getOption('block_end_prefix', 'end');
+        $this->blockEndPrefix  = $environment->getOption('block_end_prefix', 'end');
 
         $literals = array(
             'true',
@@ -67,7 +68,7 @@ class Tokenizer
         $literal_pattern = implode('|', $literals);
 
         $this->patterns = array(
-            'closing_tag' => "/{$block_end_prefix}({$blocks_pattern}|raw)/Ai",
+            'closing_tag' => "/{$this->blockEndPrefix}({$blocks_pattern}|raw)/Ai",
             'operator'    => $this->getOperatorPattern($environment),
             'literal'     => "/({$literal_pattern})/i"
         );
@@ -154,7 +155,8 @@ class Tokenizer
                 case $this->delimiters['tag'][0]:
                     if (!$in_comment) {
                         if ($in_raw) {
-                            if (isset($parts[$i]) && trim($parts[$i + 1][0]) === 'endraw') {
+                            $endraw = $this->blockEndPrefix . 'raw';
+                            if (isset($parts[$i]) && trim($parts[$i + 1][0]) === $endraw) {
                                 $in_raw = false;
                                 $in_tag = true;
                                 $tag    = '';
@@ -282,13 +284,12 @@ class Tokenizer
     {
         $match = array();
         if (preg_match($this->patterns['closing_tag'], $tag, $match)) {
-            $type = $match[1];
             if (!$this->inRaw) {
-                $this->pushToken(Token::TAG, 'end' . $type);
+                $this->pushToken(Token::TAG, $tag);
 
                 return true;
             }
-            if ($type === 'raw') {
+            if ($match[1] === 'raw') {
                 $this->inRaw = false;
 
                 return true;
