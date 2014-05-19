@@ -41,14 +41,14 @@ class FileLoader extends AbstractTemplateLoader
         );
 
         if (!is_file($cachePath)) {
-            return true;
-        }
-
-        if (!$this->environment->getOption('reload')) {
             return false;
         }
 
-        return filemtime($this->getPath($template)) > filemtime($cachePath);
+        if (!$this->environment->getOption('reload')) {
+            return true;
+        }
+
+        return filemtime($this->getPath($template)) < filemtime($cachePath);
 
     }
 

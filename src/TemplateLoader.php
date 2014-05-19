@@ -62,7 +62,7 @@ class TemplateLoader
             $this->log('Template not found: %s', $template);
             throw new RuntimeException("Template not found: {$template}");
         }
-        if (!$this->loader->isCacheFresh($template)) {
+        if ($this->loader->isCacheFresh($template)) {
             return;
         }
 
