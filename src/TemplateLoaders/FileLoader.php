@@ -26,11 +26,10 @@ class FileLoader extends AbstractTemplateLoader
 
     private function getPath($template)
     {
-        return sprintf(
-            $this->environment->getOption('template_path'),
-            $template,
-            $this->environment->getOption('template_extension')
-        );
+        $directory = $this->environment->getOption('template_directory', 'templates');
+        $extension = $this->environment->getOption('template_extension', 'tpl');
+
+        return "{$directory}/{$template}.{$extension}";
     }
 
     public function isCacheFresh($template)
@@ -44,7 +43,7 @@ class FileLoader extends AbstractTemplateLoader
             return false;
         }
 
-        if (!$this->environment->getOption('reload')) {
+        if (!$this->environment->getOption('reload', false)) {
             return true;
         }
 

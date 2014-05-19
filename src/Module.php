@@ -14,6 +14,7 @@ use Miny\AutoLoader;
 use Miny\Factory\Container;
 use Miny\HTTP\Request;
 use Miny\HTTP\Response;
+use Modules\Templating\Extensions\Core;
 use UnexpectedValueException;
 
 class Module extends \Miny\Modules\Module
@@ -23,20 +24,12 @@ class Module extends \Miny\Modules\Module
     {
         return array(
             'options' => array(
-                'reload'             => false,
                 'global_variables'   => array(),
                 'cache_namespace'    => 'Application\\Templating\\Cached',
-                'strict_mode'        => true,
                 'cache_path'         => 'templates/compiled/%s.php',
-                'template_path'      => 'templates/%s.%s',
-                'template_extension' => 'tpl',
                 'autoescape'         => true,
                 'fallback_tag'       => 'print',
                 'template_loader'    => __NAMESPACE__ . '\\TemplateLoaders\\FileLoader',
-                'delimiters'         => array(
-                    'tag'     => array('{', '}'),
-                    'comment' => array('{#', '#}')
-                )
             ),
             'codes'   => array()
         );
@@ -56,6 +49,7 @@ class Module extends \Miny\Modules\Module
             function (Container $container) use ($module, $app) {
                 $env = new Environment($module->getConfiguration('options'));
 
+                $env->addExtension(new Core());
                 $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Optimizer'));
                 $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Miny'));
 

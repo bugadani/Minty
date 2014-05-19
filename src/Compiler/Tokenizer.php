@@ -50,8 +50,14 @@ class Tokenizer
             }
         }
 
-        $this->delimiters      = $environment->getOption('delimiters');
-        $this->fallbackTagName = $environment->getOption('fallback_tag');
+        $this->delimiters      = $environment->getOption(
+            'delimiters',
+            array(
+                'tag'     => array('{', '}'),
+                'comment' => array('{#', '#}')
+            )
+        );
+        $this->fallbackTagName = $environment->getOption('fallback_tag', false);
         $this->blockEndPrefix  = $environment->getOption('block_end_prefix', 'end');
 
         $literals = array(
@@ -67,8 +73,9 @@ class Tokenizer
         $blocks_pattern  = implode('|', $blockNames);
         $literal_pattern = implode('|', $literals);
 
+        $blockEndPrefix = preg_quote($this->blockEndPrefix, '/');
         $this->patterns = array(
-            'closing_tag' => "/{$this->blockEndPrefix}({$blocks_pattern}|raw)/Ai",
+            'closing_tag' => "/{$blockEndPrefix}({$blocks_pattern}|raw)$/Ai",
             'operator'    => $this->getOperatorPattern($environment),
             'literal'     => "/({$literal_pattern})/i"
         );

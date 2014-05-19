@@ -11,19 +11,7 @@ namespace Modules\Templating\Compiler;
 
 class OperatorCollection
 {
-    private $operators;
-    private $empty;
-
-    public function __construct()
-    {
-        $this->operators = array();
-        $this->empty     = true;
-    }
-
-    public function isEmpty()
-    {
-        return $this->empty;
-    }
+    private $operators = array();
 
     public function exists(Operator $operator)
     {
@@ -32,8 +20,7 @@ class OperatorCollection
 
     public function addOperator(Operator $operator)
     {
-        $this->empty = false;
-        $symbol      = $operator->operators();
+        $symbol = $operator->operators();
         if (is_array($symbol)) {
             foreach ($symbol as $op_symbol) {
                 $this->operators[$op_symbol] = $operator;

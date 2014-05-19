@@ -8,7 +8,6 @@ class OperatorCollectionTest extends \PHPUnit_Framework_TestCase
     {
         $collection = new OperatorCollection();
 
-        $this->assertTrue($collection->isEmpty());
         $this->assertFalse($collection->isOperator('something'));
         $this->assertEmpty($collection->getSymbols());
     }

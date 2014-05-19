@@ -91,13 +91,9 @@ class Environment
     /**
      * @param array $options
      */
-    public function __construct(array $options)
+    public function __construct(array $options = array())
     {
-        $this->binaryOperators       = new OperatorCollection();
-        $this->unaryPrefixOperators  = new OperatorCollection();
-        $this->unaryPostfixOperators = new OperatorCollection();
-        $this->options               = $options;
-        $this->addExtension(new Core());
+        $this->options = $options;
     }
 
     /**
@@ -258,7 +254,8 @@ class Environment
      */
     public function getBinaryOperators()
     {
-        if ($this->binaryOperators->isEmpty()) {
+        if (!isset($this->binaryOperators)) {
+            $this->binaryOperators = new OperatorCollection();
             foreach ($this->extensions as $ext) {
                 $ext->registerBinaryOperators($this->binaryOperators);
             }
@@ -272,7 +269,8 @@ class Environment
      */
     public function getUnaryPrefixOperators()
     {
-        if ($this->unaryPrefixOperators->isEmpty()) {
+        if (!isset($this->unaryPrefixOperators)) {
+            $this->unaryPrefixOperators = new OperatorCollection();
             foreach ($this->extensions as $ext) {
                 $ext->registerUnaryPrefixOperators($this->unaryPrefixOperators);
             }
@@ -286,7 +284,8 @@ class Environment
      */
     public function getUnaryPostfixOperators()
     {
-        if ($this->unaryPostfixOperators->isEmpty()) {
+        if (!isset($this->unaryPostfixOperators)) {
+            $this->unaryPostfixOperators = new OperatorCollection();
             foreach ($this->extensions as $ext) {
                 $ext->registerUnaryPostfixOperators($this->unaryPostfixOperators);
             }
