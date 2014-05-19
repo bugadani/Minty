@@ -310,7 +310,6 @@ class Compiler
                 $this->compileForClass(
                     $embedded['body'],
                     $className,
-                    $embedded['parent'],
                     $parentAlias
                 )
             );
