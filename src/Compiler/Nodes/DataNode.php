@@ -25,4 +25,9 @@ class DataNode extends Node
     {
         $compiler->compileData($this->data);
     }
+
+    public function getData()
+    {
+        return $this->data;
+    }
 }
