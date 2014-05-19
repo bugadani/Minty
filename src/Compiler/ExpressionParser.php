@@ -73,6 +73,11 @@ class ExpressionParser
      */
     private $unaryPostfixOperators;
 
+    /**
+     * @var ConditionalOperator
+     */
+    private $conditionalOperator;
+
     public function __construct(Environment $environment)
     {
         $this->binaryOperators       = $environment->getBinaryOperators();
@@ -227,23 +232,42 @@ class ExpressionParser
         }
     }
 
+    /**
+     * @return ConditionalOperator
+     */
+    private function getConditionalOperator()
+    {
+        if (!isset($this->conditionalOperator)) {
+            $this->conditionalOperator = new ConditionalOperator();
+        }
+
+        return $this->conditionalOperator;
+    }
+
     public function parseConditional()
     {
         if (!$this->stream->current()->test(Token::PUNCTUATION, '?')) {
             return;
         }
-        $node = new OperatorNode(new ConditionalOperator());
-        $node->addOperand(OperatorNode::OPERAND_LEFT, $this->operandStack->pop());
+        $node = new OperatorNode($this->getConditionalOperator());
+        $node->addOperand(
+            OperatorNode::OPERAND_LEFT,
+            $this->operandStack->pop()
+        );
 
         // Check whether the current expression is a simplified conditional expression (expr1 ?: expr3)
         if (!$this->stream->nextTokenIf(Token::PUNCTUATION, ':')) {
-            $expression_two = $this->parseExpression(true);
-            $node->addOperand(OperatorNode::OPERAND_MIDDLE, $expression_two);
+            $node->addOperand(
+                OperatorNode::OPERAND_MIDDLE,
+                $this->parseExpression(true)
+            );
         }
 
         $this->stream->expectCurrent(Token::PUNCTUATION, ':');
-        $expression_three = $this->parseExpression(true);
-        $node->addOperand(OperatorNode::OPERAND_RIGHT, $expression_three);
+        $node->addOperand(
+            OperatorNode::OPERAND_RIGHT,
+            $this->parseExpression(true)
+        );
 
         $this->operandStack->push($node);
     }
