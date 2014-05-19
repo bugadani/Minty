@@ -9,8 +9,6 @@
 
 namespace Modules\Templating\Compiler;
 
-use Closure;
-
 class Token
 {
     const EXPRESSION_START = 0;
@@ -66,12 +64,8 @@ class Token
             return true;
         }
 
-        if (is_array($value)) {
-            foreach ($value as $val) {
-                if ($this->value === $val) {
-                    return true;
-                }
-            }
+        if (is_array($value) && in_array($this->value, $value, true)) {
+            return true;
         }
         if (is_callable($value)) {
             return $value($this->value);
@@ -106,6 +100,6 @@ class Token
             return self::$strings[$this->type];
         }
 
-        return sprintf('UNKNOWN %s', $this->type);
+        return "UNKNOWN {$this->type}";
     }
 }
