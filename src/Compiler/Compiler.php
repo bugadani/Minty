@@ -18,11 +18,6 @@ class Compiler
     const MAIN_TEMPLATE = 'Template';
 
     /**
-     * @var array
-     */
-    private $options;
-
-    /**
      * @var Environment
      */
     private $environment;
@@ -40,7 +35,6 @@ class Compiler
     public function __construct(Environment $environment)
     {
         $this->environment = $environment;
-        $this->options     = $environment->getOptions();
         $this->initialized = false;
     }
 
@@ -283,7 +277,7 @@ class Compiler
         if (!$template) {
             return 'Modules\Templating\Template';
         }
-        $path = $this->options['cache_namespace'];
+        $path = $this->environment->getOption('cache_namespace');
         $path .= '\\' . strtr($template, '/', '\\');
 
         $pos       = strrpos($path, '\\') + 1;
@@ -324,23 +318,16 @@ class Compiler
         $this->outputStack       = array();
         $this->template_stack    = array('render');
         $this->templates         = array();
-        $this->extended_template = 'Template';
+        $this->extended_template = self::MAIN_TEMPLATE;
         $this->embedded          = array();
 
         $this->initialize();
-
-        $this->addOutputStack();
-        $this->compileNode($node, 2);
-        $compiled = $this->popOutputStack();
 
         $pos       = strrpos($class, '\\');
         $namespace = substr($class, 0, $pos);
         $className = substr($class, $pos + 1);
 
-        $extended_template = $this->getExtendedTemplate();
-        $use_namespace     = $this->getClassForTemplate($extended_template);
-
-        $main_class = $this->compileClass($className, $compiled, $extended_template);
+        $mainTemplateSource = $this->compileForClass($node, $className);
 
         $this->addOutputStack();
         $this->indentation = 0;
@@ -348,32 +335,28 @@ class Compiler
         $this->newline();
         $this->indented('namespace %s;', $namespace);
         $this->newline();
-        $this->indented('use %s as BaseTemplate;', $use_namespace);
 
         foreach ($this->embedded as $i => $embedded) {
             $this->indented('use %s as EmbeddedBaseTemplate%d;', $embedded['parent'], $i);
         }
 
         $this->newline();
-        $this->add($main_class);
+        $this->add($mainTemplateSource);
 
+        $extended_template  = $this->getExtendedTemplate();
         $embedded_templates = $this->embedded;
         $this->embedded     = array();
         foreach ($embedded_templates as $i => $embedded) {
-
-            $this->addOutputStack();
-            $this->compileNode($embedded['body'], 2);
-            $template = $this->popOutputStack();
-
-            $className    = 'EmbeddedTemplate' . $i;
-            $parent_alias = 'EmbeddedBaseTemplate' . $i;
+            $className   = 'EmbeddedTemplate' . $i;
+            $parentAlias = 'EmbeddedBaseTemplate' . $i;
 
             $this->setExtendedTemplate($embedded['parent']);
-            $compiled = $this->compileClass(
+
+            $compiled = $this->compileForClass(
+                $embedded['body'],
                 $className,
-                $template,
                 $embedded['parent'],
-                $parent_alias
+                $parentAlias
             );
             $this->add($compiled);
         }
@@ -382,9 +365,28 @@ class Compiler
         }
         $this->embedded = $embedded_templates;
 
-        $this->add('?>');
-
         return $this->popOutputStack();
+    }
+
+    /**
+     * @param Node        $node
+     * @param             $className
+     * @param string|null $parent_classname
+     *
+     * @return array
+     */
+    private function compileForClass(Node $node, $className, $parent_classname = null)
+    {
+        $this->addOutputStack();
+        $this->compileNode($node, 2);
+        $extended_template = $this->getExtendedTemplate();
+
+        return $this->compileClass(
+            $className,
+            $this->popOutputStack(),
+            $extended_template,
+            $parent_classname ? : '\\' . $this->getClassForTemplate($extended_template, true)
+        );
     }
 
     private function compileClass($class, $body, $extendedTemplate, $parentClass = 'BaseTemplate')
