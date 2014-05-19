@@ -27,7 +27,7 @@ class Compiler
     private $template_stack;
     private $extended_template;
     private $embedded;
-    private $initialized;
+    private $initialized = false;
     private $filters;
     private $tags;
     private $outputStack;
@@ -35,7 +35,6 @@ class Compiler
     public function __construct(Environment $environment)
     {
         $this->environment = $environment;
-        $this->initialized = false;
     }
 
     private function initialize()
@@ -244,15 +243,6 @@ class Compiler
         return $this->popOutputStack();
     }
 
-    private function addCompiledTemplate($name, $template)
-    {
-        $this->indented('public function %s()', $name);
-        $this->indented('{');
-        $this->add($template);
-        $this->indented('}');
-        $this->newline();
-    }
-
     public function setExtendedTemplate($template)
     {
         $this->extended_template = $template;
@@ -343,27 +333,28 @@ class Compiler
         $this->newline();
         $this->add($mainTemplateSource);
 
-        $extended_template  = $this->getExtendedTemplate();
-        $embedded_templates = $this->embedded;
-        $this->embedded     = array();
-        foreach ($embedded_templates as $i => $embedded) {
+        $extendedTemplate  = $this->getExtendedTemplate();
+        $embeddedTemplates = $this->embedded;
+        $this->embedded    = array();
+        foreach ($embeddedTemplates as $i => $embedded) {
             $className   = 'EmbeddedTemplate' . $i;
             $parentAlias = 'EmbeddedBaseTemplate' . $i;
 
             $this->setExtendedTemplate($embedded['parent']);
 
-            $compiled = $this->compileForClass(
-                $embedded['body'],
-                $className,
-                $embedded['parent'],
-                $parentAlias
+            $this->add(
+                $this->compileForClass(
+                    $embedded['body'],
+                    $className,
+                    $embedded['parent'],
+                    $parentAlias
+                )
             );
-            $this->add($compiled);
         }
-        if ($extended_template) {
-            $this->setExtendedTemplate($extended_template);
+        if ($extendedTemplate) {
+            $this->setExtendedTemplate($extendedTemplate);
         }
-        $this->embedded = $embedded_templates;
+        $this->embedded = $embeddedTemplates;
 
         return $this->popOutputStack();
     }
@@ -371,22 +362,31 @@ class Compiler
     /**
      * @param Node        $node
      * @param             $className
-     * @param string|null $parent_classname
+     * @param string|null $parentClassName
      *
      * @return array
      */
-    private function compileForClass(Node $node, $className, $parent_classname = null)
+    private function compileForClass(Node $node, $className, $parentClassName = null)
     {
         $this->addOutputStack();
         $this->compileNode($node, 2);
-        $extended_template = $this->getExtendedTemplate();
+        $extendedTemplate = $this->getExtendedTemplate();
 
         return $this->compileClass(
             $className,
             $this->popOutputStack(),
-            $extended_template,
-            $parent_classname ? : '\\' . $this->getClassForTemplate($extended_template, true)
+            $extendedTemplate,
+            $parentClassName ? : '\\' . $this->getClassForTemplate($extendedTemplate, true)
         );
+    }
+
+    private function addCompiledTemplateMethod($name, $template)
+    {
+        $this->indented('public function %s()', $name);
+        $this->indented('{');
+        $this->add($template);
+        $this->indented('}');
+        $this->newline();
     }
 
     private function compileClass($class, $body, $extendedTemplate, $parentClass = 'BaseTemplate')
@@ -396,6 +396,7 @@ class Compiler
         $this->indented('{');
         $this->newline();
         $this->indent();
+
         if ($this->extendsTemplate()) {
             $this->indented('public function getParentTemplate()');
             $this->indented('{');
@@ -405,11 +406,12 @@ class Compiler
             $this->indented('}');
             $this->newline();
         } else {
-            $this->addCompiledTemplate('render', $body);
+            $this->addCompiledTemplateMethod('render', $body);
         }
-        $this->compileEmbeddedTemplates();
+
+        $this->compileEmbeddedTemplateMethods();
         foreach ($this->templates as $name => $template) {
-            $this->addCompiledTemplate($name, $template);
+            $this->addCompiledTemplateMethod($name, $template);
         }
 
         $this->outdent();
@@ -419,7 +421,7 @@ class Compiler
         return $this->popOutputStack();
     }
 
-    private function compileEmbeddedTemplates()
+    private function compileEmbeddedTemplateMethods()
     {
         $embeddedTemplates = $this->getEmbeddedTemplates();
         if (empty($embeddedTemplates)) {
@@ -435,7 +437,7 @@ class Compiler
             if ($first) {
                 $first = false;
             } else {
-                $this->add(',');
+                $this->add(', ');
             }
             $this->indented($this->string($embedded['file']));
         }
