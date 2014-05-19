@@ -54,15 +54,24 @@ class Module extends \Miny\Modules\Module
             __NAMESPACE__ . '\\Environment',
             function (Container $container) use ($module, $app) {
                 $env = new Environment($module->getConfiguration('options'));
-                if ($app->isDeveloperEnvironment()) {
-                    //Environment is a dependency of Debug extension so this line is needed
-                    //to avoid infinite recursion
-                    $container->setInstance($env);
-                    $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Debug'));
-                    $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Visualizer'));
-                }
+
                 $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Optimizer'));
                 $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Miny'));
+
+                if (!$app->isDeveloperEnvironment()) {
+                    return $env;
+                }
+
+                //Environment is a dependency of Debug extension so this line is needed
+                //to avoid infinite recursion
+                $container->setInstance($env);
+                $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Debug'));
+
+                if (!$env->getOption('enable_node_tree_visualizer', false)) {
+                    return $env;
+                }
+
+                $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Visualizer'));
 
                 return $env;
             }
