@@ -26,12 +26,22 @@ class TemplateLoader
     private $log;
 
     /**
-     * @param Environment      $environment
-     * @param AbstractLog|null $log
+     * @var AbstractTemplateLoader
      */
-    public function __construct(Environment $environment, AbstractLog $log = null)
-    {
+    private $loader;
+
+    /**
+     * @param Environment            $environment
+     * @param AbstractTemplateLoader $loader
+     * @param AbstractLog|null       $log
+     */
+    public function __construct(
+        Environment $environment,
+        AbstractTemplateLoader $loader,
+        AbstractLog $log = null
+    ) {
         $this->environment = $environment;
+        $this->loader      = $loader;
         $this->log         = $log;
     }
 
@@ -44,50 +54,22 @@ class TemplateLoader
         $this->log->write(Log::DEBUG, 'TemplateLoader', $message, $args);
     }
 
-    private function getCachedPath($file)
-    {
-        $className = $this->environment->getCompiler()->getClassForTemplate($file, false);
-
-        return sprintf($this->environment->getOption('cache_path'), dirname($file) . '/' . $className);
-    }
-
-    private function getPath($file)
-    {
-        return sprintf(
-            $this->environment->getOption('template_path'),
-            $file,
-            $this->environment->getOption('template_extension')
-        );
-    }
-
-    private function shouldReload($file, $cached)
-    {
-        if (!is_file($cached)) {
-            return true;
-        }
-
-        return $this->environment->getOption('reload') && (filemtime($file) > filemtime($cached));
-    }
-
     private function compileIfNeeded($template)
     {
-        $cached = $this->getCachedPath($template);
-        $file   = $this->getPath($template);
+        $cached = $this->getCachePath($template);
 
-        if (!is_file($file)) {
-            $this->log('File not found: %s', $file);
-            throw new RuntimeException("Template file not found: {$file}");
+        if (!$this->loader->exists($template)) {
+            $this->log('Template not found: %s', $template);
+            throw new RuntimeException("Template not found: {$template}");
         }
-        if (!$this->shouldReload($file, $cached)) {
+        if (!$this->loader->isCacheFresh($template)) {
             return;
         }
 
         $compiler = $this->environment->getCompiler();
 
-        $class = $compiler->getClassForTemplate($template);
-        $this->log('Compiling %s into %s', $file, $cached);
-        $this->log('Compiled class name is %s', $class);
-        $this->compileFile($file, $class, $cached);
+        $this->log('Compiling %s', $template);
+        $this->compileFile($template, $cached);
         if ($compiler->extendsTemplate()) {
             $this->load($compiler->getExtendedTemplate());
         }
@@ -97,18 +79,21 @@ class TemplateLoader
     }
 
     /**
-     * @param $file
-     * @param $class
+     * @param $template
      * @param $cached
      */
-    private function compileFile($file, $class, $cached)
+    private function compileFile($template, $cached)
     {
+        //Get the desired class name for the template
+        $class = $this->loader->getTemplateClassName($template);
+        $this->log('Compiled class name is %s', $class);
+
         //Read the template
-        $contents = file_get_contents($file);
+        $templateSource = $this->loader->load($template);
 
         //Compile and optimize the template
-        $stream   = $this->environment->getTokenizer()->tokenize($contents);
-        $node     = $this->environment->getParser()->parse($stream);
+        $stream = $this->environment->getTokenizer()->tokenize($templateSource);
+        $node   = $this->environment->getParser()->parse($stream);
         $this->environment->getNodeTreeTraverser()->traverse($node);
         $compiled = $this->environment->getCompiler()->compile($node, $class);
 
@@ -128,13 +113,13 @@ class TemplateLoader
      */
     public function load($template)
     {
-        $class = '\\' . $this->environment->getCompiler()->getClassForTemplate($template);
-
-        $this->compileIfNeeded($template);
+        $class = $this->loader->getTemplateClassName($template);
 
         $this->log('Loading %s', $template);
+        $this->compileIfNeeded($template);
+
         if (!class_exists($class)) {
-            $file = $this->getCachedPath($template);
+            $file = $this->getCachePath($template);
             $this->log('Template %s was not found in file %s', $class, $file);
             throw new RuntimeException("Template not found: {$template}");
         }
@@ -158,5 +143,13 @@ class TemplateLoader
     public function setGlobals(Template $template)
     {
         $template->set($this->environment->getOption('global_variables'));
+    }
+
+    private function getCachePath($template)
+    {
+        return sprintf(
+            $this->environment->getOption('cache_path'),
+            $this->loader->getCacheKey($template)
+        );
     }
 }

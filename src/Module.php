@@ -32,6 +32,7 @@ class Module extends \Miny\Modules\Module
                 'template_extension' => 'tpl',
                 'autoescape'         => true,
                 'fallback_tag'       => 'print',
+                'template_loader'    => __NAMESPACE__ . '\\TemplateLoaders\\FileLoader',
                 'delimiters'         => array(
                     'tag'     => array('{', '}'),
                     'comment' => array('{#', '#}')
@@ -75,6 +76,11 @@ class Module extends \Miny\Modules\Module
 
                 return $env;
             }
+        );
+
+        $container->addAlias(
+            __NAMESPACE__ . '\\AbstractTemplateLoader',
+            $this->getConfiguration('options:template_loader')
         );
     }
 

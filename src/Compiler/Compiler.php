@@ -323,7 +323,7 @@ class Compiler
         $this->indentation = 0;
         $this->add('<?php');
         $this->newline();
-        $this->indented('namespace %s;', $namespace);
+        $this->indented('namespace %s;', ltrim($namespace, '\\'));
         $this->newline();
 
         foreach ($this->embedded as $i => $embedded) {
@@ -376,7 +376,7 @@ class Compiler
             $className,
             $this->popOutputStack(),
             $extendedTemplate,
-            $parentClassName ? : '\\' . $this->getClassForTemplate($extendedTemplate, true)
+            $parentClassName ? : '\\' . $this->getClassForTemplate($extendedTemplate)
         );
     }
 
