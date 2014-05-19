@@ -21,7 +21,7 @@ class Tokenizer
     /**
      * @var Tag[]
      */
-    private $tags;
+    private $tags = array();
 
     /**
      * @var Tag[]
@@ -37,14 +37,13 @@ class Tokenizer
     public function __construct(Environment $environment)
     {
         $blockNames = array();
-        foreach ($environment->getTags() as $tag) {
-            $name = $tag->getTag();
+        foreach ($environment->getTags() as $name => $tag) {
             if ($tag->hasEndingTag()) {
                 $blockNames[] = $name;
             }
+
             if ($tag->isPatternBased()) {
                 $this->patternBasedTags[$name] = $tag;
-
             } else {
                 $this->tags[$name] = $tag;
             }
@@ -52,6 +51,7 @@ class Tokenizer
 
         $this->delimiters      = $environment->getOption('delimiters');
         $this->fallbackTagName = $environment->getOption('fallback_tag');
+        $block_end_prefix      = $environment->getOption('block_end_prefix', 'end');
 
         $literals = array(
             'true',
@@ -67,9 +67,9 @@ class Tokenizer
         $literal_pattern = implode('|', $literals);
 
         $this->patterns = array(
-            'closing_tag' => sprintf('/end(%s|raw)/Ai', $blocks_pattern),
+            'closing_tag' => "/{$block_end_prefix}({$blocks_pattern}|raw)/Ai",
             'operator'    => $this->getOperatorPattern($environment),
-            'literal'     => sprintf('/(%s)/i', $literal_pattern)
+            'literal'     => "/({$literal_pattern})/i"
         );
     }
 
