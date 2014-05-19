@@ -64,7 +64,7 @@ abstract class Extension
 
     public function registerNodeVisitors(Environment $env)
     {
-        foreach($this->getNodeVisitors() as $optimizer) {
+        foreach ($this->getNodeVisitors() as $optimizer) {
             $env->addNodeVisitor($optimizer);
         }
     }

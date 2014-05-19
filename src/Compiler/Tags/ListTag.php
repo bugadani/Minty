@@ -43,7 +43,7 @@ class ListTag extends Tag
     public function parse(Parser $parser, Stream $stream)
     {
         $node = new TagNode($this, array(
-            'template'   => $stream->next()->getValue()
+            'template' => $stream->next()->getValue()
         ));
 
         $node->addChild($parser->parseExpression($stream), 'expression');

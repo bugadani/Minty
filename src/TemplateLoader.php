@@ -11,7 +11,6 @@ namespace Modules\Templating;
 
 use Miny\Log\Log;
 use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\NodeTreeTraverser;
 use RuntimeException;
 
 class TemplateLoader
@@ -37,19 +36,19 @@ class TemplateLoader
     private $log;
 
     /**
-     * @param Environment       $environment
-     * @param Compiler          $compiler
-     * @param Log|null          $log
+     * @param Environment $environment
+     * @param Compiler    $compiler
+     * @param Log|null    $log
      */
     public function __construct(
         Environment $environment,
         Compiler $compiler,
         Log $log = null
     ) {
-        $this->compiler          = $compiler;
-        $this->options           = $environment->getOptions();
-        $this->environment       = $environment;
-        $this->log               = $log;
+        $this->compiler    = $compiler;
+        $this->options     = $environment->getOptions();
+        $this->environment = $environment;
+        $this->log         = $log;
     }
 
     protected function log($message)

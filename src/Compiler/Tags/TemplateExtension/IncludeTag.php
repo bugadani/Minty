@@ -57,7 +57,7 @@ class IncludeTag extends Tag
     public function parse(Parser $parser, Stream $stream)
     {
         $node = new TagNode($this, array(
-            'template'  => $parser->parseExpression($stream)
+            'template' => $parser->parseExpression($stream)
         ));
 
         if ($stream->nextTokenIf(Token::EXPRESSION_START, 'using')) {

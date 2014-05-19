@@ -10,8 +10,8 @@
 namespace Modules\Templating\Compiler\NodeVisitors;
 
 use Modules\Templating\Compiler\Node;
-use Modules\Templating\Compiler\NodeVisitor;
 use Modules\Templating\Compiler\Nodes\TagNode;
+use Modules\Templating\Compiler\NodeVisitor;
 use Modules\Templating\Compiler\Tags\ForTag;
 
 class ForLoopOptimizer extends NodeVisitor
