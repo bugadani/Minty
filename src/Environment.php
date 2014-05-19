@@ -11,8 +11,8 @@ namespace Modules\Templating;
 
 use Modules\Templating\Compiler\Exceptions\CompileException;
 use Modules\Templating\Compiler\FunctionCompiler;
-use Modules\Templating\Compiler\NodeVisitor;
 use Modules\Templating\Compiler\NodeTreeTraverser;
+use Modules\Templating\Compiler\NodeVisitor;
 use Modules\Templating\Compiler\OperatorCollection;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Tag;
@@ -100,12 +100,22 @@ class Environment
     }
 
     /**
-     * @param $key
+     * @param      $key
+     * @param null $default
      *
+     * @throws \OutOfBoundsException
      * @return mixed
      */
-    public function getOption($key)
+    public function getOption($key, $default = null)
     {
+        if (!isset($this->options[$key])) {
+            if ($default === null) {
+                throw new \OutOfBoundsException("Option {$key} is not set.");
+            }
+
+            return $default;
+        }
+
         return $this->options[$key];
     }
 

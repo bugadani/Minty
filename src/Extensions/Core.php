@@ -255,17 +255,6 @@ class Core extends Extension
         );
     }
 
-    public function getNodeOptimizers()
-    {
-        $optimizers = array(
-            new ForLoopOptimizer()
-        );
-
-        return $optimizers;
-    }
-
-
-
     /* Helper functions */
 
     /**

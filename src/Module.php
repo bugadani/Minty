@@ -14,7 +14,6 @@ use Miny\AutoLoader;
 use Miny\Factory\Container;
 use Miny\HTTP\Request;
 use Miny\HTTP\Response;
-use Modules\Templating\Compiler\NodeTreeTraverser;
 use UnexpectedValueException;
 
 class Module extends \Miny\Modules\Module
@@ -53,8 +52,16 @@ class Module extends \Miny\Modules\Module
         $module = $this;
         $container->addAlias(
             __NAMESPACE__ . '\\Environment',
-            function (Container $container) use ($module) {
+            function (Container $container) use ($module, $app) {
                 $env = new Environment($module->getConfiguration('options'));
+                if ($app->isDeveloperEnvironment()) {
+                    //Environment is a dependency of Debug extension so this line is needed
+                    //to avoid infinite recursion
+                    $container->setInstance($env);
+                    $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Debug'));
+                    $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Visualizer'));
+                }
+                $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Optimizer'));
                 $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Miny'));
 
                 return $env;
