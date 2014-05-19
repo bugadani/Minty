@@ -19,11 +19,6 @@ use UnexpectedValueException;
 abstract class Template
 {
     /**
-     * @var array
-     */
-    private $options;
-
-    /**
      * @var TemplateLoader
      */
     private $loader;
@@ -40,7 +35,6 @@ abstract class Template
 
     public function __construct(TemplateLoader $loader, Environment $environment)
     {
-        $this->options     = $environment->getOptions();
         $this->loader      = $loader;
         $this->environment = $environment;
     }
@@ -145,7 +139,7 @@ abstract class Template
         if (is_object($structure)) {
             return $structure->$key;
         }
-        if (!$this->options['strict_mode']) {
+        if (!$this->environment->getOption('strict_mode', true)) {
             return $key;
         }
         throw new UnexpectedValueException('Variable is not an array or an object.');
@@ -207,7 +201,7 @@ abstract class Template
         if (isset($this->variables[$key])) {
             return $this->variables[$key];
         }
-        if (!$this->options['strict_mode']) {
+        if (!$this->environment->getOption('strict_mode', true)) {
             return $key;
         }
         throw new OutOfBoundsException("Variable {$key} is not set.");
