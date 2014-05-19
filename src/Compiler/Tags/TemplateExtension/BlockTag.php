@@ -31,12 +31,13 @@ class BlockTag extends Tag
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        $template = $compiler
-            ->startTemplate($node->getData('template'))
-            ->compileNode($node->getChild('body'))
-            ->endTemplate();
-
-        $compiler->indented('echo $this->%s();', $template);
+        $compiler->indented(
+            'echo $this->%s();',
+            $compiler->addTemplate(
+                $node->getData('template'),
+                $node->getChild('body')
+            )
+        );
     }
 
     public function parse(Parser $parser, Stream $stream)

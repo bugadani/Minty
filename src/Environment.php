@@ -236,8 +236,7 @@ class Environment
      */
     public function addTag(Tag $tag)
     {
-        $tagName              = $tag->getTag();
-        $this->tags[$tagName] = $tag;
+        $this->tags[$tag->getTag()] = $tag;
     }
 
     /**
