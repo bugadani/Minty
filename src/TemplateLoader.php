@@ -40,11 +40,8 @@ class TemplateLoader
      * @param Compiler    $compiler
      * @param Log|null    $log
      */
-    public function __construct(
-        Environment $environment,
-        Compiler $compiler,
-        Log $log = null
-    ) {
+    public function __construct(Environment $environment, Compiler $compiler, Log $log = null)
+    {
         $this->compiler    = $compiler;
         $this->options     = $environment->getOptions();
         $this->environment = $environment;

@@ -17,11 +17,11 @@ use Modules\Templating\Compiler\TemplateFunction;
 
 abstract class Extension
 {
-    private $extension_name;
+    private $extensionName;
 
     public function __construct()
     {
-        $this->extension_name = $this->getExtensionName();
+        $this->extensionName = $this->getExtensionName();
     }
 
     abstract public function getExtensionName();
@@ -29,7 +29,7 @@ abstract class Extension
     public function registerFunctions(Environment $environment)
     {
         foreach ($this->getFunctions() as $function) {
-            $function->setExtensionName($this->extension_name);
+            $function->setExtensionName($this->extensionName);
             $environment->addFunction($function);
         }
     }

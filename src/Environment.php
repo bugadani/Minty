@@ -100,8 +100,8 @@ class Environment
     }
 
     /**
-     * @param      $key
-     * @param null $default
+     * @param $key
+     * @param $default
      *
      * @throws \OutOfBoundsException
      * @return mixed

@@ -36,14 +36,13 @@ abstract class Template
     /**
      * @var array
      */
-    private $variables;
+    private $variables = array();
 
     public function __construct(TemplateLoader $loader, Environment $environment)
     {
         $this->options     = $environment->getOptions();
         $this->loader      = $loader;
         $this->environment = $environment;
-        $this->variables   = array();
     }
 
     public function getLoader()
@@ -97,7 +96,7 @@ abstract class Template
             case 'json':
                 return json_encode($data);
             default:
-                throw new BadMethodCallException('Filter not found: ' . $for);
+                throw new BadMethodCallException("Filter is not found for {$for}");
         }
     }
 
@@ -211,7 +210,7 @@ abstract class Template
         if (!$this->options['strict_mode']) {
             return $key;
         }
-        throw new OutOfBoundsException(sprintf('Variable %s is not set.', $key));
+        throw new OutOfBoundsException("Variable {$key} is not set.");
     }
 
     public function __isset($key)
