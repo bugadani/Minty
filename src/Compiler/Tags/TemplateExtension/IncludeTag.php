@@ -44,26 +44,25 @@ class IncludeTag extends Tag
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        $compiler
-            ->indented('$template = $this->getLoader()->load(')
-            ->compileData($node->getData('template'))
-            ->add(');')
-            ->indented('$template->set(')
-            ->compileData($node->getData('arguments'))
-            ->add(');')
-            ->indented('$template->render();');
+        $compiler->indented('$template = $this->getLoader()->load(');
+        $node->getChild('template')->compile($compiler);
+        $compiler->add(');');
+
+        if ($node->hasData('arguments')) {
+            $compiler->indented('$template->set(');
+            $node->getChild('arguments')->compile($compiler);
+            $compiler->add(');');
+        }
+        $compiler->indented('$template->render();');
     }
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $node = new TagNode($this, array(
-            'template' => $parser->parseExpression($stream)
-        ));
+        $node = new TagNode($this);
 
+        $node->addChild($parser->parseExpression($stream), 'template');
         if ($stream->nextTokenIf(Token::EXPRESSION_START, 'using')) {
-            $node->addData('arguments', $parser->parseExpression($stream));
-        } else {
-            $node->addData('arguments', array());
+            $node->addChild($parser->parseExpression($stream), 'arguments');
         }
 
         return $node;

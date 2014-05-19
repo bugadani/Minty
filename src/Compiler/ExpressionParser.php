@@ -190,12 +190,10 @@ class ExpressionParser
                 $this->pushUnaryPrefixOperator($token);
                 $return = false;
             } else {
-                throw new SyntaxException(sprintf(
-                    'Unexpected %s (%s) token found in line %d',
-                    $token->getTypeString(),
-                    $token->getValue(),
-                    $token->getLine()
-                ));
+                $type  = $token->getTypeString();
+                $value = $token->getValue();
+                $line  = $token->getLine();
+                throw new SyntaxException("Unexpected {$type} ({$value}) token found in line {$line}");
             }
         } while (!$return);
     }

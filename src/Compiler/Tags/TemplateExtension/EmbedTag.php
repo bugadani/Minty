@@ -36,10 +36,10 @@ class EmbedTag extends Tag
             $compiler->addEmbedded($node->getData('template'), $node->getChild('body'))
         );
 
-        if ($node->hasData('arguments')) {
-            $compiler->indented('$embedded->set(')
-                ->compileData($node->getData('arguments'))
-                ->add(');');
+        if ($node->hasChild('arguments')) {
+            $compiler->indented('$embedded->set(');
+            $node->getChild('arguments')->compile($compiler);
+            $compiler->add(');');
         }
 
         $compiler->indented('$embedded->render();');
@@ -52,7 +52,7 @@ class EmbedTag extends Tag
         ));
 
         if ($stream->nextTokenIf(Token::IDENTIFIER, 'using')) {
-            $node->addData('arguments', $parser->parseExpression($stream));
+            $node->addChild($parser->parseExpression($stream), 'arguments');
         }
 
         $stream->expect(Token::EXPRESSION_END);
