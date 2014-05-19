@@ -285,7 +285,7 @@ class Tokenizer
         $match = array();
         if (preg_match($this->patterns['closing_tag'], $tag, $match)) {
             if (!$this->inRaw) {
-                $this->pushToken(Token::TAG, $tag);
+                $this->pushToken(Token::TAG, 'end'.$match[1]);
 
                 return true;
             }
