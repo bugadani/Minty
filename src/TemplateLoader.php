@@ -70,11 +70,14 @@ class TemplateLoader
 
         $this->log('Compiling %s', $template);
         $this->compileFile($template, $cached);
+
+        //Fetch before line 77 overrides it
+        $embeddedTemplateNames = $compiler->getEmbeddedTemplateNames();
         if ($compiler->extendsTemplate()) {
-            $this->load($compiler->getExtendedTemplate());
+            $this->compileIfNeeded($compiler->getExtendedTemplate());
         }
-        foreach ($compiler->getEmbeddedTemplates() as $template) {
-            $this->load($template['file']);
+        foreach ($embeddedTemplateNames as $template) {
+            $this->compileIfNeeded($template);
         }
     }
 

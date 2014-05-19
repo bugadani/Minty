@@ -38,6 +38,6 @@ class ParentTag extends Tag
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        $compiler->indented('echo parent::%s();', $compiler->getCurrentTemplate());
+        $compiler->indented('parent::%s();', $compiler->getCurrentTemplate());
     }
 }

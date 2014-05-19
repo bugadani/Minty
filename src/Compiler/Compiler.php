@@ -22,6 +22,7 @@ class Compiler
     private $source;
     private $indentation;
     private $templates;
+    private $currentTemplate;
     private $extendedTemplate;
     private $embedded;
     private $filters;
@@ -226,7 +227,7 @@ class Compiler
 
     public function getExtendedTemplate()
     {
-        return $this->extendedTemplate ? : false;
+        return $this->extendedTemplate;
     }
 
     public function getClassForTemplate($template, $include_namespace = true)
@@ -264,14 +265,30 @@ class Compiler
         return $this->embedded;
     }
 
+    public function getEmbeddedTemplateNames()
+    {
+        $names = array();
+        foreach ($this->embedded as $embedded) {
+            $names[] = $embedded['file'];
+        }
+
+        return $names;
+    }
+
     public function hasEmbeddedTemplates()
     {
         return !empty($this->embedded);
     }
 
+    public function getCurrentTemplate()
+    {
+        return $this->currentTemplate;
+    }
+
     public function compile(Node $node, $class)
     {
         $this->source           = '';
+        $this->currentTemplate  = 'render';
         $this->sourceStack      = array();
         $this->templates        = array();
         $this->extendedTemplate = null;
@@ -290,16 +307,18 @@ class Compiler
         $this->indented('namespace %s;', ltrim($namespace, '\\'));
         $this->newline();
 
-        foreach ($this->embedded as $i => $embedded) {
+        $embeddedTemplates = $this->getEmbeddedTemplates();
+        foreach ($embeddedTemplates as $i => $embedded) {
             $this->indented('use %s as EmbeddedBaseTemplate%d;', $embedded['parent'], $i);
         }
 
         $this->newline();
         $this->add($mainTemplateSource);
 
-        $extendedTemplate  = $this->getExtendedTemplate();
-        $embeddedTemplates = $this->embedded;
-        $this->embedded    = array();
+        $extendedTemplate = $this->getExtendedTemplate();
+        $templates        = $this->templates;
+        $this->embedded   = array();
+        $this->templates  = array();
         foreach ($embeddedTemplates as $i => $embedded) {
             $className   = 'EmbeddedTemplate' . $i;
             $parentAlias = 'EmbeddedBaseTemplate' . $i;
@@ -314,10 +333,9 @@ class Compiler
                 )
             );
         }
-        if ($extendedTemplate) {
-            $this->setExtendedTemplate($extendedTemplate);
-        }
-        $this->embedded = $embeddedTemplates;
+        $this->setExtendedTemplate($extendedTemplate);
+        $this->templates = $templates;
+        $this->embedded  = $embeddedTemplates;
 
         return $this->popSourceStack();
     }
@@ -371,10 +389,12 @@ class Compiler
             $this->addCompiledTemplateMethod('render', $body);
         }
 
-        $this->compileEmbeddedTemplateMethods();
         foreach ($this->templates as $name => $templateNode) {
+            $this->currentTemplate = $name;
             $this->addCompiledTemplateMethod($name, $this->compileToString($templateNode, 2));
         }
+
+        $this->compileEmbeddedTemplateMethod();
 
         $this->outdent();
         $this->indented('}');
@@ -383,7 +403,7 @@ class Compiler
         return $this->popSourceStack();
     }
 
-    private function compileEmbeddedTemplateMethods()
+    private function compileEmbeddedTemplateMethod()
     {
         $embeddedTemplates = $this->getEmbeddedTemplates();
         if (empty($embeddedTemplates)) {

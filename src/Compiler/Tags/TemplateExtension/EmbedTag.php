@@ -31,14 +31,16 @@ class EmbedTag extends Tag
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        $compiler
-            ->indented(
-                '$embedded = new %s($this->getLoader(), $this->getEnvironment());',
-                $compiler->addEmbedded($node->getData('template'), $node->getChild('body'))
-            )
-            ->indented('$embedded->set(')
-            ->compileData($node->getData('arguments'))
-            ->add(');');
+        $compiler->indented(
+            '$embedded = new %s($this->getLoader(), $this->getEnvironment());',
+            $compiler->addEmbedded($node->getData('template'), $node->getChild('body'))
+        );
+
+        if ($node->hasData('arguments')) {
+            $compiler->indented('$embedded->set(')
+                ->compileData($node->getData('arguments'))
+                ->add(');');
+        }
 
         $compiler->indented('$embedded->render();');
     }
@@ -51,9 +53,9 @@ class EmbedTag extends Tag
 
         if ($stream->nextTokenIf(Token::IDENTIFIER, 'using')) {
             $node->addData('arguments', $parser->parseExpression($stream));
-        } else {
-            $node->addData('arguments', array());
         }
+
+        $stream->expect(Token::EXPRESSION_END);
 
         $node->addChild(
             $parser->parse(
