@@ -56,17 +56,16 @@ class Token
         $this->line  = $line;
     }
 
-    private function checkValue($value)
+    public function test($type, $value = null)
     {
-        if ($this->value === null) {
+        if ($this->type !== $type) {
+            return false;
+        }
+
+        if ($value === null || $this->value === $value) {
             return true;
         }
-        if ($value === null) {
-            return true;
-        }
-        if (is_callable($value) || $value instanceof Closure) {
-            return $value($this->value);
-        }
+
         if (is_array($value)) {
             foreach ($value as $val) {
                 if ($this->value === $val) {
@@ -74,21 +73,11 @@ class Token
                 }
             }
         }
-
-        return $this->value === $value;
-    }
-
-    public function test($type, $value = null)
-    {
-        if ($this->type !== $type) {
-            return false;
+        if (is_callable($value)) {
+            return $value($this->value);
         }
 
-        if (!$this->checkValue($value)) {
-            return false;
-        }
-
-        return true;
+        return false;
     }
 
     public function isDataType()

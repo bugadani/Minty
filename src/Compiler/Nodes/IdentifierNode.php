@@ -47,7 +47,7 @@ class IdentifierNode extends Node
     public function compile(Compiler $compiler)
     {
         if ($this->object) {
-            $compiler->compileNode($this->getObject());
+            $this->object->compile($compiler);
         } else {
             $compiler->add('$this');
         }

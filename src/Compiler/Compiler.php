@@ -53,10 +53,14 @@ class Compiler
 
     public function indented($string)
     {
-        $args = array_slice(func_get_args(), 1);
         $this->source .= "\n";
         $this->source .= str_repeat('    ', $this->indentation);
-        $this->source .= vsprintf($string, $args);
+        if (func_num_args() > 1) {
+            $args = array_slice(func_get_args(), 1);
+            $this->source .= vsprintf($string, $args);
+        } else {
+            $this->source .= $string;
+        }
 
         return $this;
     }

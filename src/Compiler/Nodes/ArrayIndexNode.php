@@ -14,7 +14,14 @@ use Modules\Templating\Compiler\Node;
 
 class ArrayIndexNode extends Node
 {
+    /**
+     * @var Node
+     */
     private $identifier;
+
+    /**
+     * @var Node
+     */
     private $key;
 
     public function __construct(Node $identifier, Node $key)
@@ -25,10 +32,9 @@ class ArrayIndexNode extends Node
 
     public function compile(Compiler $compiler)
     {
-        $compiler
-            ->compileNode($this->identifier)
-            ->add('[')
-            ->compileNode($this->key)
-            ->add(']');
+        $this->identifier->compile($compiler);
+        $compiler->add('[');
+        $this->key->compile($compiler);
+        $compiler->add(']');
     }
 }

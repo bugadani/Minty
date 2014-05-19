@@ -26,19 +26,19 @@ class ArrayNode extends Node
         $compiler->add('array(');
         $first = true;
         foreach ($this->data as $item) {
+            if ($first) {
+                $first = false;
+            } else {
+                $compiler->add(', ');
+            }
             /** @var $value Node|null */
             /** @var $key Node|null */
             list($value, $key) = $item;
-            if (!$first) {
-                $compiler->add(', ');
-            } else {
-                $first = false;
-            }
             if ($key !== null) {
-                $compiler->compileNode($key);
+                $key->compile($compiler);
                 $compiler->add(' => ');
             }
-            $compiler->compileNode($value);
+            $value->compile($compiler);
         }
         $compiler->add(')');
     }

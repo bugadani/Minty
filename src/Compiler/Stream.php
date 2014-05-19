@@ -54,7 +54,7 @@ class Stream
      * @param       $type
      * @param       $value
      *
-     * @throws Exceptions\SyntaxException
+     * @throws SyntaxException
      * @return Token
      */
     private function testOrThrow(Token $token, $type, $value)
@@ -78,7 +78,7 @@ class Stream
      */
     public function expect($type, $value = null)
     {
-        $next = $this->next();
+        $next = next($this->tokens);
 
         return $this->testOrThrow($next, $type, $value);
     }
@@ -91,7 +91,7 @@ class Stream
      */
     public function expectCurrent($type, $value = null)
     {
-        $current = $this->current();
+        $current = current($this->tokens);
 
         return $this->testOrThrow($current, $type, $value);
     }
@@ -104,10 +104,11 @@ class Stream
      */
     public function nextTokenIf($type, $value = null)
     {
-        if ($this->next()->test($type, $value)) {
-            return $this->current();
+        $token = next($this->tokens);
+        if ($token->test($type, $value)) {
+            return $token;
         }
-        $this->prev();
+        prev($this->tokens);
 
         return false;
     }
