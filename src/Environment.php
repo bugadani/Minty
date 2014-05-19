@@ -9,6 +9,7 @@
 
 namespace Modules\Templating;
 
+use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\Exceptions\CompileException;
 use Modules\Templating\Compiler\FunctionCompiler;
 use Modules\Templating\Compiler\NodeTreeTraverser;
@@ -22,6 +23,21 @@ use Modules\Templating\Extensions\Core;
 
 class Environment
 {
+    /**
+     * @var Tokenizer
+     */
+    private $tokenizer;
+
+    /**
+     * @var Parser
+     */
+    private $parser;
+
+    /**
+     * @var Compiler
+     */
+    private $compiler;
+
     /**
      * @var Tag[]
      */
@@ -63,16 +79,6 @@ class Environment
     private $functionCompilers = array();
 
     /**
-     * @var Tokenizer
-     */
-    private $tokenizer;
-
-    /**
-     * @var Parser
-     */
-    private $parser;
-
-    /**
      * @var NodeVisitor[]
      */
     private $nodeVisitors = array();
@@ -92,6 +98,42 @@ class Environment
         $this->unaryPostfixOperators = new OperatorCollection();
         $this->options               = $options;
         $this->addExtension(new Core());
+    }
+
+    /**
+     * @return Tokenizer
+     */
+    public function getTokenizer()
+    {
+        if (!isset($this->tokenizer)) {
+            $this->tokenizer = new Tokenizer($this);
+        }
+
+        return $this->tokenizer;
+    }
+
+    /**
+     * @return Parser
+     */
+    public function getParser()
+    {
+        if (!isset($this->parser)) {
+            $this->parser = new Parser($this);
+        }
+
+        return $this->parser;
+    }
+
+    /**
+     * @return Compiler
+     */
+    public function getCompiler()
+    {
+        if (!isset($this->compiler)) {
+            $this->compiler = new Compiler($this);
+        }
+
+        return $this->compiler;
     }
 
     public function addGlobalVariable($name, $value)
@@ -278,30 +320,6 @@ class Environment
         }
 
         return $this->functionCompilers[$class];
-    }
-
-    /**
-     * @return Tokenizer
-     */
-    public function getTokenizer()
-    {
-        if (!isset($this->tokenizer)) {
-            $this->tokenizer = new Tokenizer($this);
-        }
-
-        return $this->tokenizer;
-    }
-
-    /**
-     * @return Parser
-     */
-    public function getParser()
-    {
-        if (!isset($this->parser)) {
-            $this->parser = new Parser($this);
-        }
-
-        return $this->parser;
     }
 
     /**

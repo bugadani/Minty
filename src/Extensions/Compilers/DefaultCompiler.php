@@ -22,7 +22,7 @@ class DefaultCompiler extends FunctionCompiler
 
     public function compile(Compiler $compiler, TemplateFunction $function, array $arguments)
     {
-        if (count($arguments) < 2) {
+        if (count($arguments) !== 2) {
             throw new InvalidArgumentException('Default function needs two arguments.');
         }
         $compiler->add('(isset(')
