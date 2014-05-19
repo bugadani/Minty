@@ -77,7 +77,7 @@ use Modules\Templating\Compiler\Tags\ExtractTag;
 use Modules\Templating\Compiler\Tags\ForTag;
 use Modules\Templating\Compiler\Tags\IfTag;
 use Modules\Templating\Compiler\Tags\ListTag;
-use Modules\Templating\Compiler\Tags\OutputTag;
+use Modules\Templating\Compiler\Tags\PrintTag;
 use Modules\Templating\Compiler\Tags\SwitchTag;
 use Modules\Templating\Compiler\Tags\TemplateExtension\BlockTag;
 use Modules\Templating\Compiler\Tags\TemplateExtension\EmbedTag;

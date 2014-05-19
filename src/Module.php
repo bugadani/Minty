@@ -31,7 +31,7 @@ class Module extends \Miny\Modules\Module
                 'template_path'      => 'templates/%s.%s',
                 'template_extension' => 'tpl',
                 'autoescape'         => true,
-                'fallback_tag'       => 'output',
+                'fallback_tag'       => 'print',
                 'delimiters'         => array(
                     'tag'     => array('{', '}'),
                     'comment' => array('{#', '#}')

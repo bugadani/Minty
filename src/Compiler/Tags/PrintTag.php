@@ -23,12 +23,12 @@ use Modules\Templating\Compiler\Tag;
 use Modules\Templating\Compiler\Token;
 use Modules\Templating\Environment;
 
-class OutputTag extends Tag
+class PrintTag extends Tag
 {
 
     public function getTag()
     {
-        return 'output';
+        return 'print';
     }
 
     public function parse(Parser $parser, Stream $stream)
