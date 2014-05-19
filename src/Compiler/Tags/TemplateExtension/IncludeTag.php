@@ -48,7 +48,7 @@ class IncludeTag extends Tag
         $node->getChild('template')->compile($compiler);
         $compiler->add(');');
 
-        if ($node->hasData('arguments')) {
+        if ($node->hasChild('arguments')) {
             $compiler->indented('$template->set(');
             $node->getChild('arguments')->compile($compiler);
             $compiler->add(');');
