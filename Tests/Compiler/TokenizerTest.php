@@ -33,10 +33,26 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     public function testTokenizerAcceptsCustomBlockClosingTagPrefix()
     {
-        $env = new Environment(array(
+        $env       = new Environment(array(
             'block_end_prefix' => '/'
         ));
         $tokenizer = new Tokenizer($env);
-        $tokenizer->tokenize('{raw}{/raw}');
+
+        return $tokenizer->tokenize('{raw}some random content {}{/raw{/raw}');
+    }
+
+    /**
+     * @depends testTokenizerAcceptsCustomBlockClosingTagPrefix
+     */
+    public function testRawBlocksAreNotParsed(Stream $stream)
+    {
+        $this->assertEquals('some random content {}{/raw', $stream->next()->getValue());
+    }
+
+    public function testCommentsAreNotRemovedFromRawBlocks()
+    {
+        $stream = $this->tokenizer->tokenize('{raw}something {# comment #} something{endraw}');
+
+        $this->assertEquals('something {# comment #} something', $stream->next()->getValue());
     }
 }
