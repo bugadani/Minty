@@ -127,7 +127,7 @@ class Tokenizer
         return sprintf('/(%s|[%s ])/i', implode('|', array_keys($operators)), $quote($signs));
     }
 
-    private function findTags($template)
+    private function preProcessTemplate($template)
     {
         $flags         = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_OFFSET_CAPTURE;
         $pattern_parts = array();
@@ -149,6 +149,7 @@ class Tokenizer
         $offset         = 0;
         $in_raw         = false;
 
+        $endraw = $this->blockEndPrefix . 'raw';
         foreach ($parts as $i => $part) {
             list($part, $off) = $part;
             switch ($part) {
@@ -165,7 +166,6 @@ class Tokenizer
                 case $this->delimiters['tag'][0]:
                     if (!$in_comment) {
                         if ($in_raw) {
-                            $endraw = $this->blockEndPrefix . 'raw';
                             if (isset($parts[$i]) && trim($parts[$i + 1][0]) === $endraw) {
                                 $in_raw = false;
                                 $in_tag = true;
@@ -232,6 +232,19 @@ class Tokenizer
             }
         }
 
+        if ($in_comment) {
+            throw new SyntaxException('Unterminated comment found');
+        }
+        if ($in_string) {
+            throw new SyntaxException('Unterminated string found');
+        }
+        if ($in_tag) {
+            throw new SyntaxException('Unterminated tag found');
+        }
+        if ($in_raw) {
+            throw new SyntaxException('Unterminated raw block found');
+        }
+
         return $matches;
     }
 
@@ -257,7 +270,7 @@ class Tokenizer
         $this->tokens = array();
         $this->inRaw  = false;
 
-        $matches = $this->findTags($template);
+        $matches = $this->preProcessTemplate($template);
         $cursor  = 0;
         foreach ($matches[0] as $position => $match) {
             list($tag, $tag_position) = $match;
@@ -284,9 +297,6 @@ class Tokenizer
         if ($cursor < strlen($template)) {
             $text = substr($template, $cursor);
             $this->pushToken(Token::TEXT, $text);
-        }
-        if ($this->inRaw) {
-            throw new SyntaxException("Unterminated raw block found in line {$this->line}");
         }
         $this->pushToken(Token::EOF);
 

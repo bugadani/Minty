@@ -55,4 +55,20 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('something {# comment #} something', $stream->next()->getValue());
     }
+
+    /**
+     * @expectedException \Modules\Templating\Compiler\Exceptions\SyntaxException
+     */
+    public function testUnknownTagsThrowExceptions()
+    {
+        $this->tokenizer->tokenize('{foobar}');
+    }
+
+    /**
+     * @expectedException \Modules\Templating\Compiler\Exceptions\SyntaxException
+     */
+    public function testUnterminatedStringsThrowExceptions()
+    {
+        $this->tokenizer->tokenize('{"}');
+    }
 }
