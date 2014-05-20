@@ -132,9 +132,9 @@ class Tokenizer
         $flags         = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_OFFSET_CAPTURE;
         $pattern_parts = array();
         foreach ($this->delimiters as $delimiter) {
-            $opening         = preg_quote($delimiter[0], '/');
-            $closing         = preg_quote($delimiter[1], '/');
-            $pattern = $opening . '|' . $closing;
+            $opening                 = preg_quote($delimiter[0], '/');
+            $closing                 = preg_quote($delimiter[1], '/');
+            $pattern                 = $opening . '|' . $closing;
             $pattern_parts[$pattern] = strlen($pattern);
         }
         arsort($pattern_parts);
@@ -154,13 +154,21 @@ class Tokenizer
             list($part, $off) = $part;
             switch ($part) {
                 case $this->delimiters['comment'][0]:
-                    if (!$in_tag && !$in_raw) {
-                        $in_comment = true;
+                    if (!$in_raw) {
+                        if (!$in_tag) {
+                            $in_comment = true;
+                        } else {
+                            $tag .= $part;
+                        }
                     }
                     break;
 
                 case $this->delimiters['comment'][1]:
-                    $in_comment = false;
+                    if ($in_comment) {
+                        $in_comment = false;
+                    } else {
+                        $tag .= $part;
+                    }
                     break;
 
                 case $this->delimiters['tag'][0]:
@@ -250,7 +258,7 @@ class Tokenizer
 
     private function stripComments($text)
     {
-        if($this->inRaw) {
+        if ($this->inRaw) {
             return $text;
         }
         // We can safely do this because $text contains no tags, thus no strings.
