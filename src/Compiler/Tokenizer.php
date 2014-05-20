@@ -258,8 +258,7 @@ class Tokenizer
 
     public function tokenize($template)
     {
-        $this->line = 1;
-        //init states
+        $this->line   = 1;
         $this->tokens = array();
         $this->inRaw  = false;
 
@@ -271,23 +270,18 @@ class Tokenizer
             $text_length = $tag_position - $cursor;
             $text        = substr($template, $cursor, $text_length);
 
-            $text_lines = substr_count($text, "\n");
-
             $this->pushToken(Token::TEXT, $text);
+            $this->line += substr_count($text, "\n");
 
-            $cursor = $tag_position;
-            $this->line += $text_lines;
+            $this->processTag($matches[1][$position][0]);
 
-            $tag_expr = $matches[1][$position][0];
-            $this->processTag($tag_expr);
-
-            $cursor += strlen($tag);
-            $this->line += substr_count($tag, "\n");
+            $cursor = $tag_position + strlen($tag);
         }
 
         if ($cursor < strlen($template)) {
             $text = substr($template, $cursor);
             $this->pushToken(Token::TEXT, $text);
+            $this->line += substr_count($text, "\n");
         }
         $this->pushToken(Token::EOF);
 
@@ -316,7 +310,7 @@ class Tokenizer
             }
         }
 
-        $parts    = preg_split('/([ (])/', $tag, 2, PREG_SPLIT_DELIM_CAPTURE);
+        $parts    = preg_split("/([ (\n\t])/", $tag, 2, PREG_SPLIT_DELIM_CAPTURE);
         $tag_name = $parts[0];
 
         if ($tag_name === 'raw') {
@@ -331,10 +325,11 @@ class Tokenizer
             $expression = null;
         }
 
-        if (!isset($tag_name) || !isset($this->tags[$tag_name])) {
+        if (!isset($this->tags[$tag_name])) {
             $tag_name   = $this->fallbackTagName;
             $expression = $tag;
         }
+
         if (!isset($this->tags[$tag_name])) {
             throw new SyntaxException("Unknown tag {$tag_name} in line {$this->line}");
         }
@@ -359,21 +354,29 @@ class Tokenizer
     {
         if (is_numeric($literal)) {
             $this->pushToken(Token::LITERAL, $literal);
-        } elseif ($literal[0] === '"' || $literal[0] === "'") {
-            $this->pushToken(Token::STRING, substr($literal, 1, -1));
-        } elseif ($literal[0] === ':') {
-            $this->pushToken(Token::STRING, ltrim($literal, ':'));
         } else {
-            switch (strtolower($literal)) {
-                case 'null':
-                    $this->pushToken(Token::LITERAL, null);
+            switch ($literal[0]) {
+                case '"':
+                case "'":
+                    $this->pushToken(Token::STRING, substr($literal, 1, -1));
                     break;
-                case 'true':
-                    $this->pushToken(Token::LITERAL, true);
+
+                case ':':
+                    $this->pushToken(Token::STRING, ltrim($literal, ':'));
                     break;
-                case 'false':
-                    $this->pushToken(Token::LITERAL, false);
-                    break;
+
+                default:
+                    switch (strtolower($literal)) {
+                        case 'null':
+                            $this->pushToken(Token::LITERAL, null);
+                            break;
+                        case 'true':
+                            $this->pushToken(Token::LITERAL, true);
+                            break;
+                        case 'false':
+                            $this->pushToken(Token::LITERAL, false);
+                            break;
+                    }
             }
         }
     }
@@ -384,13 +387,15 @@ class Tokenizer
             return;
         }
         $flags = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
-        $parts = preg_split($this->patterns['literal'], $expr, null, $flags);
-        foreach ($parts as $part) {
+        foreach (preg_split($this->patterns['literal'], $expr, null, $flags) as $part) {
             if (preg_match($this->patterns['literal'], $part)) {
                 $this->tokenizeLiteral($part);
+                $this->line += substr_count($part, "\n");
             } else {
-                $subparts = preg_split($this->patterns['operator'], $part, null, $flags);
-                array_walk($subparts, array($this, 'processToken'));
+                foreach (preg_split($this->patterns['operator'], $part, null, $flags) as $subpart) {
+                    $this->line += substr_count($subpart, "\n");
+                    $this->processToken($subpart);
+                }
             }
         }
     }

@@ -213,6 +213,48 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
         $stream->expect(Token::EOF);
     }
 
+    public function testLinesAreProperlySet()
+    {
+        $template = 'some text
+{test tag}
+{test "multiline
+string" +
++ tag}
+{raw}text
+new line
+{endraw}
+{#
+
+ multiline comment
+
+#}
+{test}
+';
+        $stream = $this->tokenizer->tokenize($template);
+        $this->assertEquals(1, $stream->expect(Token::TEXT, "some text\n")->getLine());
+        $this->assertEquals(2, $stream->expect(Token::TAG, 'test')->getLine());
+        $this->assertEquals(2, $stream->expect(Token::EXPRESSION_START, 'test')->getLine());
+        $this->assertEquals(2, $stream->expect(Token::IDENTIFIER, 'tag')->getLine());
+        $this->assertEquals(2, $stream->expect(Token::EXPRESSION_END)->getLine());
+        $this->assertEquals(2, $stream->expect(Token::TEXT, "\n")->getLine());
+        $this->assertEquals(3, $stream->expect(Token::TAG, 'test')->getLine());
+        $this->assertEquals(3, $stream->expect(Token::EXPRESSION_START, 'test')->getLine());
+        $this->assertEquals(3, $stream->expect(Token::STRING, "multiline\nstring")->getLine());
+        $this->assertEquals(4, $stream->expect(Token::OPERATOR, '+')->getLine());
+        $this->assertEquals(5, $stream->expect(Token::OPERATOR, '+')->getLine());
+        $this->assertEquals(5, $stream->expect(Token::IDENTIFIER, "tag")->getLine());
+        $this->assertEquals(5, $stream->expect(Token::EXPRESSION_END)->getLine());
+        $this->assertEquals(5, $stream->expect(Token::TEXT, "\n")->getLine());
+        $this->assertEquals(6, $stream->expect(Token::TEXT, "text\nnew line\n")->getLine());
+        //8th line because this is the newline before and after the comment
+        $this->assertEquals(8, $stream->expect(Token::TEXT, "\n\n")->getLine());
+        $this->assertEquals(14, $stream->expect(Token::TAG, 'test')->getLine());
+        $this->assertEquals(14, $stream->expect(Token::EXPRESSION_START, 'test')->getLine());
+        $this->assertEquals(14, $stream->expect(Token::EXPRESSION_END)->getLine());
+        $this->assertEquals(14, $stream->expect(Token::TEXT, "\n")->getLine());
+        $this->assertEquals(15, $stream->expect(Token::EOF)->getLine());
+    }
+
     public function testCommentsAreRemoved()
     {
         $stream = $this->tokenizer->tokenize('text{# a comment #} foobar');
