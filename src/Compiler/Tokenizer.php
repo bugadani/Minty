@@ -50,15 +50,18 @@ class Tokenizer
             }
         }
 
-        $this->delimiters      = $environment->getOption(
+        $this->delimiters = $environment->getOption(
             'delimiters',
             array(
                 'tag'     => array('{', '}'),
                 'comment' => array('{#', '#}')
             )
         );
+
         $this->fallbackTagName = $environment->getOption('fallback_tag', false);
         $this->blockEndPrefix  = $environment->getOption('block_end_prefix', 'end');
+        $this->operators       = $environment->getOperatorSymbols();
+        $this->punctuation     = array(',', '[', ']', '(', ')', ':', '?', '=>');
 
         $literals = array(
             'true',
@@ -76,29 +79,13 @@ class Tokenizer
         $blockEndPrefix = preg_quote($this->blockEndPrefix, '/');
         $this->patterns = array(
             'closing_tag' => "/{$blockEndPrefix}({$blocks_pattern}|raw)$/Ai",
-            'operator'    => $this->getOperatorPattern($environment),
+            'operator'    => $this->getOperatorPattern(),
             'literal'     => "/({$literal_pattern})/i"
         );
     }
 
-    private function fetchOperators(Environment $environment)
+    private function getOperatorPattern()
     {
-        foreach ($environment->getOperatorSymbols() as $operator) {
-
-            if (!is_array($operator)) {
-                $this->operators[] = $operator;
-            } else {
-                foreach ($operator as $symbol) {
-                    $this->operators[] = $symbol;
-                }
-            }
-        }
-    }
-
-    private function getOperatorPattern(Environment $environment)
-    {
-        $this->punctuation = array(',', '[', ']', '(', ')', ':', '?', '=>');
-
         $quote = function ($operator) {
             if (preg_match('/^[a-zA-Z\ ]+$/', $operator)) {
                 return '(?<=^|[^\w])' . preg_quote($operator, '/') . '(?=[\s()\[\]]|$)';
@@ -106,8 +93,6 @@ class Tokenizer
                 return preg_quote($operator, '/');
             }
         };
-
-        $this->fetchOperators($environment);
 
         $operators = array();
         $signs     = '';
@@ -294,10 +279,8 @@ class Tokenizer
             $this->line += $text_lines;
 
             $tag_expr = $matches[1][$position][0];
+            $this->processTag($tag_expr);
 
-            if (!$this->processTag($tag_expr)) {
-                $this->pushToken(Token::TEXT, $tag_expr);
-            }
             $cursor += strlen($tag);
             $this->line += substr_count($tag, "\n");
         }
@@ -315,20 +298,13 @@ class Tokenizer
     {
         $match = array();
         if (preg_match($this->patterns['closing_tag'], $tag, $match)) {
-            if (!$this->inRaw) {
-                $this->pushToken(Token::TAG, 'end' . $match[1]);
-
-                return true;
-            }
-            if ($match[1] === 'raw') {
+            if ($this->inRaw) {
                 $this->inRaw = false;
-
-                return true;
+            } else {
+                $this->pushToken(Token::TAG, 'end' . $match[1]);
             }
-        }
 
-        if ($this->inRaw) {
-            return false;
+            return;
         }
 
         foreach ($this->patternBasedTags as $tag_name => $unnamedTag) {
@@ -336,32 +312,23 @@ class Tokenizer
                 $this->pushToken(Token::TAG, $tag_name);
                 $unnamedTag->tokenize($this, $tag);
 
-                return true;
+                return;
             }
         }
 
-        $parts = preg_split('/([ (])/', $tag, 2, PREG_SPLIT_DELIM_CAPTURE);
-        switch (count($parts)) {
-            case 1:
-                $tag_name   = $parts[0];
-                $expression = null;
-                break;
-
-            case 3:
-                $tag_name   = $parts[0];
-                $expression = $parts[1] . $parts[2];
-                break;
-
-            default:
-                $tag_name   = null;
-                $expression = $tag;
-                break;
-        }
+        $parts    = preg_split('/([ (])/', $tag, 2, PREG_SPLIT_DELIM_CAPTURE);
+        $tag_name = $parts[0];
 
         if ($tag_name === 'raw') {
             $this->inRaw = true;
 
-            return true;
+            return;
+        }
+
+        if (count($parts) === 3) {
+            $expression = $parts[1] . $parts[2];
+        } else {
+            $expression = null;
         }
 
         if (!isset($tag_name) || !isset($this->tags[$tag_name])) {
@@ -374,8 +341,6 @@ class Tokenizer
         $tag = $this->tags[$tag_name];
         $tag->addNameToken($this);
         $tag->tokenize($this, $expression);
-
-        return true;
     }
 
     public function processToken($token)
@@ -437,11 +402,6 @@ class Tokenizer
             $value = $this->stripComments($value);
             if ($value === '') {
                 return;
-            }
-            $end = end($this->tokens);
-            if ($end && $end->test($type)) {
-                $old   = array_pop($this->tokens)->getValue();
-                $value = $old . $value;
             }
         }
         $this->tokens[] = new Token($type, $value, $this->line);
