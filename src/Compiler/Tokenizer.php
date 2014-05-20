@@ -366,7 +366,6 @@ class Tokenizer
         } else {
             switch (strtolower($literal)) {
                 case 'null':
-                case 'none':
                     $this->pushToken(Token::LITERAL, null);
                     break;
                 case 'true':
