@@ -350,7 +350,7 @@ class Tokenizer
         $tag->tokenize($this, $expression);
     }
 
-    public function processToken($token)
+    private function processToken($token)
     {
         if (in_array($token, $this->punctuation)) {
             $this->pushToken(Token::PUNCTUATION, $token);

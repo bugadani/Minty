@@ -34,7 +34,7 @@ class Parser
         $this->tags             = $environment->getTags();
     }
 
-    public function parseToken(Stream $stream)
+    private function parseToken(Stream $stream)
     {
         $token = $stream->current();
         $value = $token->getValue();

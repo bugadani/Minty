@@ -103,21 +103,22 @@ class ExpressionParser
         return $this->parseExpression(true);
     }
 
-    public function parseArgumentList()
+    private function parseArgumentList()
     {
         $arguments = array();
 
         if (!$this->stream->nextTokenIf(Token::PUNCTUATION, ')')) {
-            while (!$this->stream->current()->test(Token::PUNCTUATION, ')')) {
+            $token = $this->stream->current();
+            while (!$token->test(Token::PUNCTUATION, ')')) {
                 $arguments[] = $this->parseExpression(true);
-                $this->stream->expectCurrent(Token::PUNCTUATION, array(',', ')'));
+                $token       = $this->stream->expectCurrent(Token::PUNCTUATION, array(',', ')'));
             }
         }
 
         return $arguments;
     }
 
-    public function parsePostfixExpression($identifier)
+    private function parsePostfixExpression($identifier)
     {
         if ($this->stream->nextTokenIf(Token::PUNCTUATION, '(')) {
             // function call
@@ -140,7 +141,6 @@ class ExpressionParser
         }
         $this->operandStack->push($operand);
 
-        // intentional
         if ($token = $this->stream->nextTokenIf(Token::OPERATOR, $this->unaryPostfixTest)) {
             $operator = $this->unaryPostfixOperators->getOperator($token->getValue());
             $this->popOperatorsCompared($operator);
@@ -155,7 +155,7 @@ class ExpressionParser
         }
     }
 
-    public function parseArray()
+    private function parseArray()
     {
         //iterate over tokens
         $node  = new ArrayNode();
@@ -188,11 +188,11 @@ class ExpressionParser
      * @return Token The next token
      * @throws Exceptions\SyntaxException
      */
-    public function parseToken()
+    private function parseToken()
     {
         do {
-            $return = true;
-            $token  = $this->stream->next();
+            $done  = true;
+            $token = $this->stream->next();
 
             $type  = $token->getType();
             $value = $token->getValue();
@@ -227,7 +227,7 @@ class ExpressionParser
                 default:
                     if ($token->test(Token::OPERATOR, $this->unaryPrefixTest)) {
                         $this->pushUnaryPrefixOperator($value);
-                        $return = false;
+                        $done = false;
                     } else {
                         $unexpectedToken = true;
                     }
@@ -237,7 +237,7 @@ class ExpressionParser
                 $line = $token->getLine();
                 throw new SyntaxException("Unexpected {$type} ({$value}) token found in line {$line}");
             }
-        } while (!$return);
+        } while (!$done);
 
         return $this->stream->next();
     }
@@ -247,7 +247,7 @@ class ExpressionParser
      *
      * @return Node|null
      */
-    public function parseExpression($return = false)
+    private function parseExpression($return = false)
     {
         //push sentinel
         $this->operatorStack->push(null);
@@ -264,7 +264,9 @@ class ExpressionParser
         $this->operatorStack->pop();
 
         // A conditional is marked by '?' (punctuation, not operator) so it breaks the loop above.
-        $this->parseConditional();
+        if ($token->test(Token::PUNCTUATION, '?')) {
+            $this->parseConditional();
+        }
 
         if ($return) {
             return $this->operandStack->pop();
@@ -285,11 +287,8 @@ class ExpressionParser
         return $this->conditionalOperator;
     }
 
-    public function parseConditional()
+    private function parseConditional()
     {
-        if (!$this->stream->current()->test(Token::PUNCTUATION, '?')) {
-            return;
-        }
         $node = new OperatorNode($this->getConditionalOperator());
         $node->addOperand(
             OperatorNode::OPERAND_LEFT,
@@ -302,9 +301,9 @@ class ExpressionParser
                 OperatorNode::OPERAND_MIDDLE,
                 $this->parseExpression(true)
             );
+            $this->stream->expectCurrent(Token::PUNCTUATION, ':');
         }
 
-        $this->stream->expectCurrent(Token::PUNCTUATION, ':');
         $node->addOperand(
             OperatorNode::OPERAND_RIGHT,
             $this->parseExpression(true)
@@ -313,32 +312,38 @@ class ExpressionParser
         $this->operandStack->push($node);
     }
 
-    public function popOperatorsCompared(Operator $operator)
+    private function popOperatorsCompared(Operator $operator)
     {
         while ($this->compareToStackTop($operator)) {
             $this->popOperator();
         }
     }
 
-    public function popOperator()
+    private function popOperator()
     {
         $operator = $this->operatorStack->pop();
         $node     = new OperatorNode($operator);
-        $node->addOperand(OperatorNode::OPERAND_RIGHT, $this->operandStack->pop());
+        $node->addOperand(
+            OperatorNode::OPERAND_RIGHT,
+            $this->operandStack->pop()
+        );
         if ($this->binaryOperators->exists($operator)) {
-            $node->addOperand(OperatorNode::OPERAND_LEFT, $this->operandStack->pop());
+            $node->addOperand(
+                OperatorNode::OPERAND_LEFT,
+                $this->operandStack->pop()
+            );
         }
         $this->operandStack->push($node);
     }
 
-    public function pushBinaryOperator($symbol)
+    private function pushBinaryOperator($symbol)
     {
         $this->pushOperator(
             $this->binaryOperators->getOperator($symbol)
         );
     }
 
-    public function pushUnaryPrefixOperator($symbol)
+    private function pushUnaryPrefixOperator($symbol)
     {
         $this->pushOperator(
             $this->unaryPrefixOperators->getOperator($symbol)
@@ -351,7 +356,7 @@ class ExpressionParser
         $this->operatorStack->push($operator);
     }
 
-    public function compareToStackTop(Operator $operator)
+    private function compareToStackTop(Operator $operator)
     {
         $top = $this->operatorStack->top();
         if ($top === null) {

@@ -14,31 +14,37 @@ use Modules\Templating\Compiler\Node;
 
 class ArrayNode extends Node
 {
-    private $data = array();
+    private $itemCount = 0;
+
+    /**
+     * @var Node[]
+     */
+    private $keys = array();
+
+    /**
+     * @var Node[]
+     */
+    private $values = array();
 
     public function add(Node $value, Node $key = null)
     {
-        $this->data[] = array($value, $key);
+        $this->values[] = $value;
+        $this->keys[]   = $key;
+        ++$this->itemCount;
     }
 
     public function compile(Compiler $compiler)
     {
         $compiler->add('array(');
-        $first = true;
-        foreach ($this->data as $item) {
-            if ($first) {
-                $first = false;
-            } else {
+        for ($i = 0; $i < $this->itemCount; ++$i) {
+            if ($i !== 0) {
                 $compiler->add(', ');
             }
-            /** @var $value Node|null */
-            /** @var $key Node|null */
-            list($value, $key) = $item;
-            if ($key !== null) {
-                $key->compile($compiler);
+            if ($this->keys[$i] !== null) {
+                $this->keys[$i]->compile($compiler);
                 $compiler->add(' => ');
             }
-            $value->compile($compiler);
+            $this->values[$i]->compile($compiler);
         }
         $compiler->add(')');
     }
