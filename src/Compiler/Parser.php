@@ -28,48 +28,34 @@ class Parser
      */
     private $expressionParser;
 
-    /**
-     * @var Environment
-     */
-    private $environment;
-
     public function __construct(Environment $environment)
     {
-        $this->environment      = $environment;
         $this->expressionParser = new ExpressionParser($environment);
         $this->tags             = $environment->getTags();
-    }
-
-    /**
-     * @return Environment
-     */
-    public function getEnvironment()
-    {
-        return $this->environment;
     }
 
     public function parseToken(Stream $stream)
     {
         $token = $stream->current();
+        $value = $token->getValue();
+
         switch ($token->getType()) {
             case Token::TEXT:
-                return new TextNode($token->getValue());
+                return new TextNode($value);
 
             case Token::BLOCK_START:
             case Token::TAG:
-                $tag = $token->getValue();
-                if (!isset($this->tags[$tag])) {
+                if (!isset($this->tags[$value])) {
                     $line = $token->getLine();
-                    throw new ParseException("Unknown {$tag} tag found in line {$line}");
+                    throw new ParseException("Unknown {$value} tag found in line {$line}");
                 }
                 $stream->next();
 
-                return $this->tags[$tag]->parse($this, $stream);
+                return $this->tags[$value]->parse($this, $stream);
 
             default:
-                $type  = $token->getTypeString();
-                $value = $token->getValue();
-                $line  = $token->getLine();
+                $type = $token->getTypeString();
+                $line = $token->getLine();
                 throw new SyntaxException("Unexpected {$type} ({$value}) token found in line {$line}");
         }
     }
