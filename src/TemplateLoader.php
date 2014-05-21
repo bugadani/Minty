@@ -99,20 +99,20 @@ class TemplateLoader
 
     private function compileErrorTemplate(TemplatingException $e, $template, $source, $class)
     {
-        $errLine     = $e->getSourceLine();
-        $firstLine   = max($errLine - 3, 1);
-        $sourceLines = array_slice(explode("\n", $source), $firstLine - 1, 7, true);
+        $errLine     = $e->getSourceLine() - 1;
+        $firstLine   = max($errLine - 3, 0);
+        $sourceLines = array_slice(explode("\n", $source), $firstLine, 7, true);
 
         $first     = true;
         $lineArray = '';
         //create a template-array for the lines
         foreach ($sourceLines as $lineNo => $line) {
-            ++$lineNo;
             if ($first) {
                 $first = false;
             } else {
                 $lineArray .= ', ';
             }
+            //escape string delimiters
             $line = strtr($line, array("'" => "\\'"));
             $lineArray .= "{$lineNo}: '{$line}'";
         }
@@ -132,24 +132,30 @@ class TemplateLoader
             "{firstLine: {$firstLine}}";
 
         if ($baseTemplate !== false) {
-            $source = "{extends '{$baseTemplate}'}{block error}" .
-                "{$source}{parent}{{$closingTagPrefix}block}";
+            //decorate with inheritance code
+            $source = "{extends '{$baseTemplate}'}" .
+                "{block error}" .
+                "{$source}{parent}" .
+                "{{$closingTagPrefix}block}";
+
         } else {
-            //get the template source
+
+            //append the default template source
             $source .= "<h1>Failed to compile {templateName}</h1>
 <h2>Error message:</h2>
 <p>{message}</p>
 <h2>Template source:</h2>
-<pre><code><ol start=\"{firstLine}\">
+<pre><code><ol start=\"{firstLine + 1}\">
 {for lineNo : line in lines}
-<li>{if lineNo = errorLine}
-    <b>{line}</b>
-{else}
-    {line}
-{endif}</li>
+    <li>
+    {if lineNo = errorLine}
+        <b>{line}</b>
+    {else}
+        {line}
+    {endif}
+    </li>
 {{$closingTagPrefix}for}
-</ol></code></pre>
-";
+</ol></code></pre>";
             $source = strtr($source, array("\n" => ''));
         }
 
