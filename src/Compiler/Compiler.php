@@ -99,7 +99,7 @@ class Compiler
 
     public function string($string)
     {
-        return "'" . strtr($string, "'", "\\'") . "'";
+        return "'" . strtr($string, array("'" => "\\'")) . "'";
     }
 
     public function compileArgumentList(array $arguments)
