@@ -222,13 +222,11 @@ string" +
 + tag}
 {raw}text
 new line
-{endraw}
-{#
+{endraw}{#
 
  multiline comment
 
-#}
-{test}
+#}{test}
 ';
         $stream = $this->tokenizer->tokenize($template);
         $this->assertEquals(1, $stream->expect(Token::TEXT, "some text\n")->getLine());
@@ -246,13 +244,11 @@ new line
         $this->assertEquals(5, $stream->expect(Token::EXPRESSION_END)->getLine());
         $this->assertEquals(5, $stream->expect(Token::TEXT, "\n")->getLine());
         $this->assertEquals(6, $stream->expect(Token::TEXT, "text\nnew line\n")->getLine());
-        //8th line because this is the newline before and after the comment
-        $this->assertEquals(8, $stream->expect(Token::TEXT, "\n\n")->getLine());
-        $this->assertEquals(14, $stream->expect(Token::TAG, 'test')->getLine());
-        $this->assertEquals(14, $stream->expect(Token::EXPRESSION_START, 'test')->getLine());
-        $this->assertEquals(14, $stream->expect(Token::EXPRESSION_END)->getLine());
-        $this->assertEquals(14, $stream->expect(Token::TEXT, "\n")->getLine());
-        $this->assertEquals(15, $stream->expect(Token::EOF)->getLine());
+        $this->assertEquals(12, $stream->expect(Token::TAG, 'test')->getLine());
+        $this->assertEquals(12, $stream->expect(Token::EXPRESSION_START, 'test')->getLine());
+        $this->assertEquals(12, $stream->expect(Token::EXPRESSION_END)->getLine());
+        $this->assertEquals(12, $stream->expect(Token::TEXT, "\n")->getLine());
+        $this->assertEquals(13, $stream->expect(Token::EOF)->getLine());
     }
 
     public function testCommentsAreRemoved()

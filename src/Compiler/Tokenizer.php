@@ -287,15 +287,17 @@ class Tokenizer
 
     private function processText($template, $cursor, $textLength)
     {
-        if ($textLength > 0) {
-            $text = substr($template, $cursor, $textLength);
-
-            $strippedText = $this->stripComments($text);
-            if ($strippedText !== '') {
-                $this->pushToken(Token::TEXT, $strippedText);
-                $this->line += substr_count($text, "\n");
-            }
+        if ($textLength === 0) {
+            return;
         }
+
+        $text = substr($template, $cursor, $textLength);
+        $strippedText = $this->stripComments($text);
+
+        if ($strippedText !== '') {
+            $this->pushToken(Token::TEXT, $strippedText);
+        }
+        $this->line += substr_count($text, "\n");
     }
 
     private function processTag($tag)
