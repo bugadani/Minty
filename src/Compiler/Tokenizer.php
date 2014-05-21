@@ -86,16 +86,8 @@ class Tokenizer
 
     private function getOperatorPattern()
     {
-        $quote = function ($operator) {
-            if (preg_match('/^[a-zA-Z\ ]+$/', $operator)) {
-                return '(?<=^|[^\w])' . preg_quote($operator, '/') . '(?=[\s()\[\]]|$)';
-            } else {
-                return preg_quote($operator, '/');
-            }
-        };
-
         $operators = array();
-        $signs     = '';
+        $signs     = ' ';
 
         $symbols = array_merge($this->operators, $this->punctuation);
         foreach ($symbols as $symbol) {
@@ -103,13 +95,19 @@ class Tokenizer
             if ($length == 1) {
                 $signs .= $symbol;
             } else {
-                $symbol             = $quote($symbol);
-                $operators[$symbol] = $length;
+                $quotedSymbol = preg_quote($symbol, '/');
+                if (preg_match('/^[a-zA-Z\ ]+$/', $symbol)) {
+                    $quotedSymbol = "(?<=^|\\W){$quotedSymbol}(?=[\\s()\\[\\]]|$)";
+                }
+                $operators[$quotedSymbol] = $length;
             }
         }
         arsort($operators);
 
-        return sprintf('/(%s|[%s ])/i', implode('|', array_keys($operators)), $quote($signs));
+        $operators = implode('|', array_keys($operators));
+        $signs     = preg_quote($signs, '/');
+
+        return "/({$operators}|[{$signs}])/i";
     }
 
     private function preProcessTemplate($template)
@@ -239,21 +237,6 @@ class Tokenizer
         }
 
         return $matches;
-    }
-
-    private function stripComments($text)
-    {
-        if ($this->inRaw) {
-            return $text;
-        }
-        // We can safely do this because $text contains no tags, thus no strings.
-        if (($pos = strpos($text, $this->delimiters['comment'][0])) !== false) {
-            $rpos     = strrpos($text, $this->delimiters['comment'][1]);
-            $resumeAt = $rpos + strlen($this->delimiters['comment'][1]);
-            $text     = substr($text, 0, $pos) . substr($text, $resumeAt);
-        }
-
-        return $text;
     }
 
     public function tokenize($template)
@@ -398,6 +381,22 @@ class Tokenizer
                 }
             }
         }
+    }
+
+    private function stripComments($text)
+    {
+        if ($this->inRaw) {
+            //Don't strip comment-like text from raw blocks
+            return $text;
+        }
+        // We can safely do this because $text contains no tags, thus no strings.
+        if (($pos = strpos($text, $this->delimiters['comment'][0])) !== false) {
+            $rpos     = strrpos($text, $this->delimiters['comment'][1]);
+            $resumeAt = $rpos + strlen($this->delimiters['comment'][1]);
+            $text     = substr($text, 0, $pos) . substr($text, $resumeAt);
+        }
+
+        return $text;
     }
 
     public function pushToken($type, $value = null)
