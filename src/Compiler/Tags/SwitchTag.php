@@ -87,20 +87,21 @@ class SwitchTag extends Tag
         } else {
             $stream->expectCurrent(Token::EXPRESSION_START);
         }
-        $stream->next();
 
-        while (!$stream->current()->test(Token::TAG, 'endswitch')) {
+        $token = $stream->next();
+        while (!$token->test(Token::TAG, 'endswitch')) {
             $branch = $node->addChild(new RootNode());
 
-            if ($stream->current()->test(Token::IDENTIFIER, 'case')) {
+            if ($token->test(Token::IDENTIFIER, 'case')) {
                 $branch->addChild($parser->parseExpression($stream), 'condition');
-            } elseif ($stream->current()->test(Token::IDENTIFIER, 'else')) {
+            } elseif ($token->test(Token::IDENTIFIER, 'else')) {
                 $stream->expect(Token::EXPRESSION_END);
             } else {
                 throw new SyntaxException('Switch expects a case or else tag first.');
             }
 
             $branch->addChild($parser->parse($stream, $branchTest), 'body');
+            $token = $stream->current();
         }
 
         return $node;
