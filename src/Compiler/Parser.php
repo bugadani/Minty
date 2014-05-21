@@ -34,14 +34,15 @@ class Parser
         $this->tags             = $environment->getTags();
     }
 
-    private function parseToken(Stream $stream)
+    private function parseToken(Stream $stream, RootNode $root)
     {
         $token = $stream->current();
         $value = $token->getValue();
 
         switch ($token->getType()) {
             case Token::TEXT:
-                return new TextNode($value);
+                $node = new TextNode($value);
+                break;
 
             case Token::TAG:
                 if (!isset($this->tags[$value])) {
@@ -50,27 +51,30 @@ class Parser
                 }
                 $stream->next();
 
-                return $this->tags[$value]->parse($this, $stream);
+                $node = $this->tags[$value]->parse($this, $stream);
+                break;
 
             default:
                 $type = $token->getTypeString();
                 $line = $token->getLine();
                 throw new SyntaxException("Unexpected {$type} ({$value}) token found in line {$line}");
         }
+        $node->setParent($root);
+        return $stream->next();
     }
 
     public function parse(Stream $stream, Closure $endCondition = null)
     {
         $root = new RootNode();
+        $token = $stream->next();
+
         if ($endCondition) {
-            while (!$endCondition($stream)) {
-                $node = $this->parseToken($stream);
-                $node->setParent($root);
+            while (!$endCondition($token)) {
+                $token = $this->parseToken($stream, $root);
             }
         } else {
-            while (!$stream->next()->test(Token::EOF)) {
-                $node = $this->parseToken($stream);
-                $node->setParent($root);
+            while (!$token->test(Token::EOF)) {
+                $token = $this->parseToken($stream, $root);
             }
         }
 

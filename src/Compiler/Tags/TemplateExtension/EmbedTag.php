@@ -60,8 +60,8 @@ class EmbedTag extends Tag
         $node->addChild(
             $parser->parse(
                 $stream,
-                function (Stream $stream) {
-                    return $stream->next()->test(Token::TAG, 'endembed');
+                function (Token $token) {
+                    return $token->test(Token::TAG, 'endembed');
                 }
             ),
             'body'

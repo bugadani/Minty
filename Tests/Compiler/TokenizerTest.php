@@ -226,7 +226,7 @@ new line
 
  multiline comment
 
-#}{test}
+#} {test}
 ';
         $stream = $this->tokenizer->tokenize($template);
         $this->assertEquals(1, $stream->expect(Token::TEXT, "some text\n")->getLine());
@@ -244,6 +244,8 @@ new line
         $this->assertEquals(5, $stream->expect(Token::EXPRESSION_END)->getLine());
         $this->assertEquals(5, $stream->expect(Token::TEXT, "\n")->getLine());
         $this->assertEquals(6, $stream->expect(Token::TEXT, "text\nnew line\n")->getLine());
+        //8th line as the
+        $this->assertEquals(8, $stream->expect(Token::TEXT, ' ')->getLine());
         $this->assertEquals(12, $stream->expect(Token::TAG, 'test')->getLine());
         $this->assertEquals(12, $stream->expect(Token::EXPRESSION_START, 'test')->getLine());
         $this->assertEquals(12, $stream->expect(Token::EXPRESSION_END)->getLine());

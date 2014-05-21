@@ -69,10 +69,9 @@ class SwitchTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $branchTest = function (Stream $stream) {
-            $token = $stream->next();
-            if ($token->test(Token::EXPRESSION_START)) {
-                return $stream->nextTokenIf(Token::IDENTIFIER, array('else', 'case'));
+        $branchTest = function (Token $token) {
+            if ($token->test(Token::EXPRESSION_START, array('else', 'case'))) {
+                return true;
             }
 
             return $token->test(Token::TAG, 'endswitch');
@@ -83,18 +82,17 @@ class SwitchTag extends Tag
         ));
 
         if ($stream->next()->test(Token::TEXT)) {
-            $stream->expect(Token::EXPRESSION_START);
+            $token = $stream->expect(Token::EXPRESSION_START);
         } else {
-            $stream->expectCurrent(Token::EXPRESSION_START);
+            $token = $stream->expectCurrent(Token::EXPRESSION_START);
         }
 
-        $token = $stream->next();
         while (!$token->test(Token::TAG, 'endswitch')) {
             $branch = $node->addChild(new RootNode());
 
-            if ($token->test(Token::IDENTIFIER, 'case')) {
+            if ($token->test(Token::EXPRESSION_START, 'case')) {
                 $branch->addChild($parser->parseExpression($stream), 'condition');
-            } elseif ($token->test(Token::IDENTIFIER, 'else')) {
+            } elseif ($token->test(Token::EXPRESSION_START, 'else')) {
                 $stream->expect(Token::EXPRESSION_END);
             } else {
                 throw new SyntaxException('Switch expects a case or else tag first.');

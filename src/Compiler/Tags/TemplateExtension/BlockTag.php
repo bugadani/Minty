@@ -49,8 +49,8 @@ class BlockTag extends Tag
 
         $bodyNode = $parser->parse(
             $stream,
-            function (Stream $stream) {
-                return $stream->next()->test(Token::TAG, 'endblock');
+            function (Token $token) {
+                return $token->test(Token::TAG, 'endblock');
             }
         );
         $node->addChild($bodyNode, 'body');

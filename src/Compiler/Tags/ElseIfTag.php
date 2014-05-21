@@ -21,10 +21,8 @@ class ElseIfTag extends MetaTag
 
     public function tokenize(Tokenizer $tokenizer, $expression)
     {
-        $tokenizer->pushToken(Token::EXPRESSION_START);
-        $tokenizer->pushToken(Token::IDENTIFIER, 'elseif');
+        $tokenizer->pushToken(Token::EXPRESSION_START, 'elseif');
         $tokenizer->tokenizeExpression($expression);
-        $tokenizer->pushToken(Token::EXPRESSION_END);
         $tokenizer->pushToken(Token::EXPRESSION_END);
     }
 }
