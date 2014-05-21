@@ -269,6 +269,35 @@ class Tokenizer
         return new Stream($this->tokens);
     }
 
+    private function stripComments($text)
+    {
+        if ($this->inRaw) {
+            //Don't strip comment-like text from raw blocks
+            return $text;
+        }
+        // We can safely do this because $text contains no tags, thus no strings.
+        if (($pos = strpos($text, $this->delimiters['comment'][0])) !== false) {
+            $rpos     = strrpos($text, $this->delimiters['comment'][1]);
+            $resumeAt = $rpos + strlen($this->delimiters['comment'][1]);
+            $text     = substr($text, 0, $pos) . substr($text, $resumeAt);
+        }
+
+        return $text;
+    }
+
+    private function processText($template, $cursor, $textLength)
+    {
+        if ($textLength > 0) {
+            $text = substr($template, $cursor, $textLength);
+
+            $strippedText = $this->stripComments($text);
+            if ($strippedText !== '') {
+                $this->pushToken(Token::TEXT, $strippedText);
+                $this->line += substr_count($text, "\n");
+            }
+        }
+    }
+
     private function processTag($tag)
     {
         $match = array();
@@ -382,42 +411,8 @@ class Tokenizer
         }
     }
 
-    private function stripComments($text)
-    {
-        if ($this->inRaw) {
-            //Don't strip comment-like text from raw blocks
-            return $text;
-        }
-        // We can safely do this because $text contains no tags, thus no strings.
-        if (($pos = strpos($text, $this->delimiters['comment'][0])) !== false) {
-            $rpos     = strrpos($text, $this->delimiters['comment'][1]);
-            $resumeAt = $rpos + strlen($this->delimiters['comment'][1]);
-            $text     = substr($text, 0, $pos) . substr($text, $resumeAt);
-        }
-
-        return $text;
-    }
-
     public function pushToken($type, $value = null)
     {
         $this->tokens[] = new Token($type, $value, $this->line);
-    }
-
-    /**
-     * @param $template
-     * @param $cursor
-     * @param $textLength
-     */
-    private function processText($template, $cursor, $textLength)
-    {
-        if ($textLength > 0) {
-            $text = substr($template, $cursor, $textLength);
-
-            $strippedText = $this->stripComments($text);
-            if ($strippedText !== '') {
-                $this->pushToken(Token::TEXT, $strippedText);
-                $this->line += substr_count($text, "\n");
-            }
-        }
     }
 }
