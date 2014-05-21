@@ -123,7 +123,7 @@ class Tokenizer
         arsort($pattern_parts);
         $pattern        = sprintf('/(%s|["\'])/', implode('|', array_keys($pattern_parts)));
         $parts          = preg_split($pattern, $template, -1, $flags);
-        $matches        = array(array(), array());
+        $matches        = array();
         $tag_just_ended = false;
         $in_comment     = false;
         $in_tag         = false;
@@ -132,9 +132,11 @@ class Tokenizer
         $offset         = 0;
         $in_raw         = false;
 
-        $endraw = $this->blockEndPrefix . 'raw';
+        $endraw                    = $this->blockEndPrefix . 'raw';
+        $tagClosingDelimiterLength = strlen($this->delimiters['tag'][1]);
+
         foreach ($parts as $i => $part) {
-            list($part, $off) = $part;
+            list($part, $currentOffset) = $part;
             switch ($part) {
                 case $this->delimiters['comment'][0]:
                     if (!$in_raw) {
@@ -157,18 +159,19 @@ class Tokenizer
                 case $this->delimiters['tag'][0]:
                     if (!$in_comment) {
                         if ($in_raw) {
-                            if (isset($parts[$i]) && trim($parts[$i + 1][0]) === $endraw) {
+                            //Since this is a delimiter, $parts[$i + 1] always exists.
+                            if (trim($parts[$i + 1][0]) === $endraw) {
                                 $in_raw = false;
                                 $in_tag = true;
                                 $tag    = '';
-                                $offset = $off;
+                                $offset = $currentOffset;
                             }
                         } elseif (!$in_string) {
                             if ($in_tag) {
                                 $tag = '';
                             }
                             $in_tag = true;
-                            $offset = $off;
+                            $offset = $currentOffset;
                         } else {
                             $tag .= $part;
                         }
@@ -209,13 +212,15 @@ class Tokenizer
             }
             if ($tag_just_ended) {
                 $tag_just_ended = false;
-                if (trim($tag) == 'raw') {
+
+                $tag = trim($tag);
+                if ($tag == 'raw') {
                     $in_raw = true;
                 }
 
-                $matches[1][] = array(trim($tag), $offset);
-                $matches[0][] = array(
-                    $this->delimiters['tag'][0] . $tag . $this->delimiters['tag'][1],
+                $matches[] = array(
+                    $tag,
+                    $currentOffset - $offset + $tagClosingDelimiterLength,
                     $offset
                 );
 
@@ -247,25 +252,18 @@ class Tokenizer
 
         $matches = $this->preProcessTemplate($template);
         $cursor  = 0;
-        foreach ($matches[0] as $position => $match) {
-            list($tag, $tag_position) = $match;
+        foreach ($matches as $match) {
+            list($tag, $tagLength, $tagPosition) = $match;
 
-            $text_length = $tag_position - $cursor;
-            $text        = substr($template, $cursor, $text_length);
+            $textLength = $tagPosition - $cursor;
+            $this->processText($template, $cursor, $textLength);
+            $this->processTag($tag);
 
-            $this->pushToken(Token::TEXT, $text);
-            $this->line += substr_count($text, "\n");
-
-            $this->processTag($matches[1][$position][0]);
-
-            $cursor = $tag_position + strlen($tag);
+            $cursor = $tagPosition + $tagLength;
         }
 
-        if ($cursor < strlen($template)) {
-            $text = substr($template, $cursor);
-            $this->pushToken(Token::TEXT, $text);
-            $this->line += substr_count($text, "\n");
-        }
+        $textLength = strlen($template) - $cursor;
+        $this->processText($template, $cursor, $textLength);
         $this->pushToken(Token::EOF);
 
         return new Stream($this->tokens);
@@ -402,12 +400,24 @@ class Tokenizer
 
     public function pushToken($type, $value = null)
     {
-        if ($type === Token::TEXT) {
-            $value = $this->stripComments($value);
-            if ($value === '') {
-                return;
+        $this->tokens[] = new Token($type, $value, $this->line);
+    }
+
+    /**
+     * @param $template
+     * @param $cursor
+     * @param $textLength
+     */
+    private function processText($template, $cursor, $textLength)
+    {
+        if ($textLength > 0) {
+            $text = substr($template, $cursor, $textLength);
+
+            $strippedText = $this->stripComments($text);
+            if ($strippedText !== '') {
+                $this->pushToken(Token::TEXT, $strippedText);
+                $this->line += substr_count($text, "\n");
             }
         }
-        $this->tokens[] = new Token($type, $value, $this->line);
     }
 }

@@ -265,7 +265,7 @@ new line
     public function unclosedSyntaxProvider()
     {
         return array(
-            array('{raw}unclosed raw block'),
+            array('{raw}unclosed raw block{'),
             array('{foo tag}'),
             array('{"unterminated string'),
             array('{unclosed tag'),
