@@ -11,6 +11,7 @@ namespace Modules\Templating;
 
 use Miny\Log\AbstractLog;
 use Miny\Log\Log;
+use Modules\Templating\Compiler\Exceptions\TemplatingException;
 use RuntimeException;
 
 class TemplateLoader
@@ -83,6 +84,80 @@ class TemplateLoader
 
     /**
      * @param $template
+     * @param $class
+     *
+     * @return mixed
+     */
+    private function compileString($template, $class)
+    {
+        $stream = $this->environment->getTokenizer()->tokenize($template);
+        $node   = $this->environment->getParser()->parse($stream);
+        $this->environment->getNodeTreeTraverser()->traverse($node);
+
+        return $this->environment->getCompiler()->compile($node, $class);
+    }
+
+    private function compileErrorTemplate(TemplatingException $e, $template, $source, $class)
+    {
+        $errLine     = $e->getSourceLine();
+        $firstLine   = max($errLine - 3, 1);
+        $sourceLines = array_slice(explode("\n", $source), $firstLine - 1, 7, true);
+
+        $first     = true;
+        $lineArray = '';
+        //create a template-array for the lines
+        foreach ($sourceLines as $lineNo => $line) {
+            ++$lineNo;
+            if ($first) {
+                $first = false;
+            } else {
+                $lineArray .= ', ';
+            }
+            $line = strtr($line, array("'" => "\\'"));
+            $lineArray .= "{$lineNo}: '{$line}'";
+        }
+
+        $closingTagPrefix = $this->environment->getOption('block_end_prefix', 'end');
+        $baseTemplate     = $this->environment->getOption('error_template', false);
+
+        //escape string delimiters in exception message
+        $message = strtr($e->getMessage(), array("'" => "\\'"));
+
+        //insert data into template
+        //(error message, error line number, first displayed line number, template source)
+        $source = "{templateName: '{$template}'}" .
+            "{message: '{$message}'}" .
+            "{lines: [{$lineArray}]}" .
+            "{errorLine: {$errLine}}" .
+            "{firstLine: {$firstLine}}";
+
+        if ($baseTemplate !== false) {
+            $source = "{extends '{$baseTemplate}'}{block error}" .
+                "{$source}{parent}{{$closingTagPrefix}block}";
+        } else {
+            //get the template source
+            $source .= "<h1>Failed to compile {templateName}</h1>
+<h2>Error message:</h2>
+<p>{message}</p>
+<h2>Template source:</h2>
+<pre><code><ol start=\"{firstLine}\">
+{for lineNo : line in lines}
+<li>{if lineNo = errorLine}
+    <b>{line}</b>
+{else}
+    {line}
+{endif}</li>
+{{$closingTagPrefix}for}
+</ol></code></pre>
+";
+            $source = strtr($source, array("\n" => ''));
+        }
+
+        return $this->compileString($source, $class);
+    }
+
+    /**
+     * @param $template
      * @param $cached
      */
     private function compileFile($template, $cached)
@@ -95,11 +170,11 @@ class TemplateLoader
         $templateSource = $this->loader->load($template);
 
         //Compile and optimize the template
-        $stream = $this->environment->getTokenizer()->tokenize($templateSource);
-        $node   = $this->environment->getParser()->parse($stream);
-        $this->environment->getNodeTreeTraverser()->traverse($node);
-        $compiled = $this->environment->getCompiler()->compile($node, $class);
-
+        try {
+            $compiled = $this->compileString($templateSource, $class);
+        } catch (TemplatingException $e) {
+            $compiled = $this->compileErrorTemplate($e, $template, $templateSource, $class);
+        }
         //Store the compiled template
         $cacheDir = dirname($cached);
         if (!is_dir($cacheDir)) {

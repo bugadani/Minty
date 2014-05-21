@@ -24,12 +24,12 @@ class Module extends \Miny\Modules\Module
     {
         return array(
             'options' => array(
-                'global_variables'   => array(),
-                'cache_namespace'    => 'Application\\Templating\\Cached',
-                'cache_path'         => 'templates/compiled/%s.php',
-                'autoescape'         => true,
-                'fallback_tag'       => 'print',
-                'template_loader'    => __NAMESPACE__ . '\\TemplateLoaders\\FileLoader',
+                'global_variables' => array(),
+                'cache_namespace'  => 'Application\\Templating\\Cached',
+                'cache_path'       => 'templates/compiled/%s.php',
+                'autoescape'       => true,
+                'fallback_tag'     => 'print',
+                'template_loader'  => __NAMESPACE__ . '\\TemplateLoaders\\FileLoader'
             ),
             'codes'   => array()
         );
