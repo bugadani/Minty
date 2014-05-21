@@ -14,6 +14,9 @@ use Modules\Templating\Environment;
 
 class Tokenizer
 {
+    /**
+     * @var Stream
+     */
     private $tokens;
     private $operators = array();
     private $delimiters;
@@ -247,26 +250,24 @@ class Tokenizer
     public function tokenize($template)
     {
         $this->line   = 1;
-        $this->tokens = array();
+        $this->tokens = new Stream();
         $this->inRaw  = false;
 
-        $matches = $this->preProcessTemplate($template);
         $cursor  = 0;
-        foreach ($matches as $match) {
+        foreach ($this->preProcessTemplate($template) as $match) {
             list($tag, $tagLength, $tagPosition) = $match;
 
-            $textLength = $tagPosition - $cursor;
-            $this->processText($template, $cursor, $textLength);
+            $this->processText($template, $cursor, $tagPosition);
             $this->processTag($tag);
 
             $cursor = $tagPosition + $tagLength;
         }
 
-        $textLength = strlen($template) - $cursor;
-        $this->processText($template, $cursor, $textLength);
+        $this->processText($template, $cursor, strlen($template));
         $this->pushToken(Token::EOF);
 
-        return new Stream($this->tokens);
+        $this->tokens->rewind();
+        return $this->tokens;
     }
 
     private function stripComments($text)
@@ -285,8 +286,9 @@ class Tokenizer
         return $text;
     }
 
-    private function processText($template, $cursor, $textLength)
+    private function processText($template, $cursor, $endPosition)
     {
+        $textLength = $endPosition - $cursor;
         if ($textLength === 0) {
             return;
         }
@@ -415,6 +417,6 @@ class Tokenizer
 
     public function pushToken($type, $value = null)
     {
-        $this->tokens[] = new Token($type, $value, $this->line);
+        $this->tokens->push(new Token($type, $value, $this->line));
     }
 }

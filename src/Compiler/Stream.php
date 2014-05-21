@@ -11,26 +11,18 @@ namespace Modules\Templating\Compiler;
 
 use Modules\Templating\Compiler\Exceptions\SyntaxException;
 
-class Stream
+class Stream extends \SplDoublyLinkedList
 {
-    /**
-     * @var Token[]
-     */
-    private $tokens;
 
-    public function __construct(array $tokens)
+    public function __construct(array $tokens = null)
     {
-        array_unshift($tokens, null);
-        $this->tokens = $tokens;
-        reset($this->tokens);
-    }
-
-    /**
-     * @return Token
-     */
-    public function current()
-    {
-        return current($this->tokens);
+        $this->push(null);
+        if (!empty($tokens)) {
+            foreach ($tokens as $token) {
+                $this->push($token);
+            }
+            $this->rewind();
+        }
     }
 
     /**
@@ -38,7 +30,9 @@ class Stream
      */
     public function prev()
     {
-        return prev($this->tokens);
+        parent::prev();
+
+        return $this->current();
     }
 
     /**
@@ -46,7 +40,9 @@ class Stream
      */
     public function next()
     {
-        return next($this->tokens);
+        parent::next();
+
+        return $this->current();
     }
 
     /**
@@ -62,12 +58,10 @@ class Stream
         if ($token->test($type, $value)) {
             return $token;
         }
-        throw new SyntaxException(sprintf(
-            'Unexpected %s (%s) found in line %s',
-            $token->getTypeString(),
-            $token->getValue(),
-            $token->getLine()
-        ));
+        $type = $token->getTypeString();
+        $value = $token->getValue();
+        $line = $token->getLine();
+        throw new SyntaxException("Unexpected {$type} ({$value}) found in line {$line}");
     }
 
     /**
@@ -78,9 +72,8 @@ class Stream
      */
     public function expect($type, $value = null)
     {
-        $next = next($this->tokens);
-
-        return $this->testOrThrow($next, $type, $value);
+        parent::next();
+        return $this->expectCurrent($type, $value);
     }
 
     /**
@@ -91,9 +84,7 @@ class Stream
      */
     public function expectCurrent($type, $value = null)
     {
-        $current = current($this->tokens);
-
-        return $this->testOrThrow($current, $type, $value);
+        return $this->testOrThrow($this->current(), $type, $value);
     }
 
     /**
@@ -104,11 +95,11 @@ class Stream
      */
     public function nextTokenIf($type, $value = null)
     {
-        $token = next($this->tokens);
+        $token = $this->next();
         if ($token->test($type, $value)) {
             return $token;
         }
-        prev($this->tokens);
+        parent::prev();
 
         return false;
     }
