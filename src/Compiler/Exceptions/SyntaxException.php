@@ -9,9 +9,6 @@
 
 namespace Modules\Templating\Compiler\Exceptions;
 
-use RuntimeException;
-
-class SyntaxException extends RuntimeException
+class SyntaxException extends TemplatingException
 {
-
 }

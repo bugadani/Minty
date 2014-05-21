@@ -9,6 +9,7 @@
 
 namespace Modules\Templating\Compiler;
 
+use Modules\Templating\Compiler\Exceptions\ParseException;
 use Modules\Templating\Compiler\Exceptions\SyntaxException;
 use Modules\Templating\Environment;
 
@@ -134,6 +135,8 @@ class Tokenizer
         $tag            = '';
         $offset         = 0;
         $in_raw         = false;
+        $line           = 1;
+        $commentLines   = 0;
 
         $endraw                    = $this->blockEndPrefix . 'raw';
         $tagClosingDelimiterLength = strlen($this->delimiters['tag'][1]);
@@ -154,6 +157,7 @@ class Tokenizer
                 case $this->delimiters['comment'][1]:
                     if ($in_comment) {
                         $in_comment = false;
+                        $line += $commentLines;
                     } else {
                         $tag .= $part;
                     }
@@ -211,6 +215,11 @@ class Tokenizer
                     if ($in_tag) {
                         $tag .= $part;
                     }
+                    if ($in_comment) {
+                        $commentLines += substr_count($part, "\n");
+                    } else {
+                        $line += substr_count($part, "\n");
+                    }
                     break;
             }
             if ($tag_just_ended) {
@@ -232,16 +241,16 @@ class Tokenizer
         }
 
         if ($in_comment) {
-            throw new SyntaxException('Unterminated comment found');
+            throw new SyntaxException('Unterminated comment', $line);
         }
         if ($in_string) {
-            throw new SyntaxException('Unterminated string found');
+            throw new SyntaxException('Unterminated string', $line);
         }
         if ($in_tag) {
-            throw new SyntaxException('Unterminated tag found');
+            throw new SyntaxException('Unterminated tag', $line);
         }
         if ($in_raw) {
-            throw new SyntaxException('Unterminated raw block found');
+            throw new SyntaxException('Unterminated raw block', $line);
         }
 
         return $matches;
@@ -253,7 +262,7 @@ class Tokenizer
         $this->tokens = new Stream();
         $this->inRaw  = false;
 
-        $cursor  = 0;
+        $cursor = 0;
         foreach ($this->preProcessTemplate($template) as $match) {
             list($tag, $tagLength, $tagPosition) = $match;
 
@@ -267,6 +276,7 @@ class Tokenizer
         $this->pushToken(Token::EOF);
 
         $this->tokens->rewind();
+
         return $this->tokens;
     }
 
@@ -293,7 +303,7 @@ class Tokenizer
             return;
         }
 
-        $text = substr($template, $cursor, $textLength);
+        $text         = substr($template, $cursor, $textLength);
         $strippedText = $this->stripComments($text);
 
         if ($strippedText !== '') {
@@ -345,7 +355,7 @@ class Tokenizer
         }
 
         if (!isset($this->tags[$tag_name])) {
-            throw new SyntaxException("Unknown tag {$tag_name} in line {$this->line}");
+            throw new ParseException("Unknown tag \"{$tag_name}\"", $this->line);
         }
         $tag = $this->tags[$tag_name];
         $tag->addNameToken($this);
@@ -371,6 +381,12 @@ class Tokenizer
             switch ($literal[0]) {
                 case '"':
                 case "'":
+                    //strip backslashes from double-slashes and escaped string delimiters
+                    $stripSlashes = array(
+                        "\\{$literal[0]}" => $literal[0],
+                        '\\\\'            => '\\'
+                    );
+                    $literal      = strtr($literal, $stripSlashes);
                     $this->pushToken(Token::STRING, substr($literal, 1, -1));
                     break;
 

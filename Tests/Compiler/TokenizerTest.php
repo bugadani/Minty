@@ -82,6 +82,27 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
         $stream->expect(Token::EOF);
     }
 
+    public function testTokenizerDoesNotParseCommentsInStrings()
+    {
+        $stream = $this->tokenizer->tokenize("{test 'string {#'}");
+        $stream->expect(Token::TAG, 'test');
+        $stream->expect(Token::EXPRESSION_START, 'test');
+        $stream->expect(Token::STRING, 'string {#');
+        $stream->expect(Token::EXPRESSION_END);
+        $stream->expect(Token::EOF);
+    }
+
+    public function testStringDelimiterIsEscapedCorrectly()
+    {
+        $stream = $this->tokenizer->tokenize("{test 'string \\' \\\\\\' ' \"string \\\"\"}");
+        $stream->expect(Token::TAG, 'test');
+        $stream->expect(Token::EXPRESSION_START, 'test');
+        $stream->expect(Token::STRING, "string ' \\' ");
+        $stream->expect(Token::STRING, 'string "');
+        $stream->expect(Token::EXPRESSION_END);
+        $stream->expect(Token::EOF);
+    }
+
     public function testTokenizerAcceptsCustomBlockClosingTagPrefix()
     {
         $env       = new Environment(array(
@@ -263,8 +284,8 @@ new line
     {
         return array(
             array('{raw}unclosed raw block{'),
-            array('{foo tag}'),
             array('{"unterminated string'),
+            array('{"unterminated \\" \\\\\\"'),
             array('{unclosed tag'),
             array('{#unclosed comment'),
         );
@@ -277,5 +298,13 @@ new line
     public function testTokenizerThrowsExceptions($template)
     {
         $this->tokenizer->tokenize($template);
+    }
+
+    /**
+     * @expectedException \Modules\Templating\Compiler\Exceptions\ParseException
+     */
+    public function testTokenizerThrowsParseExceptionForUnknownTags()
+    {
+        $this->tokenizer->tokenize('{foo tag}');
     }
 }

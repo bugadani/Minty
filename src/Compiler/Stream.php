@@ -71,10 +71,16 @@ class Stream extends \SplDoublyLinkedList
         if ($token->test($type, $value)) {
             return $token;
         }
-        $type  = $token->getTypeString();
         $value = $token->getValue();
-        $line  = $token->getLine();
-        throw new SyntaxException("Unexpected {$type} ({$value}) found in line {$line}");
+        $message = "Unexpected {$token->getTypeString()}";
+        if($value === true) {
+            $message .= ' (true)';
+        } elseif($value === false) {
+            $message .= ' (false)';
+        } elseif($value !== '') {
+            $message .= " ({$value})";
+        }
+        throw new SyntaxException($message, $token->getLine());
     }
 
     /**

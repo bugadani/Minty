@@ -10,7 +10,6 @@
 namespace Modules\Templating;
 
 use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Exceptions\CompileException;
 use Modules\Templating\Compiler\FunctionCompiler;
 use Modules\Templating\Compiler\NodeTreeTraverser;
 use Modules\Templating\Compiler\NodeVisitor;
@@ -19,7 +18,6 @@ use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Tag;
 use Modules\Templating\Compiler\TemplateFunction;
 use Modules\Templating\Compiler\Tokenizer;
-use Modules\Templating\Extensions\Core;
 
 class Environment
 {
@@ -182,13 +180,13 @@ class Environment
     /**
      * @param string $name
      *
+     * @throws \RuntimeException
      * @return Extension
-     * @throws CompileException
      */
     public function getExtension($name)
     {
         if (!isset($this->extensions[$name])) {
-            throw new CompileException("Extension not found: {$name}");
+            throw new \RuntimeException("Extension not found: {$name}");
         }
 
         return $this->extensions[$name];
@@ -197,13 +195,13 @@ class Environment
     /**
      * @param string $name
      *
+     * @throws \RuntimeException
      * @return TemplateFunction
-     * @throws CompileException
      */
     public function getFunction($name)
     {
         if (!isset($this->functions[$name])) {
-            throw new CompileException("Function not found: {$name}");
+            throw new \RuntimeException("Function not found: {$name}");
         }
 
         return $this->functions[$name];

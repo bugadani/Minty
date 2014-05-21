@@ -47,7 +47,7 @@ class Parser
             case Token::TAG:
                 if (!isset($this->tags[$value])) {
                     $line = $token->getLine();
-                    throw new ParseException("Unknown {$value} tag found in line {$line}");
+                    throw new ParseException("Unknown {$value} tag", $line);
                 }
                 $stream->next();
 
@@ -57,7 +57,7 @@ class Parser
             default:
                 $type = $token->getTypeString();
                 $line = $token->getLine();
-                throw new SyntaxException("Unexpected {$type} ({$value}) token found in line {$line}");
+                throw new SyntaxException("Unexpected {$type} ({$value}) token" ,$line);
         }
         $node->setParent($root);
         return $stream->next();

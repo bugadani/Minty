@@ -9,9 +9,6 @@
 
 namespace Modules\Templating\Compiler\Exceptions;
 
-use RuntimeException;
-
-class ParseException extends RuntimeException
+class ParseException extends TemplatingException
 {
-
 }
