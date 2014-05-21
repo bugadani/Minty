@@ -43,7 +43,6 @@ class Parser
             case Token::TEXT:
                 return new TextNode($value);
 
-            case Token::BLOCK_START:
             case Token::TAG:
                 if (!isset($this->tags[$value])) {
                     $line = $token->getLine();

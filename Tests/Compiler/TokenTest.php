@@ -10,8 +10,6 @@ class TokenTest extends \PHPUnit_Framework_TestCase
         return array(
             array(Token::EXPRESSION_START, 'EXPRESSION START'),
             array(Token::EXPRESSION_END, 'EXPRESSION END'),
-            array(Token::BLOCK_START, 'BLOCK START'),
-            array(Token::BLOCK_END, 'BLOCK END'),
             array(Token::LITERAL, 'LITERAL'),
             array(Token::STRING, 'STRING'),
             array(Token::IDENTIFIER, 'IDENTIFIER'),

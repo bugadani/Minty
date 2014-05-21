@@ -13,22 +13,18 @@ class Token
 {
     const EXPRESSION_START = 0;
     const EXPRESSION_END   = 1;
-    const BLOCK_START      = 2;
-    const BLOCK_END        = 3;
-    const LITERAL          = 4;
-    const STRING           = 5;
-    const IDENTIFIER       = 6;
-    const OPERATOR         = 7;
-    const PUNCTUATION      = 8;
-    const TEXT             = 9;
-    const TAG              = 10;
-    const EOF              = 11;
+    const LITERAL          = 2;
+    const STRING           = 3;
+    const IDENTIFIER       = 4;
+    const OPERATOR         = 5;
+    const PUNCTUATION      = 6;
+    const TEXT             = 7;
+    const TAG              = 8;
+    const EOF              = 9;
 
     private static $strings = array(
         self::EXPRESSION_START => 'EXPRESSION START',
         self::EXPRESSION_END   => 'EXPRESSION END',
-        self::BLOCK_START      => 'BLOCK START',
-        self::BLOCK_END        => 'BLOCK END',
         self::LITERAL          => 'LITERAL',
         self::STRING           => 'STRING',
         self::IDENTIFIER       => 'IDENTIFIER',
