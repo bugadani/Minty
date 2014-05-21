@@ -46,25 +46,6 @@ class Stream extends \SplDoublyLinkedList
     }
 
     /**
-     * @param Token $token
-     * @param       $type
-     * @param       $value
-     *
-     * @throws SyntaxException
-     * @return Token
-     */
-    private function testOrThrow(Token $token, $type, $value)
-    {
-        if ($token->test($type, $value)) {
-            return $token;
-        }
-        $type = $token->getTypeString();
-        $value = $token->getValue();
-        $line = $token->getLine();
-        throw new SyntaxException("Unexpected {$type} ({$value}) found in line {$line}");
-    }
-
-    /**
      * @param $type
      * @param $value
      *
@@ -73,6 +54,7 @@ class Stream extends \SplDoublyLinkedList
     public function expect($type, $value = null)
     {
         parent::next();
+
         return $this->expectCurrent($type, $value);
     }
 
@@ -80,11 +62,19 @@ class Stream extends \SplDoublyLinkedList
      * @param $type
      * @param $value
      *
+     * @throws Exceptions\SyntaxException
      * @return Token
      */
     public function expectCurrent($type, $value = null)
     {
-        return $this->testOrThrow($this->current(), $type, $value);
+        $token = $this->current();
+        if ($token->test($type, $value)) {
+            return $token;
+        }
+        $type  = $token->getTypeString();
+        $value = $token->getValue();
+        $line  = $token->getLine();
+        throw new SyntaxException("Unexpected {$type} ({$value}) found in line {$line}");
     }
 
     /**
@@ -95,7 +85,8 @@ class Stream extends \SplDoublyLinkedList
      */
     public function nextTokenIf($type, $value = null)
     {
-        $token = $this->next();
+        parent::next();
+        $token = $this->current();
         if ($token->test($type, $value)) {
             return $token;
         }
