@@ -323,7 +323,6 @@ class Tokenizer
 
     public function processToken($token)
     {
-        $token = trim($token);
         if (in_array($token, $this->punctuation)) {
             $this->pushToken(Token::PUNCTUATION, $token);
         } elseif (in_array($token, $this->operators)) {
@@ -376,8 +375,10 @@ class Tokenizer
                 $this->line += substr_count($part, "\n");
             } else {
                 foreach (preg_split($this->patterns['operator'], $part, null, $flags) as $subpart) {
-                    $this->line += substr_count($subpart, "\n");
-                    $this->processToken($subpart);
+                    if ($subpart !== ' ') {
+                        $this->line += substr_count($subpart, "\n");
+                        $this->processToken(trim($subpart));
+                    }
                 }
             }
         }
