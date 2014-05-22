@@ -46,20 +46,18 @@ class ListTag extends Tag
             ->add(';');
 
         $compiler
-            ->indented('if(is_array($list_source) || $list_source instanceof \Traversable) {')
-            ->indent()
+            ->indented('if(is_array($list_source) || $list_source instanceof \Traversable)')
+            ->openBracket()
             ->indented('$template = $this->getLoader()->load(')
             ->add($compiler->string($node->getData('template')))
             ->add(');')
-            ->indented('foreach ($list_source as $element) {')
-            ->indent()
+            ->indented('foreach ($list_source as $element)')
+            ->openBracket()
             ->indented('$template->clean();')
             ->indented('$template->loadGlobals();')
             ->indented('$template->set($element);')
-            ->indented('echo $template->render();')
-            ->outdent()
-            ->indented('}')
-            ->outdent()
-            ->indented('}');
+            ->indented('$template->render();')
+            ->closeBracket()
+            ->closeBracket();
     }
 }
