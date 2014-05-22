@@ -38,13 +38,28 @@ class Tokenizer
     private $line;
     private $fallbackTagName;
     private $blockEndPrefix;
+    private $blockEndingTags;
 
     public function __construct(Environment $environment)
     {
-        $blockNames = array();
+        $this->punctuation     = array(',', '[', ']', '(', ')', ':', '?', '=>');
+        $this->fallbackTagName = $environment->getOption('fallback_tag', false);
+        $this->blockEndPrefix  = $environment->getOption('block_end_prefix', 'end');
+        $this->operators       = $environment->getOperatorSymbols();
+        $this->delimiters      = $environment->getOption(
+            'delimiters',
+            array(
+                'tag'     => array('{', '}'),
+                'comment' => array('{#', '#}')
+            )
+        );
+
+        $this->blockEndingTags = array(
+            $this->blockEndPrefix . 'raw' => 'endraw'
+        );
         foreach ($environment->getTags() as $name => $tag) {
             if ($tag->hasEndingTag()) {
-                $blockNames[] = $name;
+                $this->blockEndingTags[$this->blockEndPrefix . $name] = 'end' . $name;
             }
 
             if ($tag->isPatternBased()) {
@@ -53,19 +68,6 @@ class Tokenizer
                 $this->tags[$name] = $tag;
             }
         }
-
-        $this->delimiters = $environment->getOption(
-            'delimiters',
-            array(
-                'tag'     => array('{', '}'),
-                'comment' => array('{#', '#}')
-            )
-        );
-
-        $this->fallbackTagName = $environment->getOption('fallback_tag', false);
-        $this->blockEndPrefix  = $environment->getOption('block_end_prefix', 'end');
-        $this->operators       = $environment->getOperatorSymbols();
-        $this->punctuation     = array(',', '[', ']', '(', ')', ':', '?', '=>');
 
         $literals = array(
             'true',
@@ -77,14 +79,10 @@ class Tokenizer
             "'(?:\\\\.|[^'\\\\])*'"
         );
 
-        $blocks_pattern  = implode('|', $blockNames);
         $literal_pattern = implode('|', $literals);
-
-        $blockEndPrefix = preg_quote($this->blockEndPrefix, '/');
-        $this->patterns = array(
-            'closing_tag' => "/{$blockEndPrefix}({$blocks_pattern}|raw)$/Ai",
-            'operator'    => $this->getOperatorPattern(),
-            'literal'     => "/({$literal_pattern})/i"
+        $this->patterns  = array(
+            'operator' => $this->getOperatorPattern(),
+            'literal'  => "/({$literal_pattern})/i"
         );
     }
 
@@ -152,7 +150,7 @@ class Tokenizer
             switch ($part) {
                 case $this->delimiters['comment'][0]:
                     if (!$this->inRaw && !$in_tag) {
-                        $in_comment = true;
+                        $in_comment   = true;
                         $commentLines = 0;
                     }
                     break;
@@ -281,12 +279,11 @@ class Tokenizer
 
     private function processTag($tag)
     {
-        $match = array();
-        if (preg_match($this->patterns['closing_tag'], $tag, $match)) {
-            if ($this->inRaw) {
+        if (isset($this->blockEndingTags[$tag])) {
+            if ($this->inRaw && $tag === $this->blockEndPrefix . 'raw') {
                 $this->inRaw = false;
             } else {
-                $this->pushToken(Token::TAG, 'end' . $match[1]);
+                $this->pushToken(Token::TAG, $this->blockEndingTags[$tag]);
             }
 
             return;
