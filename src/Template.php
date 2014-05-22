@@ -54,6 +54,11 @@ abstract class Template
         $this->variables = array();
     }
 
+    public function loadGlobals()
+    {
+        $this->set($this->environment->getOption('global_variables'));
+    }
+
     public function set($variables)
     {
         if (!is_array($variables)) {

@@ -10,13 +10,11 @@
 namespace Modules\Templating\Compiler\Tags;
 
 use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Exceptions\SyntaxException;
 use Modules\Templating\Compiler\Nodes\TagNode;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
 use Modules\Templating\Compiler\Tag;
 use Modules\Templating\Compiler\Token;
-use Modules\Templating\Compiler\Tokenizer;
 
 class ListTag extends Tag
 {
@@ -26,27 +24,16 @@ class ListTag extends Tag
         return 'list';
     }
 
-    public function tokenize(Tokenizer $tokenizer, $expression)
-    {
-        $tokenizer->pushToken(Token::EXPRESSION_START, $this->getTag());
-
-        if (!strpos($expression, 'using')) {
-            throw new SyntaxException('A template must be specified by the using keyword.');
-        }
-        list($expression, $template) = explode('using', $expression);
-
-        $tokenizer->tokenizeExpression($template);
-        $tokenizer->tokenizeExpression($expression);
-        $tokenizer->pushToken(Token::EXPRESSION_END);
-    }
-
     public function parse(Parser $parser, Stream $stream)
     {
-        $node = new TagNode($this, array(
-            'template' => $stream->next()->getValue()
-        ));
+        $node = new TagNode($this);
 
         $node->addChild($parser->parseExpression($stream), 'expression');
+
+        $stream->expectCurrent(Token::IDENTIFIER, 'using');
+
+        $node->addData('template', $stream->next()->getValue());
+        $stream->expect(Token::EXPRESSION_END);
 
         return $node;
     }
@@ -67,7 +54,7 @@ class ListTag extends Tag
             ->indented('foreach ($list_source as $element) {')
             ->indent()
             ->indented('$template->clean();')
-            ->indented('$template->getLoader()->setGlobals($template);')
+            ->indented('$template->loadGlobals();')
             ->indented('$template->set($element);')
             ->indented('echo $template->render();')
             ->outdent()

@@ -57,8 +57,6 @@ class TemplateLoader
 
     private function compileIfNeeded($template)
     {
-        $cached = $this->getCachePath($template);
-
         if (!$this->loader->exists($template)) {
             $this->log('Template not found: %s', $template);
             throw new RuntimeException("Template not found: {$template}");
@@ -70,7 +68,7 @@ class TemplateLoader
         $compiler = $this->environment->getCompiler();
 
         $this->log('Compiling %s', $template);
-        $this->compileFile($template, $cached);
+        $this->compileFile($template, $this->getCachePath($template));
 
         //Fetch before line 77 overrides it
         $embeddedTemplateNames = $compiler->getEmbeddedTemplateNames();
@@ -118,7 +116,7 @@ class TemplateLoader
         }
 
         $closingTagPrefix = $this->environment->getOption('block_end_prefix', 'end');
-        $baseTemplate = $this->environment->getOption(
+        $baseTemplate     = $this->environment->getOption(
             'error_template',
             '__compile_error_template'
         );
@@ -135,7 +133,7 @@ class TemplateLoader
             "{message: '{$message}'}" .
             "{lines: [{$lineArray}]}" .
             "{errorLine: {$errLine}}" .
-            "{firstLine: {$firstLine}}".
+            "{firstLine: {$firstLine}}" .
             "{parent}{{$closingTagPrefix}block}";
 
         return $this->compileString($source, $class);
@@ -143,9 +141,9 @@ class TemplateLoader
 
     /**
      * @param $template
-     * @param $cached
+     * @param $destination
      */
-    private function compileFile($template, $cached)
+    private function compileFile($template, $destination)
     {
         //Get the desired class name for the template
         $class = $this->loader->getTemplateClassName($template);
@@ -161,11 +159,11 @@ class TemplateLoader
             $compiled = $this->compileErrorTemplate($e, $template, $templateSource, $class);
         }
         //Store the compiled template
-        $cacheDir = dirname($cached);
+        $cacheDir = dirname($destination);
         if (!is_dir($cacheDir)) {
             mkdir($cacheDir, 0777, true);
         }
-        file_put_contents($cached, $compiled);
+        file_put_contents($destination, $compiled);
     }
 
     /**
@@ -198,14 +196,9 @@ class TemplateLoader
             $this->compileIfNeeded($file);
         }
 
-        $this->setGlobals($object);
+        $object->loadGlobals();
 
         return $object;
-    }
-
-    public function setGlobals(Template $template)
-    {
-        $template->set($this->environment->getOption('global_variables'));
     }
 
     private function getCachePath($template)
