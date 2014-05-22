@@ -32,7 +32,7 @@ class BlockTag extends Tag
     public function compile(Compiler $compiler, TagNode $node)
     {
         $compiler->indented(
-            'echo $this->%s();',
+            '$this->%s();',
             $compiler->addTemplate(
                 $node->getData('template'),
                 $node->getChild('body')
