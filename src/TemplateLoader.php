@@ -58,26 +58,59 @@ class TemplateLoader
     private function compileIfNeeded($template)
     {
         if (!$this->loader->exists($template)) {
-            $this->log('Template not found: %s', $template);
+            $this->log('Template %s is not found', $template);
             throw new RuntimeException("Template not found: {$template}");
         }
         if ($this->loader->isCacheFresh($template)) {
+            //The template is already compiled and up to date
             return;
         }
 
-        $compiler = $this->environment->getCompiler();
+        //Compile and store the template
+        $this->saveCompiledTemplate(
+            $this->compileTemplateByName($template),
+            $this->getCachePath($template)
+        );
+    }
 
+    /**
+     * @param $template
+     *
+     * @return string
+     */
+    private function compileTemplateByName($template)
+    {
         $this->log('Compiling %s', $template);
-        $this->compileFile($template, $this->getCachePath($template));
+        //Get the desired class name for the template
+        $class = $this->loader->getTemplateClassName($template);
+        $this->log('Compiled class name is %s', $class);
 
-        //Fetch before line 77 overrides it
-        $embeddedTemplateNames = $compiler->getEmbeddedTemplateNames();
-        if ($compiler->extendsTemplate()) {
-            $this->compileIfNeeded($compiler->getExtendedTemplate());
+        //Read the template
+        $templateSource = $this->loader->load($template);
+
+        //Compile and optimize the template
+        try {
+            $compiled = $this->compileString($templateSource, $class);
+        } catch (TemplatingException $e) {
+            $this->log('Failed to compile %s. Compiling an error template.', $template);
+            $templateSource = $this->getErrorTemplate($e, $template, $templateSource);
+            $compiled       = $this->compileString($templateSource, $class);
         }
-        foreach ($embeddedTemplateNames as $template) {
-            $this->compileIfNeeded($template);
+
+        return $compiled;
+    }
+
+    /**
+     * @param $compiled
+     * @param $destination
+     */
+    private function saveCompiledTemplate($compiled, $destination)
+    {
+        $cacheDir = dirname($destination);
+        if (!is_dir($cacheDir)) {
+            mkdir($cacheDir, 0777, true);
         }
+        file_put_contents($destination, $compiled);
     }
 
     /**
@@ -88,14 +121,32 @@ class TemplateLoader
      */
     private function compileString($template, $class)
     {
+        //Tokenize and parse the template
         $stream = $this->environment->getTokenizer()->tokenize($template);
         $node   = $this->environment->getParser()->parse($stream);
+
+        //Run the Node Tree Visitors
         $this->environment->getNodeTreeTraverser()->traverse($node);
 
-        return $this->environment->getCompiler()->compile($node, $class);
+        //Compile the template
+        $compiler = $this->environment->getCompiler();
+        $compiled = $compiler->compile($node, $class);
+
+        //Fetch template names related to the current (extended, embedded templates)
+        $relatedTemplateNames = $compiler->getEmbeddedTemplateNames();
+        if ($compiler->extendsTemplate()) {
+            $relatedTemplateNames[] = $compiler->getExtendedTemplate();
+        }
+
+        //Compile the related templates
+        foreach ($relatedTemplateNames as $template) {
+            $this->compileIfNeeded($template);
+        }
+
+        return $compiled;
     }
 
-    private function compileErrorTemplate(TemplatingException $e, $template, $source, $class)
+    private function getErrorTemplate(TemplatingException $e, $template, $source)
     {
         $errLine     = $e->getSourceLine() - 1;
         $firstLine   = max($errLine - 3, 0);
@@ -115,55 +166,29 @@ class TemplateLoader
             $lineArray .= "{$lineNo}: '{$line}'";
         }
 
-        $closingTagPrefix = $this->environment->getOption('block_end_prefix', 'end');
+        //escape string delimiters in exception message
+        $message = strtr($e->getMessage(), array("'" => "\\'"));
+
+        $closingTagPrefix = $this->environment->getOption(
+            'block_end_prefix',
+            'end'
+        );
         $baseTemplate     = $this->environment->getOption(
             'error_template',
             '__compile_error_template'
         );
 
-        //escape string delimiters in exception message
-        $message = strtr($e->getMessage(), array("'" => "\\'"));
-
         //insert data into template and decorate with inheritance code
         //(error message, error line number, first displayed line number, template source)
 
-        $source = "{extends '{$baseTemplate}'}" .
-            "{block error}" .
-            "{templateName: '{$template}'}" .
-            "{message: '{$message}'}" .
-            "{lines: [{$lineArray}]}" .
-            "{errorLine: {$errLine}}" .
-            "{firstLine: {$firstLine}}" .
-            "{parent}{{$closingTagPrefix}block}";
-
-        return $this->compileString($source, $class);
-    }
-
-    /**
-     * @param $template
-     * @param $destination
-     */
-    private function compileFile($template, $destination)
-    {
-        //Get the desired class name for the template
-        $class = $this->loader->getTemplateClassName($template);
-        $this->log('Compiled class name is %s', $class);
-
-        //Read the template
-        $templateSource = $this->loader->load($template);
-
-        //Compile and optimize the template
-        try {
-            $compiled = $this->compileString($templateSource, $class);
-        } catch (TemplatingException $e) {
-            $compiled = $this->compileErrorTemplate($e, $template, $templateSource, $class);
-        }
-        //Store the compiled template
-        $cacheDir = dirname($destination);
-        if (!is_dir($cacheDir)) {
-            mkdir($cacheDir, 0777, true);
-        }
-        file_put_contents($destination, $compiled);
+        return "{extends '{$baseTemplate}'}" .
+        "{block error}" .
+        "{templateName: '{$template}'}" .
+        "{message: '{$message}'}" .
+        "{lines: [{$lineArray}]}" .
+        "{errorLine: {$errLine}}" .
+        "{firstLine: {$firstLine}}" .
+        "{parent}{{$closingTagPrefix}block}";
     }
 
     /**

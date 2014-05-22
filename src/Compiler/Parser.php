@@ -57,15 +57,16 @@ class Parser
             default:
                 $type = $token->getTypeString();
                 $line = $token->getLine();
-                throw new SyntaxException("Unexpected {$type} ({$value}) token" ,$line);
+                throw new SyntaxException("Unexpected {$type} ({$value}) token", $line);
         }
         $node->setParent($root);
+
         return $stream->next();
     }
 
     public function parse(Stream $stream, Closure $endCondition = null)
     {
-        $root = new RootNode();
+        $root  = new RootNode();
         $token = $stream->next();
 
         if ($endCondition) {

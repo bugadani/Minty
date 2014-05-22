@@ -249,7 +249,7 @@ new line
 
 #} {test}
 ';
-        $stream = $this->tokenizer->tokenize($template);
+        $stream   = $this->tokenizer->tokenize($template);
         $this->assertEquals(1, $stream->expect(Token::TEXT, "some text\n")->getLine());
         $this->assertEquals(2, $stream->expect(Token::TAG, 'test')->getLine());
         $this->assertEquals(2, $stream->expect(Token::EXPRESSION_START, 'test')->getLine());

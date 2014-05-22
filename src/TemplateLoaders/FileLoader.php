@@ -53,17 +53,19 @@ class FileLoader extends AbstractTemplateLoader
 
     public function exists($template)
     {
-        if($template === '__compile_error_template') {
+        if ($template === '__compile_error_template') {
             return true;
         }
+
         return is_file($this->getPath($template));
     }
 
     public function load($template)
     {
-        if($template === '__compile_error_template') {
+        if ($template === '__compile_error_template') {
             return $this->getCompileErrorTemplate();
         }
+
         return file_get_contents($this->getPath($template));
     }
 

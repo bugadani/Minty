@@ -9,7 +9,6 @@
 
 namespace Modules\Templating\Compiler\Functions;
 
-use Closure;
 use InvalidArgumentException;
 use Modules\Templating\Compiler\TemplateFunction;
 
