@@ -118,46 +118,25 @@ class TemplateLoader
         }
 
         $closingTagPrefix = $this->environment->getOption('block_end_prefix', 'end');
-        $baseTemplate     = $this->environment->getOption('error_template', false);
+        $baseTemplate = $this->environment->getOption(
+            'error_template',
+            '__compile_error_template'
+        );
 
         //escape string delimiters in exception message
         $message = strtr($e->getMessage(), array("'" => "\\'"));
 
-        //insert data into template
+        //insert data into template and decorate with inheritance code
         //(error message, error line number, first displayed line number, template source)
-        $source = "{templateName: '{$template}'}" .
+
+        $source = "{extends '{$baseTemplate}'}" .
+            "{block error}" .
+            "{templateName: '{$template}'}" .
             "{message: '{$message}'}" .
             "{lines: [{$lineArray}]}" .
             "{errorLine: {$errLine}}" .
-            "{firstLine: {$firstLine}}";
-
-        if ($baseTemplate !== false) {
-            //decorate with inheritance code
-            $source = "{extends '{$baseTemplate}'}" .
-                "{block error}" .
-                "{$source}{parent}" .
-                "{{$closingTagPrefix}block}";
-
-        } else {
-
-            //append the default template source
-            $source .= "<h1>Failed to compile {templateName}</h1>
-<h2>Error message:</h2>
-<p>{message}</p>
-<h2>Template source:</h2>
-<pre><code><ol start=\"{firstLine + 1}\">
-{for lineNo : line in lines}
-    <li>
-    {if lineNo = errorLine}
-        <b>{line}</b>
-    {else}
-        {line}
-    {endif}
-    </li>
-{{$closingTagPrefix}for}
-</ol></code></pre>";
-            $source = strtr($source, array("\n" => ''));
-        }
+            "{firstLine: {$firstLine}}".
+            "{parent}{{$closingTagPrefix}block}";
 
         return $this->compileString($source, $class);
     }

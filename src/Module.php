@@ -29,7 +29,8 @@ class Module extends \Miny\Modules\Module
                 'cache_path'       => 'templates/compiled/%s.php',
                 'autoescape'       => true,
                 'fallback_tag'     => 'print',
-                'template_loader'  => __NAMESPACE__ . '\\TemplateLoaders\\FileLoader'
+                'template_loader'  => __NAMESPACE__ . '\\TemplateLoaders\\FileLoader',
+                'debug'            => $this->application->isDeveloperEnvironment()
             ),
             'codes'   => array()
         );
@@ -46,14 +47,14 @@ class Module extends \Miny\Modules\Module
         $module = $this;
         $container->addAlias(
             __NAMESPACE__ . '\\Environment',
-            function (Container $container) use ($module, $app) {
+            function (Container $container) use ($module) {
                 $env = new Environment($module->getConfiguration('options'));
 
                 $env->addExtension(new Core());
                 $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Optimizer'));
                 $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Miny'));
 
-                if (!$app->isDeveloperEnvironment()) {
+                if (!$env->getOption('debug', false)) {
                     return $env;
                 }
 
