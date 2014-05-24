@@ -273,19 +273,19 @@ class Tokenizer
             return;
         }
 
-        foreach ($this->patternBasedTags as $tag_name => $unnamedTag) {
+        foreach ($this->patternBasedTags as $tagName => $unnamedTag) {
             if ($unnamedTag->matches($tag)) {
-                $this->pushToken(Token::TAG, $tag_name);
+                $this->pushToken(Token::TAG, $tagName);
                 $unnamedTag->tokenize($this, $tag);
 
                 return;
             }
         }
 
-        $parts    = preg_split("/([ (\n\t])/", $tag, 2, PREG_SPLIT_DELIM_CAPTURE);
-        $tag_name = $parts[0];
+        $parts   = preg_split("/([ (\n\t])/", $tag, 2, PREG_SPLIT_DELIM_CAPTURE);
 
-        if ($tag_name === 'raw') {
+        $tagName = $parts[0];
+        if ($tagName === 'raw') {
             $this->inRaw = true;
 
             return;
@@ -297,15 +297,15 @@ class Tokenizer
             $expression = null;
         }
 
-        if (!isset($this->tags[$tag_name])) {
-            $tag_name   = $this->fallbackTagName;
+        if (!isset($this->tags[$tagName])) {
+            $tagName    = $this->fallbackTagName;
             $expression = $tag;
-        }
 
-        if (!isset($this->tags[$tag_name])) {
-            throw new ParseException("Unknown tag \"{$tag_name}\"", $this->line);
+            if (!isset($this->tags[$tagName])) {
+                throw new ParseException("Unknown tag \"{$tagName}\"", $this->line);
+            }
         }
-        $tag = $this->tags[$tag_name];
+        $tag = $this->tags[$tagName];
         $tag->addNameToken($this);
         $tag->tokenize($this, $expression);
     }
