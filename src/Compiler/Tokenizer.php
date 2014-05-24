@@ -118,8 +118,13 @@ class Tokenizer
         $this->tokens = new Stream();
         $this->inRaw  = false;
 
+        $in_comment                  = false;
+        $in_tag                      = false;
+        $in_string                   = false;
+        $tagStartPosition            = 0;
+        $tagOpeningDelimiterPosition = 0;
+
         $cursor        = 0;
-        $flags         = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_OFFSET_CAPTURE;
         $pattern_parts = array();
         foreach ($this->delimiters as $delimiter) {
             $opening                 = preg_quote($delimiter[0], '/');
@@ -128,38 +133,25 @@ class Tokenizer
             $pattern_parts[$pattern] = strlen($pattern);
         }
         arsort($pattern_parts);
-        $pattern                     = sprintf(
-            '/(%s|["\'])/',
-            implode('|', array_keys($pattern_parts))
-        );
-        $parts                       = preg_split($pattern, $template, -1, $flags);
-        $in_comment                  = false;
-        $in_tag                      = false;
-        $in_string                   = false;
-        $tagStartPosition            = 0;
-        $tagOpeningDelimiterPosition = 0;
-        $line                        = 1;
-        $commentLines                = 0;
+        $delimiterPatterns = implode('|', array_keys($pattern_parts));
 
         $endraw                    = $this->blockEndPrefix . 'raw';
         $tagOpeningDelimiterLength = strlen($this->delimiters['tag'][0]);
         $tagClosingDelimiterLength = strlen($this->delimiters['tag'][1]);
 
+        $flags = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_OFFSET_CAPTURE;
+        $parts = preg_split("/({$delimiterPatterns}|[\"'])/", $template, -1, $flags);
         foreach ($parts as $i => $part) {
             list($part, $currentOffset) = $part;
             switch ($part) {
                 case $this->delimiters['comment'][0]:
                     if (!$this->inRaw && !$in_tag) {
-                        $in_comment   = true;
-                        $commentLines = 0;
+                        $in_comment = true;
                     }
                     break;
 
                 case $this->delimiters['comment'][1]:
-                    if ($in_comment) {
-                        $in_comment = false;
-                        $line += $commentLines;
-                    }
+                    $in_comment = false;
                     break;
 
                 case $this->delimiters['tag'][0]:
@@ -213,28 +205,20 @@ class Tokenizer
                         }
                     }
                     break;
-
-                default:
-                    if ($in_comment) {
-                        $commentLines += substr_count($part, "\n");
-                    } else {
-                        $line += substr_count($part, "\n");
-                    }
-                    break;
             }
         }
 
         if ($in_comment) {
-            throw new SyntaxException('Unterminated comment', $line);
+            throw new SyntaxException('Unterminated comment', $this->line);
         }
         if ($in_string) {
-            throw new SyntaxException('Unterminated string', $line);
+            throw new SyntaxException('Unterminated string', $this->line);
         }
         if ($in_tag) {
-            throw new SyntaxException('Unterminated tag', $line);
+            throw new SyntaxException('Unterminated tag', $this->line);
         }
         if ($this->inRaw) {
-            throw new SyntaxException('Unterminated raw block', $line);
+            throw new SyntaxException('Unterminated raw block', $this->line);
         }
 
         $this->processText($template, $cursor, strlen($template));
