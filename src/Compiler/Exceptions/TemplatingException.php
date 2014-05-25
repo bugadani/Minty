@@ -13,7 +13,7 @@ class TemplatingException extends \RuntimeException
 {
     private $sourceLine;
 
-    public function __construct($message, $sourceLine)
+    public function __construct($message, $sourceLine = 0)
     {
         parent::__construct("{$message} found in line {$sourceLine}");
         $this->sourceLine = $sourceLine;

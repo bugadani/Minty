@@ -234,8 +234,7 @@ class ExpressionParser
                     break;
             }
             if ($unexpectedToken) {
-                $line = $token->getLine();
-                throw new SyntaxException("Unexpected {$type} ({$value}) token found in line {$line}");
+                throw new SyntaxException("Unexpected {$type} ({$value}) token", $token->getLine());
             }
         } while (!$done);
 
