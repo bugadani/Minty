@@ -47,6 +47,10 @@ class FileLoader extends AbstractTemplateLoader
             return true;
         }
 
+        if ($template === '__compile_error_template') {
+            return true;
+        }
+
         return filemtime($this->getPath($template)) < filemtime($cachePath);
 
     }
