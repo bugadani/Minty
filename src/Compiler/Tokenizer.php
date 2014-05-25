@@ -33,12 +33,13 @@ class Tokenizer
     private $patternBasedTags = array();
 
     private $patterns;
-    private $inRaw;
     private $punctuation;
     private $line;
     private $fallbackTagName;
     private $blockEndPrefix;
     private $blockEndingTags;
+    private $parts;
+    private $position;
 
     public function __construct(Environment $environment)
     {
@@ -54,9 +55,7 @@ class Tokenizer
             )
         );
 
-        $this->blockEndingTags = array(
-            $this->blockEndPrefix . 'raw' => 'endraw'
-        );
+        $this->blockEndingTags = array();
         foreach ($environment->getTags() as $name => $tag) {
             if ($tag->hasEndingTag()) {
                 $this->blockEndingTags[$this->blockEndPrefix . $name] = 'end' . $name;
@@ -116,112 +115,44 @@ class Tokenizer
     {
         $this->line   = 1;
         $this->tokens = new Stream();
-        $this->inRaw  = false;
 
-        $in_comment                  = false;
-        $in_tag                      = false;
-        $in_string                   = false;
-        $tagStartPosition            = 0;
-        $tagOpeningDelimiterPosition = 0;
-
-        $cursor        = 0;
         $pattern_parts = array();
-        foreach ($this->delimiters as $delimiter) {
-            $opening                 = preg_quote($delimiter[0], '/');
-            $closing                 = preg_quote($delimiter[1], '/');
-            $pattern                 = $opening . '|' . $closing;
-            $pattern_parts[$pattern] = strlen($pattern);
+        foreach ($this->delimiters as $delimiters) {
+            foreach ($delimiters as $delimiter) {
+                $pattern                 = preg_quote($delimiter, '/');
+                $pattern_parts[$pattern] = strlen($pattern);
+            }
         }
         arsort($pattern_parts);
         $delimiterPatterns = implode('|', array_keys($pattern_parts));
 
-        $endraw                    = $this->blockEndPrefix . 'raw';
-        $tagOpeningDelimiterLength = strlen($this->delimiters['tag'][0]);
-        $tagClosingDelimiterLength = strlen($this->delimiters['tag'][1]);
+        $flags = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
 
-        $flags = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_OFFSET_CAPTURE;
-        $parts = preg_split("/({$delimiterPatterns}|[\"'])/", $template, -1, $flags);
-        foreach ($parts as $i => $part) {
-            list($part, $currentOffset) = $part;
-            switch ($part) {
+        $this->parts    = preg_split("/({$delimiterPatterns}|[\"'])/", $template, -1, $flags);
+        $this->position = -1;
+
+        $currentText = '';
+        while (isset($this->parts[++$this->position])) {
+            switch ($this->parts[$this->position]) {
                 case $this->delimiters['comment'][0]:
-                    if (!$this->inRaw && !$in_tag) {
-                        $in_comment = true;
-                    }
-                    break;
-
-                case $this->delimiters['comment'][1]:
-                    $in_comment = false;
+                    $this->pushToken(Token::TEXT, $currentText);
+                    $currentText = '';
+                    $this->tokenizeComment();
                     break;
 
                 case $this->delimiters['tag'][0]:
-                    if (!$in_comment && !$in_string) {
-                        //Check if we are not in a raw block or the next tag is an endraw
-                        if (!$this->inRaw || trim($parts[$i + 1][0]) === $endraw) {
-                            $in_tag                      = true;
-                            $tagOpeningDelimiterPosition = $currentOffset;
-                            $tagStartPosition            = $currentOffset + $tagOpeningDelimiterLength;
-                        }
-                    }
+                    $this->pushToken(Token::TEXT, $currentText);
+                    $currentText = '';
+                    $this->tokenizeTag();
                     break;
 
-                case $this->delimiters['tag'][1]:
-                    if ($in_tag && !$in_string) {
-                        $tag = trim(
-                            substr(
-                                $template,
-                                $tagStartPosition,
-                                $currentOffset - $tagStartPosition
-                            )
-                        );
-
-                        $this->processText($template, $cursor, $tagOpeningDelimiterPosition);
-                        $this->processTag($tag);
-
-                        $cursor = $currentOffset + $tagClosingDelimiterLength;
-                        $in_tag = false;
-                    }
-                    break;
-
-                case '"':
-                case "'":
-                    if ($in_tag) {
-                        if (!$in_string) {
-                            $in_string = $part;
-                        } elseif ($part === $in_string) {
-                            $in_string = false;
-                            //Let's walk from the previous character backwards
-                            $i = $currentOffset;
-                            while ($i > 0 && $template[--$i] === '\\') {
-                                //If we find one backslash, we flip back the flag to true
-                                //2 backslashes, flag is false... even = the string has ended
-                                $in_string = !$in_string;
-                            }
-                            if ($in_string) {
-                                //restore the variable value since it is
-                                //either true or one of the delimiters
-                                $in_string = $part;
-                            }
-                        }
-                    }
+                default:
+                    $currentText .= $this->parts[$this->position];
                     break;
             }
         }
 
-        if ($in_comment) {
-            throw new SyntaxException('Unterminated comment', $this->line);
-        }
-        if ($in_string) {
-            throw new SyntaxException('Unterminated string', $this->line);
-        }
-        if ($in_tag) {
-            throw new SyntaxException('Unterminated tag', $this->line);
-        }
-        if ($this->inRaw) {
-            throw new SyntaxException('Unterminated raw block', $this->line);
-        }
-
-        $this->processText($template, $cursor, strlen($template));
+        $this->pushToken(Token::TEXT, $currentText);
         $this->pushToken(Token::EOF);
 
         $this->tokens->rewind();
@@ -229,48 +160,104 @@ class Tokenizer
         return $this->tokens;
     }
 
-    private function stripComments($text)
+    private function tokenizeComment()
     {
-        if ($this->inRaw) {
-            //Don't strip comment-like text from raw blocks
-            return $text;
+        while (isset($this->parts[++$this->position])) {
+            if ($this->parts[$this->position] === $this->delimiters['comment'][1]) {
+                break;
+            }
+            $this->line += substr_count($this->parts[$this->position], "\n");
         }
-        // We can safely do this because $text contains no tags, thus no strings.
-        if (($pos = strpos($text, $this->delimiters['comment'][0])) !== false) {
-            $rpos     = strrpos($text, $this->delimiters['comment'][1]);
-            $resumeAt = $rpos + strlen($this->delimiters['comment'][1]);
-            $text     = substr($text, 0, $pos) . substr($text, $resumeAt);
+        if (!isset($this->parts[$this->position])) {
+            throw new SyntaxException('Unterminated comment', $this->line);
         }
-
-        return $text;
     }
 
-    private function processText($template, $cursor, $endPosition)
+    private function tokenizeTag()
     {
-        $textLength = $endPosition - $cursor;
-        if ($textLength === 0) {
-            return;
+        $tagExpression = '';
+        while (isset($this->parts[++$this->position])) {
+            switch ($this->parts[$this->position]) {
+                case $this->delimiters['tag'][1]:
+                    if (!$this->processTag(trim($tagExpression))) {
+                        $this->tokenizeRawBlock();
+                    }
+                    break 2;
+
+                case '"':
+                case "'":
+                    $tagExpression .= $this->tokenizeString($this->parts[$this->position]);
+                    break;
+
+                default:
+                    $tagExpression .= $this->parts[$this->position];
+                    break;
+            }
+        }
+        if (!isset($this->parts[$this->position])) {
+            throw new SyntaxException('Unterminated tag', $this->line);
+        }
+    }
+
+    private function tokenizeRawBlock()
+    {
+        $text   = '';
+        $endRaw = $this->blockEndPrefix . 'raw';
+        while (isset($this->parts[++$this->position])) {
+            $p = $this->position;
+            if ($this->parts[$p] === $this->delimiters['tag'][0]) {
+                if (isset($this->parts[++$p]) && trim($this->parts[$p]) === $endRaw) {
+                    if (isset($this->parts[++$p]) && $this->parts[$p] === $this->delimiters['tag'][1]) {
+                        $this->position += 2;
+                        break;
+                    }
+                }
+            }
+            $text .= $this->parts[$this->position];
         }
 
-        $text         = substr($template, $cursor, $textLength);
-        $strippedText = $this->stripComments($text);
+        $this->pushToken(Token::TEXT, $text);
 
-        if ($strippedText !== '') {
-            $this->pushToken(Token::TEXT, $strippedText);
+        if (!isset($this->parts[$this->position])) {
+            throw new SyntaxException('Unterminated raw block', $this->line);
         }
-        $this->line += substr_count($text, "\n");
+    }
+
+    private function tokenizeString($delimiter)
+    {
+        $string = $delimiter;
+        while (isset($this->parts[++$this->position])) {
+            $part = $this->parts[$this->position];
+            if ($part === $delimiter) {
+                $in_string = false;
+                //Let's walk from the previous character backwards
+                $i = strlen($string);
+                while ($i > 0 && $string[--$i] === '\\') {
+                    //If we find one backslash, we flip back the flag to true
+                    //2 backslashes, flag is false... even = the string has ended
+                    $in_string = !$in_string;
+                }
+                if (!$in_string) {
+                    break;
+                }
+            }
+            $string .= $part;
+
+        }
+        $string .= $delimiter;
+        if (!isset($this->parts[$this->position])) {
+            throw new SyntaxException('Unterminated string', $this->line);
+        }
+
+        return $string;
     }
 
     private function processTag($tag)
     {
         if (isset($this->blockEndingTags[$tag])) {
-            if ($this->inRaw && $tag === $this->blockEndPrefix . 'raw') {
-                $this->inRaw = false;
-            } else {
-                $this->pushToken(Token::TAG, $this->blockEndingTags[$tag]);
-            }
+            $this->pushToken(Token::TAG, $this->blockEndingTags[$tag]);
 
-            return;
+            return true;
         }
 
         foreach ($this->patternBasedTags as $tagName => $unnamedTag) {
@@ -278,17 +265,15 @@ class Tokenizer
                 $this->pushToken(Token::TAG, $tagName);
                 $unnamedTag->tokenize($this, $tag);
 
-                return;
+                return true;
             }
         }
 
-        $parts   = preg_split("/([ (\n\t])/", $tag, 2, PREG_SPLIT_DELIM_CAPTURE);
+        $parts = preg_split("/([ (\n\t])/", $tag, 2, PREG_SPLIT_DELIM_CAPTURE);
 
         $tagName = $parts[0];
         if ($tagName === 'raw') {
-            $this->inRaw = true;
-
-            return;
+            return false;
         }
 
         if (count($parts) === 3) {
@@ -308,6 +293,8 @@ class Tokenizer
         $tag = $this->tags[$tagName];
         $tag->addNameToken($this);
         $tag->tokenize($this, $expression);
+
+        return true;
     }
 
     private function processToken($token)
@@ -381,6 +368,14 @@ class Tokenizer
 
     public function pushToken($type, $value = null)
     {
-        $this->tokens->push(new Token($type, $value, $this->line));
+        if ($type === Token::TEXT) {
+            if ($value === '') {
+                return;
+            }
+            $this->tokens->push(new Token($type, $value, $this->line));
+            $this->line += substr_count($value, "\n");
+        } else {
+            $this->tokens->push(new Token($type, $value, $this->line));
+        }
     }
 }

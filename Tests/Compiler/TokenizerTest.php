@@ -77,7 +77,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     public function testTokenizerDoesNotParseTagsInRawBlock()
     {
-        $stream = $this->tokenizer->tokenize('{raw}{test}{endraw}');
+        $stream = $this->tokenizer->tokenize('{ raw }{test}{ endraw }');
         $stream->expect(Token::TEXT, '{test}');
         $stream->expect(Token::EOF);
     }
@@ -243,7 +243,7 @@ string" +
 + tag}
 {raw}text
 new line
-{endraw}{#
+{endraw} {#
 
  multiline comment
 
@@ -266,6 +266,7 @@ new line
         $this->assertEquals(5, $stream->expect(Token::TEXT, "\n")->getLine());
         $this->assertEquals(6, $stream->expect(Token::TEXT, "text\nnew line\n")->getLine());
         $this->assertEquals(8, $stream->expect(Token::TEXT, ' ')->getLine());
+        $this->assertEquals(12, $stream->expect(Token::TEXT, ' ')->getLine());
         $this->assertEquals(12, $stream->expect(Token::TAG, 'test')->getLine());
         $this->assertEquals(12, $stream->expect(Token::EXPRESSION_START, 'test')->getLine());
         $this->assertEquals(12, $stream->expect(Token::EXPRESSION_END)->getLine());
@@ -276,7 +277,8 @@ new line
     public function testCommentsAreRemoved()
     {
         $stream = $this->tokenizer->tokenize('text{# a comment #} foobar');
-        $stream->expect(Token::TEXT, 'text foobar');
+        $stream->expect(Token::TEXT, 'text');
+        $stream->expect(Token::TEXT, ' foobar');
         $stream->expect(Token::EOF);
     }
 
