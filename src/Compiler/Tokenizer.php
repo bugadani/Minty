@@ -321,6 +321,10 @@ class Tokenizer
                     $this->pushToken(Token::STRING, ltrim($part, ':'));
                     break;
 
+                case '$':
+                    $this->pushToken(Token::VARIABLE, ltrim($part, '$'));
+                    break;
+
                 default:
                     switch (strtolower($part)) {
                         case 'null':

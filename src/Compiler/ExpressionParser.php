@@ -17,6 +17,7 @@ use Modules\Templating\Compiler\Nodes\DataNode;
 use Modules\Templating\Compiler\Nodes\FunctionNode;
 use Modules\Templating\Compiler\Nodes\IdentifierNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
+use Modules\Templating\Compiler\Nodes\VariableNode;
 use Modules\Templating\Compiler\Operators\ConditionalOperator;
 use Modules\Templating\Environment;
 use SplStack;
@@ -118,20 +119,23 @@ class ExpressionParser
         return $arguments;
     }
 
-    private function parsePostfixExpression($identifier)
+    private function parseIdentifier($identifier)
     {
         if ($this->stream->nextTokenIf(Token::PUNCTUATION, '(')) {
             // function call
-            $this->operandStack->push(
-                new FunctionNode(
-                    $identifier,
-                    $this->parseArgumentList()
-                )
+            $node = new FunctionNode(
+                $identifier,
+                $this->parseArgumentList()
             );
-
-            return;
+        } else {
+            $node = new IdentifierNode($identifier);
         }
-        $operand = new IdentifierNode($identifier);
+        $this->operandStack->push($node);
+    }
+
+    private function parseVariable($variable)
+    {
+        $operand = new VariableNode($variable);
         while ($this->stream->nextTokenIf(Token::PUNCTUATION, '[')) {
             //array indexing
             $operand = new ArrayIndexNode(
@@ -204,7 +208,11 @@ class ExpressionParser
                     break;
 
                 case Token::IDENTIFIER:
-                    $this->parsePostfixExpression($value);
+                    $this->parseIdentifier($value);
+                    break;
+
+                case Token::VARIABLE:
+                    $this->parseVariable($value);
                     break;
 
                 case Token::PUNCTUATION:

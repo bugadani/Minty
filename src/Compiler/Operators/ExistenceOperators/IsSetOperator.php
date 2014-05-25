@@ -14,6 +14,7 @@ use Modules\Templating\Compiler\Nodes\ArrayIndexNode;
 use Modules\Templating\Compiler\Nodes\FunctionNode;
 use Modules\Templating\Compiler\Nodes\IdentifierNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
+use Modules\Templating\Compiler\Nodes\VariableNode;
 use Modules\Templating\Compiler\Operator;
 use Modules\Templating\Compiler\Operators\PropertyAccessOperator;
 
@@ -28,8 +29,12 @@ class IsSetOperator extends Operator
     public function compile(Compiler $compiler, OperatorNode $node)
     {
         $operand = $node->getOperand(OperatorNode::OPERAND_LEFT);
-        if ($operand instanceof OperatorNode
-            && $operand->getOperator() instanceof PropertyAccessOperator
+        if ($operand instanceof VariableNode || $operand instanceof ArrayIndexNode) {
+            $compiler->add('isset(')
+                ->compileNode($operand)
+                ->add(')');
+        } elseif ($operand instanceof OperatorNode && $operand->getOperator(
+            ) instanceof PropertyAccessOperator
         ) {
             $right = $operand->getOperand(OperatorNode::OPERAND_RIGHT);
 
@@ -49,10 +54,6 @@ class IsSetOperator extends Operator
                 $compiler->compileNode($right);
             }
             $compiler->add(')');
-        } elseif ($operand instanceof IdentifierNode || $operand instanceof ArrayIndexNode) {
-            $compiler->add('isset(')
-                ->compileNode($operand)
-                ->add(')');
         } else {
             $compiler->add('(')
                 ->compileNode($operand)

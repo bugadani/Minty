@@ -20,7 +20,8 @@ class Token
     const PUNCTUATION      = 6;
     const TEXT             = 7;
     const TAG              = 8;
-    const EOF              = 9;
+    const VARIABLE         = 9;
+    const EOF              = 10;
 
     private static $strings = array(
         self::EXPRESSION_START => 'EXPRESSION START',
@@ -32,6 +33,7 @@ class Token
         self::PUNCTUATION      => 'PUNCTUATION',
         self::TEXT             => 'TEXT',
         self::TAG              => 'TAG',
+        self::VARIABLE         => 'VARIABLE',
         self::EOF              => 'EOF',
     );
     private $type;

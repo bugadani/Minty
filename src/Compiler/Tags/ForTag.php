@@ -37,10 +37,10 @@ class ForTag extends Tag
         list($vars, $source) = explode(' in ', $expression, 2);
         if (strpos($vars, ':') !== false) {
             list($key, $vars) = explode(':', $vars, 2);
-            $tokenizer->pushToken(Token::IDENTIFIER, trim($key));
+            $tokenizer->tokenizeExpression(trim($key));
             $tokenizer->pushToken(Token::PUNCTUATION, ':');
         }
-        $tokenizer->pushToken(Token::IDENTIFIER, trim($vars));
+        $tokenizer->tokenizeExpression(trim($vars));
 
         $tokenizer->pushToken(Token::IDENTIFIER, 'in');
         $tokenizer->tokenizeExpression($source);

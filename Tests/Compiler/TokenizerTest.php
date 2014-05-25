@@ -92,6 +92,16 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
         $stream->expect(Token::EOF);
     }
 
+    public function testTokenizerDoesNotParseVariablesInStrings()
+    {
+        $stream = $this->tokenizer->tokenize('{test "string $var"}');
+        $stream->expect(Token::TAG, 'test');
+        $stream->expect(Token::EXPRESSION_START, 'test');
+        $stream->expect(Token::STRING, 'string $var');
+        $stream->expect(Token::EXPRESSION_END);
+        $stream->expect(Token::EOF);
+    }
+
     public function testStringDelimiterIsEscapedCorrectly()
     {
         $stream = $this->tokenizer->tokenize("{test 'string \\' \\\\\\' ' \"string \\\"\"}");
@@ -184,13 +194,15 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
     public function testIdentifiersAreParsed()
     {
         $stream = $this->tokenizer->tokenize(
-            '{ test ident + ifier }'
+            '{ test ident + ifier + $variable }'
         );
         $stream->expect(Token::TAG, 'test');
         $stream->expect(Token::EXPRESSION_START, 'test');
         $stream->expect(Token::IDENTIFIER, 'ident');
         $stream->expect(Token::OPERATOR, '+');
         $stream->expect(Token::IDENTIFIER, 'ifier');
+        $stream->expect(Token::OPERATOR, '+');
+        $stream->expect(Token::VARIABLE, 'variable');
         $stream->expect(Token::EXPRESSION_END);
         $stream->expect(Token::EOF);
     }

@@ -12,7 +12,7 @@ namespace Modules\Templating\Compiler\Nodes;
 use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\Node;
 
-class IdentifierNode extends Node
+class VariableNode extends Node
 {
     private $name;
 
@@ -28,6 +28,8 @@ class IdentifierNode extends Node
 
     public function compile(Compiler $compiler)
     {
-        throw new \RuntimeException('IdentifierNode should not be compiled directly');
+        $compiler
+            ->add('$this->')
+            ->add($this->name);
     }
 }
