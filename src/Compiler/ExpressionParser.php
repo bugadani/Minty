@@ -132,7 +132,7 @@ class ExpressionParser
             return;
         }
         $operand = new IdentifierNode($identifier);
-        if ($this->stream->nextTokenIf(Token::PUNCTUATION, '[')) {
+        while ($this->stream->nextTokenIf(Token::PUNCTUATION, '[')) {
             //array indexing
             $operand = new ArrayIndexNode(
                 $operand,
@@ -226,7 +226,9 @@ class ExpressionParser
 
                 default:
                     if ($token->test(Token::OPERATOR, $this->unaryPrefixTest)) {
-                        $this->pushUnaryPrefixOperator($value);
+                        $this->pushOperator(
+                            $this->unaryPrefixOperators->getOperator($value)
+                        );
                         $done = false;
                     } else {
                         $unexpectedToken = true;
@@ -253,7 +255,9 @@ class ExpressionParser
 
         $token = $this->parseToken();
         while ($token->test(Token::OPERATOR, $this->binaryTest)) {
-            $this->pushBinaryOperator($token->getValue());
+            $this->pushOperator(
+                $this->binaryOperators->getOperator($token->getValue())
+            );
             $token = $this->parseToken();
         }
         while ($this->operatorStack->top() !== null) {
@@ -333,20 +337,6 @@ class ExpressionParser
             );
         }
         $this->operandStack->push($node);
-    }
-
-    private function pushBinaryOperator($symbol)
-    {
-        $this->pushOperator(
-            $this->binaryOperators->getOperator($symbol)
-        );
-    }
-
-    private function pushUnaryPrefixOperator($symbol)
-    {
-        $this->pushOperator(
-            $this->unaryPrefixOperators->getOperator($symbol)
-        );
     }
 
     private function pushOperator(Operator $operator)

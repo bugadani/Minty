@@ -189,7 +189,6 @@ class Core extends Extension
             new ExtendsTag(),
             new EmbedTag(),
             new IfTag(),
-            new AssignTag(),
             new PrintTag(),
             new ExtractTag(),
             new ElseTag(),

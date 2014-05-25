@@ -37,6 +37,9 @@ class PrintTag extends Tag
 
         $node = new TagNode($this);
         $node->addChild($parser->parseExpression($stream), 'expression');
+        if ($stream->current()->test(Token::PUNCTUATION, ':')) {
+            $node->addChild($parser->parseExpression($stream), 'value');
+        }
 
         return $node;
     }
@@ -97,11 +100,21 @@ class PrintTag extends Tag
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        $compiler
-            ->indented('echo ')
-            ->compileNode(
-                $this->ensureSafe($compiler->getEnvironment(), $node->getChild('expression'))
-            )
-            ->add(';');
+        if ($node->hasChild('value')) {
+            $compiler
+                ->indented('')
+                ->compileNode($node->getChild('expression'))
+                ->add(' = ')
+                ->compileNode($node->getChild('value'))
+                ->add(';');
+        } else {
+            $compiler
+                ->indented('echo ')
+                ->compileNode(
+                    $this->ensureSafe($compiler->getEnvironment(), $node->getChild('expression'))
+                )
+                ->add(';');
+        }
+
     }
 }
