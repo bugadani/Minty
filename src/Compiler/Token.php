@@ -34,11 +34,6 @@ class Token
         self::TAG              => 'TAG',
         self::EOF              => 'EOF',
     );
-    private static $data_types = array(
-        Token::LITERAL,
-        Token::STRING,
-        Token::IDENTIFIER
-    );
     private $type;
     private $value;
     private $line;
@@ -68,11 +63,6 @@ class Token
         }
 
         return false;
-    }
-
-    public function isDataType()
-    {
-        return in_array($this->type, self::$data_types);
     }
 
     public function getType()

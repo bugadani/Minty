@@ -68,22 +68,4 @@ class TokenTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($token->test(Token::LITERAL, 'is_int'));
         $this->assertTrue($token->test(Token::LITERAL, array(4, 5)));
     }
-
-    public function dataTypeProvider()
-    {
-        return array(
-            array(new Token(Token::LITERAL, 4), true),
-            array(new Token(Token::STRING, '4'), true),
-            array(new Token(Token::IDENTIFIER, 'ident'), true),
-            array(new Token(Token::EXPRESSION_START), false),
-        );
-    }
-
-    /**
-     * @dataProvider dataTypeProvider
-     */
-    public function testIsDataType(Token $token, $is_data_type)
-    {
-        $this->assertEquals($is_data_type, $token->isDataType());
-    }
 }
