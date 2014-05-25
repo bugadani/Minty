@@ -32,7 +32,7 @@ class Tokenizer
      */
     private $patternBasedTags = array();
 
-    private $patterns;
+    private $expressionPartsPattern;
     private $punctuation;
     private $line;
     private $fallbackTagName;
@@ -68,30 +68,26 @@ class Tokenizer
             }
         }
 
-        $literals = array(
-            'true',
-            'false',
-            'null',
-            ':[a-zA-Z]+[a-zA-Z_\-0-9]*',
-            '(?<!\w)\d+(?:\.\d+)?',
-            '"(?:\\\\.|[^"\\\\])*"',
-            "'(?:\\\\.|[^'\\\\])*'"
-        );
-
-        $literal_pattern = implode('|', $literals);
-        $this->patterns  = array(
-            'operator' => $this->getOperatorPattern(),
-            'literal'  => "/({$literal_pattern})/i"
+        $this->expressionPartsPattern = $this->getExpressionPartsPattern(
+            array(
+                'true',
+                'false',
+                'null',
+                '$[a-zA-Z]+[a-zA-Z_\-0-9]*',
+                ':[a-zA-Z]+[a-zA-Z_\-0-9]*',
+                '(?<!\w)\d+(?:\.\d+)?',
+                '"(?:\\\\.|[^"\\\\])*"',
+                "'(?:\\\\.|[^'\\\\])*'"
+            )
         );
     }
 
-    private function getOperatorPattern()
+    private function getExpressionPartsPattern(array $dataPatterns)
     {
-        $operators = array();
-        $signs     = ' ';
+        $patterns = array();
+        $signs    = ' ';
 
-        $symbols = array_merge($this->operators, $this->punctuation);
-        foreach ($symbols as $symbol) {
+        foreach (array_merge($this->operators, $this->punctuation) as $symbol) {
             $length = strlen($symbol);
             if ($length == 1) {
                 $signs .= $symbol;
@@ -100,15 +96,18 @@ class Tokenizer
                 if (preg_match('/^[a-zA-Z\ ]+$/', $symbol)) {
                     $quotedSymbol = "(?<=^|\\W){$quotedSymbol}(?=[\\s()\\[\\]]|$)";
                 }
-                $operators[$quotedSymbol] = $length;
+                $patterns[$quotedSymbol] = $length;
             }
         }
-        arsort($operators);
+        foreach($dataPatterns as $pattern) {
+            $patterns[$pattern] = strlen($pattern);
+        }
+        arsort($patterns);
 
-        $operators = implode('|', array_keys($operators));
-        $signs     = preg_quote($signs, '/');
+        $patterns = implode('|', array_keys($patterns));
+        $signs    = preg_quote($signs, '/');
 
-        return "/({$operators}|[{$signs}])/i";
+        return "/({$patterns}|[{$signs}])/i";
     }
 
     public function tokenize($template)
@@ -297,40 +296,33 @@ class Tokenizer
         return true;
     }
 
-    private function processToken($token)
+    private function tokenizeExpressionPart($part)
     {
-        if (in_array($token, $this->punctuation)) {
-            $this->pushToken(Token::PUNCTUATION, $token);
-        } elseif (in_array($token, $this->operators)) {
-            $this->pushToken(Token::OPERATOR, $token);
-        } elseif (strlen($token) !== 0) {
-            $this->pushToken(Token::IDENTIFIER, $token);
-        }
-    }
-
-    private function tokenizeLiteral($literal)
-    {
-        if (is_numeric($literal)) {
-            $this->pushToken(Token::LITERAL, $literal);
+        if (in_array($part, $this->punctuation)) {
+            $this->pushToken(Token::PUNCTUATION, $part);
+        } elseif (in_array($part, $this->operators)) {
+            $this->pushToken(Token::OPERATOR, $part);
+        } elseif (is_numeric($part)) {
+            $this->pushToken(Token::LITERAL, $part);
         } else {
-            switch ($literal[0]) {
+            switch ($part[0]) {
                 case '"':
                 case "'":
                     //strip backslashes from double-slashes and escaped string delimiters
                     $stripSlashes = array(
-                        "\\{$literal[0]}" => $literal[0],
-                        '\\\\'            => '\\'
+                        "\\{$part[0]}" => $part[0],
+                        '\\\\'         => '\\'
                     );
-                    $literal      = strtr($literal, $stripSlashes);
-                    $this->pushToken(Token::STRING, substr($literal, 1, -1));
+                    $part         = strtr($part, $stripSlashes);
+                    $this->pushToken(Token::STRING, substr($part, 1, -1));
                     break;
 
                 case ':':
-                    $this->pushToken(Token::STRING, ltrim($literal, ':'));
+                    $this->pushToken(Token::STRING, ltrim($part, ':'));
                     break;
 
                 default:
-                    switch (strtolower($literal)) {
+                    switch (strtolower($part)) {
                         case 'null':
                             $this->pushToken(Token::LITERAL, null);
                             break;
@@ -339,6 +331,11 @@ class Tokenizer
                             break;
                         case 'false':
                             $this->pushToken(Token::LITERAL, false);
+                            break;
+                        default:
+                            if (trim($part) !== '') {
+                                $this->pushToken(Token::IDENTIFIER, $part);
+                            }
                             break;
                     }
             }
@@ -351,17 +348,10 @@ class Tokenizer
             return;
         }
         $flags = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
-        foreach (preg_split($this->patterns['literal'], $expr, null, $flags) as $part) {
-            if (preg_match($this->patterns['literal'], $part)) {
-                $this->tokenizeLiteral($part);
+        foreach (preg_split($this->expressionPartsPattern, $expr, null, $flags) as $part) {
+            if($part !== ' ') {
+                $this->tokenizeExpressionPart($part);
                 $this->line += substr_count($part, "\n");
-            } else {
-                foreach (preg_split($this->patterns['operator'], $part, null, $flags) as $subpart) {
-                    if ($subpart !== ' ') {
-                        $this->line += substr_count($subpart, "\n");
-                        $this->processToken(trim($subpart));
-                    }
-                }
             }
         }
     }

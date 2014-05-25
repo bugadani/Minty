@@ -197,7 +197,6 @@ class ExpressionParser
             $type  = $token->getType();
             $value = $token->getValue();
 
-            $unexpectedToken = false;
             switch ($type) {
                 case Token::STRING:
                 case Token::LITERAL:
@@ -211,7 +210,7 @@ class ExpressionParser
                 case Token::PUNCTUATION:
                     switch ($value) {
                         case '(':
-                            $this->parseExpression();
+                            $this->parseExpression(false);
                             break;
 
                         case '[':
@@ -219,25 +218,19 @@ class ExpressionParser
                             break;
 
                         default:
-                            $unexpectedToken = true;
-                            break;
+                            $type = $token->getTypeString();
+                            $line = $token->getLine();
+                            throw new SyntaxException("Unexpected {$type} ({$value}) token", $line);
                     }
                     break;
 
                 default:
-                    if ($token->test(Token::OPERATOR, $this->unaryPrefixTest)) {
-                        $this->pushOperator(
-                            $this->unaryPrefixOperators->getOperator($value)
-                        );
-                        $done = false;
-                    } else {
-                        $unexpectedToken = true;
-                    }
+                    $this->stream->expectCurrent(Token::OPERATOR, $this->unaryPrefixTest);
+                    $this->pushOperator(
+                        $this->unaryPrefixOperators->getOperator($value)
+                    );
+                    $done = false;
                     break;
-            }
-            if ($unexpectedToken) {
-                $type = $token->getTypeString();
-                throw new SyntaxException("Unexpected {$type} ({$value}) token", $token->getLine());
             }
         } while (!$done);
 
