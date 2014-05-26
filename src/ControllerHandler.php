@@ -39,9 +39,9 @@ class ControllerHandler
         }
     }
 
-    public function onControllerFinished($controller, $action, $controllerReturnValue)
+    public function onControllerFinished($controller, $action, $returnValue)
     {
-        if ($this->shouldNotRenderTemplate($controller, $controllerReturnValue)) {
+        if ($this->shouldNotRenderTemplate($controller, $returnValue)) {
             return;
         }
         if (!isset($this->currentLayout)) {
@@ -66,11 +66,11 @@ class ControllerHandler
 
     /**
      * @param $controller
-     * @param $controllerReturnValue
+     * @param $returnValue
      *
      * @return bool
      */
-    protected function shouldNotRenderTemplate($controller, $controllerReturnValue)
+    protected function shouldNotRenderTemplate($controller, $returnValue)
     {
         if ($controller instanceof Controller) {
             if ($controller->getHeaders()->has('location')) {
@@ -78,7 +78,7 @@ class ControllerHandler
             }
         }
 
-        return $controllerReturnValue === false;
+        return $returnValue === false;
     }
 
     private function determineCurrentLayout($controller, $action)

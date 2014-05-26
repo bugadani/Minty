@@ -123,16 +123,16 @@ class ForTag extends Tag
             'create_stack'  => true
         ));
 
-        $loop_var = $parser->parseExpression($stream);
+        $loopVar = $parser->parseExpression($stream);
         if ($stream->current()->test(Token::PUNCTUATION, ':')) {
-            $node->addChild($loop_var, 'loop_key');
-            $loop_var = $parser->parseExpression($stream);
+            $node->addChild($loopVar, 'loop_key');
+            $loopVar = $parser->parseExpression($stream);
         }
 
         $stream->expectCurrent(Token::IDENTIFIER, 'in');
 
         $node->addChild($parser->parseExpression($stream), 'source');
-        $node->addChild($loop_var, 'loop_variable');
+        $node->addChild($loopVar, 'loop_variable');
         $node->addChild($parser->parse($stream, $elseTest), 'loop_body');
 
         if ($stream->current()->test(Token::EXPRESSION_START, 'else')) {

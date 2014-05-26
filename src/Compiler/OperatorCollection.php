@@ -22,8 +22,8 @@ class OperatorCollection
     {
         $symbol = $operator->operators();
         if (is_array($symbol)) {
-            foreach ($symbol as $op_symbol) {
-                $this->operators[$op_symbol] = $operator;
+            foreach ($symbol as $opSymbol) {
+                $this->operators[$opSymbol] = $operator;
             }
         } else {
             $this->operators[$symbol] = $operator;

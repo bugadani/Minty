@@ -134,21 +134,21 @@ class Compiler
                 $this->compileData($value);
             }
             $this->add(')');
-        } elseif (is_numeric($data) || is_float($data)) {
+        } elseif (is_numeric($data)) {
             $old = setlocale(LC_NUMERIC, 0);
             if ($old) {
                 setlocale(LC_NUMERIC, 'C');
-            }
-            $this->add($data);
-            if ($old) {
+                $this->add($data);
                 setlocale(LC_NUMERIC, $old);
+            } else {
+                $this->add($data);
             }
         } elseif (is_bool($data)) {
             $this->add($data ? 'true' : 'false');
         } elseif ($data === null) {
             $this->add('null');
         } elseif ($data instanceof Node) {
-            $this->compileNode($data);
+            $data->compile($this);
         } else {
             $this->add($this->string($data));
         }
@@ -203,10 +203,10 @@ class Compiler
 
     public function compileNode(Node $node, $indentation = null)
     {
-        $old_indentation   = $this->indentation;
+        $oldIndentation    = $this->indentation;
         $this->indentation = $indentation ? : $this->indentation;
         $node->compile($this);
-        $this->indentation = $old_indentation;
+        $this->indentation = $oldIndentation;
 
         return $this;
     }
@@ -234,7 +234,7 @@ class Compiler
         return $this->extendedTemplate;
     }
 
-    public function getClassForTemplate($template, $include_namespace = true)
+    public function getClassForTemplate($template, $includeNamespace = true)
     {
         if (!$template) {
             return 'Modules\Templating\Template';
@@ -244,7 +244,7 @@ class Compiler
 
         $pos       = strrpos($path, '\\') + 1;
         $className = substr($path, $pos);
-        if ($include_namespace) {
+        if ($includeNamespace) {
             $namespace = substr($path, 0, $pos);
 
             return $namespace . 'Template_' . $className;

@@ -99,7 +99,7 @@ class Tokenizer
                 $patterns[$quotedSymbol] = $length;
             }
         }
-        foreach($dataPatterns as $pattern) {
+        foreach ($dataPatterns as $pattern) {
             $patterns[$pattern] = strlen($pattern);
         }
         arsort($patterns);
@@ -115,15 +115,15 @@ class Tokenizer
         $this->line   = 1;
         $this->tokens = new Stream();
 
-        $pattern_parts = array();
+        $patternParts = array();
         foreach ($this->delimiters as $delimiters) {
             foreach ($delimiters as $delimiter) {
-                $pattern                 = preg_quote($delimiter, '/');
-                $pattern_parts[$pattern] = strlen($pattern);
+                $pattern                = preg_quote($delimiter, '/');
+                $patternParts[$pattern] = strlen($pattern);
             }
         }
-        arsort($pattern_parts);
-        $delimiterPatterns = implode('|', array_keys($pattern_parts));
+        arsort($patternParts);
+        $delimiterPatterns = implode('|', array_keys($patternParts));
 
         $flags = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
 
@@ -203,10 +203,10 @@ class Tokenizer
         $text   = '';
         $endRaw = $this->blockEndPrefix . 'raw';
         while (isset($this->parts[++$this->position])) {
-            $p = $this->position;
-            if ($this->parts[$p] === $this->delimiters['tag'][0]) {
-                if (isset($this->parts[++$p]) && trim($this->parts[$p]) === $endRaw) {
-                    if (isset($this->parts[++$p]) && $this->parts[$p] === $this->delimiters['tag'][1]) {
+            $pos = $this->position;
+            if ($this->parts[$pos] === $this->delimiters['tag'][0]) {
+                if (isset($this->parts[++$pos]) && trim($this->parts[$pos]) === $endRaw) {
+                    if (isset($this->parts[++$pos]) && $this->parts[$pos] === $this->delimiters['tag'][1]) {
                         $this->position += 2;
                         break;
                     }
@@ -228,15 +228,15 @@ class Tokenizer
         while (isset($this->parts[++$this->position])) {
             $part = $this->parts[$this->position];
             if ($part === $delimiter) {
-                $in_string = false;
+                $inString = false;
                 //Let's walk from the previous character backwards
-                $i = strlen($string);
-                while ($i > 0 && $string[--$i] === '\\') {
+                $offset = strlen($string);
+                while ($offset > 0 && $string[--$offset] === '\\') {
                     //If we find one backslash, we flip back the flag to true
                     //2 backslashes, flag is false... even = the string has ended
-                    $in_string = !$in_string;
+                    $inString = !$inString;
                 }
-                if (!$in_string) {
+                if (!$inString) {
                     break;
                 }
             }
@@ -353,7 +353,7 @@ class Tokenizer
         }
         $flags = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
         foreach (preg_split($this->expressionPartsPattern, $expr, null, $flags) as $part) {
-            if($part !== ' ') {
+            if ($part !== ' ') {
                 $this->tokenizeExpressionPart($part);
                 $this->line += substr_count($part, "\n");
             }

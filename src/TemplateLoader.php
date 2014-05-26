@@ -147,9 +147,9 @@ class TemplateLoader
         return $compiled;
     }
 
-    private function getErrorTemplate(TemplatingException $e, $template, $source)
+    private function getErrorTemplate(TemplatingException $exception, $template, $source)
     {
-        $errLine     = $e->getSourceLine() - 1;
+        $errLine     = $exception->getSourceLine() - 1;
         $firstLine   = max($errLine - 3, 0);
         $sourceLines = array_slice(explode("\n", $source), $firstLine, 7, true);
 
@@ -168,7 +168,7 @@ class TemplateLoader
         }
 
         //escape string delimiters in exception message
-        $message = strtr($e->getMessage(), array("'" => "\\'"));
+        $message = strtr($exception->getMessage(), array("'" => "\\'"));
 
         $closingTagPrefix = $this->environment->getOption(
             'block_end_prefix',

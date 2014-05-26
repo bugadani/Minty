@@ -48,17 +48,17 @@ abstract class Extension
         }
     }
 
-    public function registerUnaryPrefixOperators(OperatorCollection $unary_prefix)
+    public function registerUnaryPrefixOperators(OperatorCollection $unaryPrefix)
     {
         foreach ($this->getPrefixUnaryOperators() as $operator) {
-            $unary_prefix->addOperator($operator);
+            $unaryPrefix->addOperator($operator);
         }
     }
 
-    public function registerUnaryPostfixOperators(OperatorCollection $unary_postfix)
+    public function registerUnaryPostfixOperators(OperatorCollection $unaryPostfix)
     {
         foreach ($this->getPostfixUnaryOperators() as $operator) {
-            $unary_postfix->addOperator($operator);
+            $unaryPostfix->addOperator($operator);
         }
     }
 

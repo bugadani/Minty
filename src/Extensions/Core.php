@@ -95,7 +95,7 @@ class Core extends Extension
 
     public function getBinaryOperators()
     {
-        $binary_operators = array(
+        $binaryOperators = array(
             //arithmetic operators
             new AdditionOperator(10),
             new SubtractionOperator(10),
@@ -144,7 +144,7 @@ class Core extends Extension
             new ExclusiveRangeOperator(9),
         );
 
-        return $binary_operators;
+        return $binaryOperators;
     }
 
     public function getPrefixUnaryOperators()
@@ -284,15 +284,15 @@ class Core extends Extension
         return $string;
     }
 
-    public function batchFunction($data, $size, $preserve_keys = true, $no_item = null)
+    public function batchFunction($data, $size, $preserveKeys = true, $noItem = null)
     {
         $data   = $this->traversableToArray($data);
-        $result = array_chunk($data, abs($size), $preserve_keys);
-        if ($no_item == null) {
+        $result = array_chunk($data, abs($size), $preserveKeys);
+        if ($noItem == null) {
             return $result;
         }
         $last          = count($result) - 1;
-        $result[$last] = array_pad($result[$last], $size, $no_item);
+        $result[$last] = array_pad($result[$last], $size, $noItem);
 
         return $result;
     }
@@ -423,14 +423,14 @@ class Core extends Extension
         return str_replace($search, $replace, $string);
     }
 
-    public function reverseFunction($data, $preserve_keys = false)
+    public function reverseFunction($data, $preserveKeys = false)
     {
         if (is_string($data)) {
             return strrev($data);
         }
         $data = $this->traversableToArray($data);
 
-        return array_reverse($data, $preserve_keys);
+        return array_reverse($data, $preserveKeys);
     }
 
     public function shuffleFunction($data)
@@ -444,7 +444,7 @@ class Core extends Extension
         return $data;
     }
 
-    public function sliceFunction($data, $start, $length, $preserve_keys = false)
+    public function sliceFunction($data, $start, $length, $preserveKeys = false)
     {
         if (is_string($data)) {
             if ($length === null) {
@@ -455,7 +455,7 @@ class Core extends Extension
         }
         $data = $this->traversableToArray($data);
 
-        return array_slice($data, $start, $length, $preserve_keys);
+        return array_slice($data, $start, $length, $preserveKeys);
     }
 
     public function sortFunction($data, $reverse = false)

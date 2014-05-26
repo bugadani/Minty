@@ -13,16 +13,16 @@ use Modules\Templating\Compiler\TemplateFunction;
 
 class MethodFunction extends TemplateFunction
 {
-    private $method_name;
+    private $methodName;
 
     public function __construct($name, $method, array $options = array())
     {
         parent::__construct($name, $options);
-        $this->method_name = $method;
+        $this->methodName = $method;
     }
 
     public function getMethod()
     {
-        return $this->method_name;
+        return $this->methodName;
     }
 }

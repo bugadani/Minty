@@ -26,10 +26,8 @@ class ExtendsTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $stream->expect(Token::STRING);
-
         $node = new TagNode($this, array(
-            'template' => $stream->current()->getValue()
+            'template' => $stream->expect(Token::STRING)->getValue()
         ));
 
         $stream->expect(Token::EXPRESSION_END);

@@ -112,16 +112,16 @@ class Module extends \Miny\Modules\Module
         if (!is_array($handlers) || empty($handlers)) {
             return;
         }
-        $response_code = $response->getCode();
+        $responseCode = $response->getCode();
         foreach ($handlers as $key => $handler) {
             if (!is_array($handler)) {
                 if (!$response->isCode($key)) {
                     continue;
                 }
-                $template_name = $handler;
+                $templateName = $handler;
             } else {
                 if (isset($handler['codes'])) {
-                    if (!in_array($response_code, $handler['codes'])) {
+                    if (!in_array($responseCode, $handler['codes'])) {
                         continue;
                     }
                 } elseif (isset($handler['code'])) {
@@ -134,17 +134,17 @@ class Module extends \Miny\Modules\Module
                 if (!isset($handler['template'])) {
                     throw new UnexpectedValueException('Response code handler must specify a template.');
                 }
-                $template_name = $handler['template'];
+                $templateName = $handler['template'];
             }
             break;
         }
-        if (!isset($template_name)) {
+        if (!isset($templateName)) {
             return;
         }
 
         /** @var $loader TemplateLoader */
         $loader   = $container->get(__NAMESPACE__ . '\\TemplateLoader');
-        $template = $loader->load($template_name);
+        $template = $loader->load($templateName);
         $template->set(
             array(
                 'request'  => $request,
@@ -154,7 +154,7 @@ class Module extends \Miny\Modules\Module
         $template->render();
     }
 
-    public function handleException(\Exception $e)
+    public function handleException(\Exception $exception)
     {
         $container = $this->application->getContainer();
 
@@ -165,20 +165,20 @@ class Module extends \Miny\Modules\Module
         $loader   = $container->get(__NAMESPACE__ . '\\TemplateLoader');
         $handlers = $this->getConfiguration('exceptions');
         if (!is_array($handlers)) {
-            $template_name = $handlers;
+            $templateName = $handlers;
         } else {
             foreach ($handlers as $class => $handler) {
-                if ($e instanceof $class) {
-                    $template_name = $handler;
+                if ($exception instanceof $class) {
+                    $templateName = $handler;
                     break;
                 }
             }
-            if (!isset($template_name)) {
+            if (!isset($templateName)) {
                 return;
             }
         }
-        $template = $loader->load($template_name);
-        $template->set(array('exception' => $e));
+        $template = $loader->load($templateName);
+        $template->set(array('exception' => $exception));
         $template->render();
     }
 }

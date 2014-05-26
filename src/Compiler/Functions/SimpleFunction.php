@@ -13,16 +13,16 @@ use Modules\Templating\Compiler\TemplateFunction;
 
 class SimpleFunction extends TemplateFunction
 {
-    private $function_name;
+    private $functionName;
 
     public function __construct($name, $function = null, array $options = array())
     {
         parent::__construct($name, $options);
-        $this->function_name = $function ? : $name;
+        $this->functionName = $function ? : $name;
     }
 
     public function getFunction()
     {
-        return $this->function_name;
+        return $this->functionName;
     }
 }
