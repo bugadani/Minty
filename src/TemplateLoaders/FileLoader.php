@@ -101,17 +101,17 @@ class FileLoader extends AbstractTemplateLoader
     private function getCompileErrorTemplate()
     {
         $closingTagPrefix = $this->environment->getOption('block_end_prefix', 'end');
-        $source           = "{block error}<h1>Failed to compile {templateName}</h1>
+        $source           = "{block error}<h1>Failed to compile { \$templateName }</h1>
 <h2>Error message:</h2>
-<p>{message}</p>
+<p>{\$message}</p>
 <h2>Template source:</h2>
-<pre><code><ol start=\"{firstLine + 1}\">
-{for lineNo: line in lines}
+<pre><code><ol start=\"{\$firstLine + 1}\">
+{for \$lineNo: \$line in \$lines}
     <li>
-    {if lineNo = errorLine}
-        <b>{line}</b>
+    {if \$lineNo = \$errorLine}
+        <b>{\$line}</b>
     {else}
-        {line}
+        {\$line}
     {endif}
     </li>
 {{$closingTagPrefix}for}

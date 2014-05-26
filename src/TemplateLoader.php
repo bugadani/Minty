@@ -92,7 +92,8 @@ class TemplateLoader
         try {
             $compiled = $this->compileString($templateSource, $class);
         } catch (TemplatingException $e) {
-            $this->log('Failed to compile %s. Compiling an error template.', $template);
+            $this->log('Failed to compile %s. Reason: %s.', $template, $e->getMessage());
+            $this->log('Compiling an error template.', $template);
             $templateSource = $this->getErrorTemplate($e, $template, $templateSource);
             $compiled       = $this->compileString($templateSource, $class);
         }
@@ -183,11 +184,11 @@ class TemplateLoader
 
         return "{extends '{$baseTemplate}'}" .
         "{block error}" .
-        "{templateName: '{$template}'}" .
-        "{message: '{$message}'}" .
-        "{lines: [{$lineArray}]}" .
-        "{errorLine: {$errLine}}" .
-        "{firstLine: {$firstLine}}" .
+        "{\$templateName: '{$template}'}" .
+        "{\$message: '{$message}'}" .
+        "{\$lines: [{$lineArray}]}" .
+        "{\$errorLine: {$errLine}}" .
+        "{\$firstLine: {$firstLine}}" .
         "{parent}{{$closingTagPrefix}block}";
     }
 
