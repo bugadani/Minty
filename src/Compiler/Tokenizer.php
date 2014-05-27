@@ -19,13 +19,13 @@ class Tokenizer
      * @var Stream
      */
     private $tokens;
-    private $operators = array();
+    private $operators;
     private $delimiters;
 
     /**
      * @var Tag[]
      */
-    private $tags = array();
+    private $tags;
 
     private $expressionPartsPattern;
     private $punctuation;
@@ -78,20 +78,18 @@ class Tokenizer
         $patterns = array();
         $signs    = ' ';
 
-        foreach (array_merge(
-                     $this->operators,
-                     $this->punctuation,
-                     array_keys($this->literals)
-                 ) as $symbol) {
+        $symbols = array_merge($this->operators, $this->punctuation, array_keys($this->literals));
+        foreach ($symbols as $symbol) {
             $length = strlen($symbol);
-            if ($length == 1) {
+            if ($length === 1) {
                 $signs .= $symbol;
             } else {
-                $quotedSymbol = preg_quote($symbol, '/');
                 if (preg_match('/^[a-zA-Z\ ]+$/', $symbol)) {
-                    $quotedSymbol = "(?<=^|\\W){$quotedSymbol}(?=[\\s()\\[\\]]|$)";
+                    $symbol = "(?<=^|\\W){$symbol}(?=[\\s()\\[\\]]|$)";
+                } else {
+                    $symbol = preg_quote($symbol, '/');
                 }
-                $patterns[$quotedSymbol] = $length;
+                $patterns[$symbol] = $length;
             }
         }
         foreach ($dataPatterns as $pattern) {
@@ -118,11 +116,13 @@ class Tokenizer
             }
         }
         arsort($patternParts);
-        $delimiterPatterns = implode('|', array_keys($patternParts));
 
-        $flags = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
+        //String patterns
+        $patternParts['"(?:\\\\.|[^"\\\\])*"'] = 0;
+        $patternParts["'(?:\\\\.|[^'\\\\])*'"] = 0;
 
-        $this->parts    = preg_split("/({$delimiterPatterns}|[\"'])/", $template, -1, $flags);
+        $pattern        = implode('|', array_keys($patternParts));
+        $this->parts    = preg_split("/({$pattern})/", $template, -1, PREG_SPLIT_DELIM_CAPTURE);
         $this->position = -1;
 
         $currentText = '';
@@ -158,108 +158,79 @@ class Tokenizer
     {
         while (isset($this->parts[++$this->position])) {
             if ($this->parts[$this->position] === $this->delimiters['comment'][1]) {
-                break;
+                return;
             }
             $this->line += substr_count($this->parts[$this->position], "\n");
         }
-        if (!isset($this->parts[$this->position])) {
-            throw new SyntaxException('Unterminated comment', $this->line);
-        }
+        throw new SyntaxException('Unterminated comment', $this->line);
     }
 
     private function tokenizeTag()
     {
         $tagExpression = '';
         while (isset($this->parts[++$this->position])) {
-            switch ($this->parts[$this->position]) {
-                case $this->delimiters['tag'][1]:
-                    if (!$this->processTag(trim($tagExpression))) {
-                        $this->tokenizeRawBlock();
-                    }
-                    break 2;
+            if ($this->parts[$this->position] === $this->delimiters['tag'][1]) {
+                if (!$this->processTag(trim($tagExpression))) {
+                    $this->tokenizeRawBlock();
+                }
 
-                case '"':
-                case "'":
-                    $tagExpression .= $this->tokenizeString($this->parts[$this->position]);
-                    break;
-
-                default:
-                    $tagExpression .= $this->parts[$this->position];
-                    break;
+                return;
             }
+            $tagExpression .= $this->parts[$this->position];
         }
-        if (!isset($this->parts[$this->position])) {
-            throw new SyntaxException('Unterminated tag', $this->line);
-        }
+        throw new SyntaxException('Unterminated tag', $this->line);
     }
 
     private function tokenizeRawBlock()
     {
-        $text   = '';
-        $endRaw = $this->blockEndPrefix . 'raw';
+        $text                = '';
+        $endRaw              = $this->blockEndPrefix . 'raw';
+        $tagOpeningDelimiter = $this->delimiters['tag'][0];
+        $tagClosingDelimiter = $this->delimiters['tag'][1];
+
         while (isset($this->parts[++$this->position])) {
             $pos = $this->position;
-            if ($this->parts[$pos] === $this->delimiters['tag'][0]) {
+
+            //Check if the current position is a tag opening delimiter
+            if ($this->parts[$pos] === $tagOpeningDelimiter) {
+
+                //Check if the tag is a raw block closing tag
                 if (isset($this->parts[++$pos]) && trim($this->parts[$pos]) === $endRaw) {
-                    if (isset($this->parts[++$pos]) && $this->parts[$pos] === $this->delimiters['tag'][1]) {
+
+                    //Check if the tag is closed
+                    if (isset($this->parts[++$pos]) && $this->parts[$pos] === $tagClosingDelimiter) {
                         $this->position += 2;
-                        break;
+                        $this->pushToken(Token::TEXT, $text);
+
+                        return;
                     }
                 }
             }
             $text .= $this->parts[$this->position];
         }
 
-        $this->pushToken(Token::TEXT, $text);
-
-        if (!isset($this->parts[$this->position])) {
-            throw new SyntaxException('Unterminated raw block', $this->line);
-        }
-    }
-
-    private function tokenizeString($delimiter)
-    {
-        $string = $delimiter;
-        while (isset($this->parts[++$this->position])) {
-            $part = $this->parts[$this->position];
-            if ($part === $delimiter) {
-                $inString = false;
-                //Let's walk from the previous character backwards
-                $offset = strlen($string);
-                while ($offset > 0 && $string[--$offset] === '\\') {
-                    //If we find one backslash, we flip back the flag to true
-                    //2 backslashes, flag is false... even = the string has ended
-                    $inString = !$inString;
-                }
-                if (!$inString) {
-                    break;
-                }
-            }
-            $string .= $part;
-        }
-        $string .= $delimiter;
-        if (!isset($this->parts[$this->position])) {
-            throw new SyntaxException('Unterminated string', $this->line);
-        }
-
-        return $string;
+        throw new SyntaxException('Unterminated raw block', $this->line);
     }
 
     private function processTag($tag)
     {
+        //Since ending tags can't have arguments, they are handled first
         if (isset($this->blockEndingTags[$tag])) {
             $this->pushToken(Token::TAG, $this->blockEndingTags[$tag]);
 
             return true;
         }
 
-        preg_match("/(.*?)([ (\n\t].*|)$/ADs", $tag, $parts);
-        list(, $tagName, $expression) = $parts;
-
-        if ($tagName === 'raw') {
+        //Raw shouldn't have arguments so don't run it through preg_match.
+        //Also, it's handled in tokenizeRawBlock so return
+        if ($tag === 'raw') {
             return false;
         }
 
+        preg_match("/(.*?)([ (\n\t].*|)$/ADs", $tag, $parts);
+        list(, $tagName, $expression) = $parts;
+
+        //If the tag name is unknown, try to use the fallback
         if (!isset($this->tags[$tagName])) {
             $tagName    = $this->fallbackTagName;
             $expression = $tag;
@@ -333,11 +304,14 @@ class Tokenizer
         }
         $flags = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
         foreach (preg_split($this->expressionPartsPattern, $expression, null, $flags) as $part) {
+            //We can safely skip spaces
             if ($part !== ' ') {
-                if (trim($part) !== '') {
+                if (trim($part) === '') {
+                    //Whitespace strings only matter for line numbering
+                    $this->line += substr_count($part, "\n");
+                } else {
                     $this->tokenizeExpressionPart($part);
                 }
-                $this->line += substr_count($part, "\n");
             }
         }
     }
@@ -348,10 +322,8 @@ class Tokenizer
             if ($value === '') {
                 return;
             }
-            $this->tokens->push(new Token($type, $value, $this->line));
-            $this->line += substr_count($value, "\n");
-        } else {
-            $this->tokens->push(new Token($type, $value, $this->line));
         }
+        $this->tokens->push(new Token($type, $value, $this->line));
+        $this->line += substr_count($value, "\n");
     }
 }

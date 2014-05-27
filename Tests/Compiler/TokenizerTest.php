@@ -11,9 +11,14 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
      */
     private $tokenizer;
 
+    /**
+     * @var Environment
+     */
+    private $environment;
+
     public function setUp()
     {
-        $mockEnv = new Environment();
+        $mockEnv = new Environment(array('fallback_tag' => 'fallback'));
 
         $testTag = $this->getMockBuilder('\\Modules\\Templating\\Compiler\\Tag')
             ->getMockForAbstractClass();
@@ -52,7 +57,8 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
         $mockEnv->addTag($testTag);
         $mockEnv->addTag($testBlockTag);
 
-        $this->tokenizer = new Tokenizer($mockEnv);
+        $this->tokenizer   = new Tokenizer($mockEnv);
+        $this->environment = $mockEnv;
     }
 
     public function testTokenizerDoesNotParseTagsInRawBlock()
@@ -288,5 +294,19 @@ new line
     public function testTokenizerThrowsParseExceptionForUnknownTags()
     {
         $this->tokenizer->tokenize('{foo tag}');
+    }
+
+    public function testTokenizerUsesFallbackTagForUnknownTags()
+    {
+        $fallbackTag = $this->getMockBuilder('\\Modules\\Templating\\Compiler\\Tag')
+            ->getMockForAbstractClass();
+        $fallbackTag->expects($this->any())
+            ->method('getTag')
+            ->will($this->returnValue('fallback'));
+
+        $this->environment->addTag($fallbackTag);
+
+        $tokenizer = new Tokenizer($this->environment);
+        $tokenizer->tokenize('{foo tag}');
     }
 }
