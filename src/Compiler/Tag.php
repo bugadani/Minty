@@ -21,16 +21,6 @@ abstract class Tag
         return false;
     }
 
-    public function isPatternBased()
-    {
-        return false;
-    }
-
-    public function matches($tag)
-    {
-        return false;
-    }
-
     public function addNameToken(Tokenizer $tokenizer)
     {
         $tokenizer->pushToken(Token::TAG, $this->getTag());

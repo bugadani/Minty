@@ -27,19 +27,19 @@ class Tokenizer
      */
     private $tags = array();
 
-    /**
-     * @var Tag[]
-     */
-    private $patternBasedTags = array();
-
     private $expressionPartsPattern;
     private $punctuation;
     private $line;
     private $fallbackTagName;
     private $blockEndPrefix;
-    private $blockEndingTags;
+    private $blockEndingTags = array();
     private $parts;
     private $position;
+    private $literals = array(
+        'null'  => null,
+        'true'  => true,
+        'false' => false
+    );
 
     public function __construct(Environment $environment)
     {
@@ -55,24 +55,15 @@ class Tokenizer
             )
         );
 
-        $this->blockEndingTags = array();
-        foreach ($environment->getTags() as $name => $tag) {
+        $this->tags = $environment->getTags();
+        foreach ($this->tags as $name => $tag) {
             if ($tag->hasEndingTag()) {
                 $this->blockEndingTags[$this->blockEndPrefix . $name] = 'end' . $name;
-            }
-
-            if ($tag->isPatternBased()) {
-                $this->patternBasedTags[$name] = $tag;
-            } else {
-                $this->tags[$name] = $tag;
             }
         }
 
         $this->expressionPartsPattern = $this->getExpressionPartsPattern(
             array(
-                'true',
-                'false',
-                'null',
                 '$[a-zA-Z]+[a-zA-Z_\-0-9]*',
                 ':[a-zA-Z]+[a-zA-Z_\-0-9]*',
                 '(?<!\w)\d+(?:\.\d+)?',
@@ -87,7 +78,11 @@ class Tokenizer
         $patterns = array();
         $signs    = ' ';
 
-        foreach (array_merge($this->operators, $this->punctuation) as $symbol) {
+        foreach (array_merge(
+                     $this->operators,
+                     $this->punctuation,
+                     array_keys($this->literals)
+                 ) as $symbol) {
             $length = strlen($symbol);
             if ($length == 1) {
                 $signs .= $symbol;
@@ -241,7 +236,6 @@ class Tokenizer
                 }
             }
             $string .= $part;
-
         }
         $string .= $delimiter;
         if (!isset($this->parts[$this->position])) {
@@ -259,26 +253,11 @@ class Tokenizer
             return true;
         }
 
-        foreach ($this->patternBasedTags as $tagName => $unnamedTag) {
-            if ($unnamedTag->matches($tag)) {
-                $this->pushToken(Token::TAG, $tagName);
-                $unnamedTag->tokenize($this, $tag);
+        preg_match("/(.*?)([ (\n\t].*|)$/ADs", $tag, $parts);
+        list(, $tagName, $expression) = $parts;
 
-                return true;
-            }
-        }
-
-        $parts = preg_split("/([ (\n\t])/", $tag, 2, PREG_SPLIT_DELIM_CAPTURE);
-
-        $tagName = $parts[0];
         if ($tagName === 'raw') {
             return false;
-        }
-
-        if (count($parts) === 3) {
-            $expression = $parts[1] . $parts[2];
-        } else {
-            $expression = null;
         }
 
         if (!isset($this->tags[$tagName])) {
@@ -289,6 +268,7 @@ class Tokenizer
                 throw new ParseException("Unknown tag \"{$tagName}\"", $this->line);
             }
         }
+
         $tag = $this->tags[$tagName];
         $tag->addNameToken($this);
         $tag->tokenize($this, $expression);
@@ -298,6 +278,17 @@ class Tokenizer
 
     private function tokenizeExpressionPart($part)
     {
+        static $escapedCharacters = array(
+            "'" => array(
+                "\\'"  => "'",
+                '\\\\' => '\\'
+            ),
+            '"' => array(
+                '\\"'  => '"',
+                '\\\\' => '\\'
+            )
+        );
+
         if (in_array($part, $this->punctuation)) {
             $this->pushToken(Token::PUNCTUATION, $part);
         } elseif (in_array($part, $this->operators)) {
@@ -309,11 +300,7 @@ class Tokenizer
                 case '"':
                 case "'":
                     //strip backslashes from double-slashes and escaped string delimiters
-                    $stripSlashes = array(
-                        "\\{$part[0]}" => $part[0],
-                        '\\\\'         => '\\'
-                    );
-                    $part         = strtr($part, $stripSlashes);
+                    $part = strtr($part, $escapedCharacters[$part[0]]);
                     $this->pushToken(Token::STRING, substr($part, 1, -1));
                     break;
 
@@ -326,35 +313,30 @@ class Tokenizer
                     break;
 
                 default:
-                    switch (strtolower($part)) {
-                        case 'null':
-                            $this->pushToken(Token::LITERAL, null);
-                            break;
-                        case 'true':
-                            $this->pushToken(Token::LITERAL, true);
-                            break;
-                        case 'false':
-                            $this->pushToken(Token::LITERAL, false);
-                            break;
-                        default:
-                            if (trim($part) !== '') {
-                                $this->pushToken(Token::IDENTIFIER, $part);
-                            }
-                            break;
+                    $lowerCasePart = strtolower($part);
+                    if (array_key_exists($lowerCasePart, $this->literals)) {
+                        $this->pushToken(Token::LITERAL, $this->literals[$lowerCasePart]);
+                    } else {
+                        $this->pushToken(Token::IDENTIFIER, $part);
                     }
+                    break;
             }
         }
+
+
     }
 
-    public function tokenizeExpression($expr)
+    public function tokenizeExpression($expression)
     {
-        if ($expr === null || $expr === '') {
+        if ($expression === null || $expression === '') {
             return;
         }
         $flags = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
-        foreach (preg_split($this->expressionPartsPattern, $expr, null, $flags) as $part) {
+        foreach (preg_split($this->expressionPartsPattern, $expression, null, $flags) as $part) {
             if ($part !== ' ') {
-                $this->tokenizeExpressionPart($part);
+                if (trim($part) !== '') {
+                    $this->tokenizeExpressionPart($part);
+                }
                 $this->line += substr_count($part, "\n");
             }
         }

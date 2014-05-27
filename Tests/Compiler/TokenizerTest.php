@@ -31,25 +31,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
             ->method('hasEndingTag')
             ->will($this->returnValue(true));
 
-        $testPatternTag = $this->getMockBuilder('\\Modules\\Templating\\Compiler\\Tag')
-            ->setMethods(array('matches', 'isPatternBased'))
-            ->getMockForAbstractClass();
-        $testPatternTag->expects($this->any())
-            ->method('getTag')
-            ->will($this->returnValue('pattern'));
-        $testPatternTag->expects($this->any())
-            ->method('isPatternBased')
-            ->will($this->returnValue(true));
-        $testPatternTag->expects($this->any())
-            ->method('matches')
-            ->will(
-                $this->returnCallback(
-                    function ($arg) {
-                        return $arg === 'pattern based tag';
-                    }
-                )
-            );
-
         $mockOperator = $this->getMockBuilder('\\Modules\\Templating\\Compiler\\Operator')
             ->setMethods(array('operators'))
             ->setConstructorArgs(array(1))
@@ -70,7 +51,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
         $mockEnv->getBinaryOperators()->addOperator($otherOperator);
         $mockEnv->addTag($testTag);
         $mockEnv->addTag($testBlockTag);
-        $mockEnv->addTag($testPatternTag);
 
         $this->tokenizer = new Tokenizer($mockEnv);
     }
@@ -231,18 +211,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
         $stream->expect(Token::EXPRESSION_START, 'testblock');
         $stream->expect(Token::EXPRESSION_END);
         $stream->expect(Token::TAG, 'endtestblock');
-        $stream->expect(Token::EOF);
-    }
-
-    public function testPatternBasedTagsAreParsed()
-    {
-        $stream = $this->tokenizer->tokenize('{ pattern based tag }');
-        $stream->expect(Token::TAG, 'pattern');
-        $stream->expect(Token::EXPRESSION_START, 'pattern');
-        $stream->expect(Token::IDENTIFIER, 'pattern');
-        $stream->expect(Token::IDENTIFIER, 'based');
-        $stream->expect(Token::IDENTIFIER, 'tag');
-        $stream->expect(Token::EXPRESSION_END);
         $stream->expect(Token::EOF);
     }
 
