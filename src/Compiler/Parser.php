@@ -28,10 +28,24 @@ class Parser
      */
     private $expressionParser;
 
+    /**
+     * @var Environment
+     */
+    private $environment;
+
     public function __construct(Environment $environment)
     {
         $this->expressionParser = new ExpressionParser($environment);
         $this->tags             = $environment->getTags();
+        $this->environment      = $environment;
+    }
+
+    /**
+     * @return Environment
+     */
+    public function getEnvironment()
+    {
+        return $this->environment;
     }
 
     private function parseToken(Stream $stream, RootNode $root)

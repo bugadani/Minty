@@ -16,6 +16,7 @@ use Modules\Templating\Compiler\Nodes\FunctionNode;
 use Modules\Templating\Compiler\Nodes\IdentifierNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Nodes\TagNode;
+use Modules\Templating\Compiler\Nodes\TextNode;
 use Modules\Templating\Compiler\Operators\FilterOperator;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
@@ -35,11 +36,15 @@ class PrintTag extends Tag
     {
         $stream->expectCurrent(Token::EXPRESSION_START);
 
-        $node = new TagNode($this);
-        $node->addChild($parser->parseExpression($stream), 'expression');
+        $expression = $parser->parseExpression($stream);
         if ($stream->current()->test(Token::PUNCTUATION, ':')) {
+            $node = new TagNode($this);
             $node->addChild($parser->parseExpression($stream), 'value');
+        } else {
+            $expression = $this->ensureSafe($parser->getEnvironment(), $expression);
+            $node       = new TextNode($expression);
         }
+        $node->addChild($expression, 'expression');
 
         return $node;
     }
@@ -100,21 +105,11 @@ class PrintTag extends Tag
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        if ($node->hasChild('value')) {
-            $compiler
-                ->indented('')
-                ->compileNode($node->getChild('expression'))
-                ->add(' = ')
-                ->compileNode($node->getChild('value'))
-                ->add(';');
-        } else {
-            $compiler
-                ->indented('echo ')
-                ->compileNode(
-                    $this->ensureSafe($compiler->getEnvironment(), $node->getChild('expression'))
-                )
-                ->add(';');
-        }
-
+        $compiler
+            ->indented('')
+            ->compileNode($node->getChild('expression'))
+            ->add(' = ')
+            ->compileNode($node->getChild('value'))
+            ->add(';');
     }
 }

@@ -30,7 +30,7 @@ class TextNode extends Node
     {
         $compiler
             ->indented('echo ')
-            ->add($compiler->string($this->text))
+            ->compileData($this->text)
             ->add(';');
     }
 }
