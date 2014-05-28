@@ -55,7 +55,13 @@ class FunctionNode extends IdentifierNode
         $environment = $compiler->getEnvironment();
 
         $name = $this->getName();
-        if (!$this->getObject() && $environment->hasFunction($name)) {
+        if ($this->getObject()) {
+            $compiler
+                ->compileNode($this->getObject())
+                ->add('->')
+                ->add($name)
+                ->compileArgumentList($this->arguments);
+        } elseif ($environment->hasFunction($name)) {
             $function = $environment->getFunction($name);
             $environment
                 ->getFunctionCompiler($function->getOption('compiler'))
