@@ -180,7 +180,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
     public function testIdentifiersAreParsed()
     {
         $stream = $this->tokenizer->tokenize(
-            '{ test ident + ifier + $variable }'
+            '{ test ident + ifier + $variable + $var_underscore }'
         );
         $stream->expect(Token::TAG, 'test');
         $stream->expect(Token::EXPRESSION_START, 'test');
@@ -189,6 +189,8 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
         $stream->expect(Token::IDENTIFIER, 'ifier');
         $stream->expect(Token::OPERATOR, '+');
         $stream->expect(Token::VARIABLE, 'variable');
+        $stream->expect(Token::OPERATOR, '+');
+        $stream->expect(Token::VARIABLE, 'var_underscore');
         $stream->expect(Token::EXPRESSION_END);
         $stream->expect(Token::EOF);
     }
@@ -207,6 +209,17 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
         $stream->expect(Token::PUNCTUATION, ':');
         $stream->expect(Token::PUNCTUATION, '=>');
         $stream->expect(Token::EXPRESSION_END);
+        $stream->expect(Token::EOF);
+    }
+
+    public function testStringsAreOnlyParsedInTags()
+    {
+        $stream = $this->tokenizer->tokenize('"{ test }"');
+        $stream->expect(Token::TEXT, '"');
+        $stream->expect(Token::TAG, 'test');
+        $stream->expect(Token::EXPRESSION_START, 'test');
+        $stream->expect(Token::EXPRESSION_END);
+        $stream->expect(Token::TEXT, '"');
         $stream->expect(Token::EOF);
     }
 

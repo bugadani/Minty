@@ -14,6 +14,7 @@ use Miny\Log\Log;
 use Modules\Templating\Compiler\Node;
 use Modules\Templating\Compiler\Nodes\DataNode;
 use Modules\Templating\Compiler\Nodes\IdentifierNode;
+use Modules\Templating\Compiler\Nodes\VariableNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Nodes\RootNode;
 use Modules\Templating\Compiler\Nodes\TagNode;
@@ -76,7 +77,7 @@ class NodeTreeVisualizer extends NodeVisitor
                 $symbols = implode(', ', $symbols);
             }
             $string .= " ({$symbols})";
-        } elseif ($node instanceof IdentifierNode) {
+        } elseif ($node instanceof IdentifierNode || $node instanceof VariableNode) {
             $string .= " ({$node->getName()})";
         } elseif ($node instanceof DataNode) {
             $data = $node->getData();

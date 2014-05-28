@@ -117,12 +117,9 @@ class Tokenizer
         }
         arsort($patternParts);
 
-        //String patterns
-        $patternParts['"(?:\\\\.|[^"\\\\])*"'] = 0;
-        $patternParts["'(?:\\\\.|[^'\\\\])*'"] = 0;
+        $pattern     = implode('|', array_keys($patternParts));
+        $this->parts = preg_split("/({$pattern}|[\"'])/", $template, -1, PREG_SPLIT_DELIM_CAPTURE);
 
-        $pattern        = implode('|', array_keys($patternParts));
-        $this->parts    = preg_split("/({$pattern})/", $template, -1, PREG_SPLIT_DELIM_CAPTURE);
         $this->position = -1;
 
         $currentText = '';
@@ -169,22 +166,56 @@ class Tokenizer
     {
         $tagExpression = '';
         while (isset($this->parts[++$this->position])) {
-            if ($this->parts[$this->position] === $this->delimiters['tag'][1]) {
-                $tag = trim($tagExpression);
-                if ($tag === 'raw') {
-                    $this->tokenizeRawBlock();
-                } elseif (isset($this->blockEndingTags[$tag])) {
-                    //Since ending tags can't have arguments, they are handled first
-                    $this->pushToken(Token::TAG, $this->blockEndingTags[$tag]);
-                } else {
-                    $this->processTag($tag);
-                }
+            switch ($this->parts[$this->position]) {
+                case $this->delimiters['tag'][1]:
+                    $tag = trim($tagExpression);
+                    if ($tag === 'raw') {
+                        $this->tokenizeRawBlock();
+                    } elseif (isset($this->blockEndingTags[$tag])) {
+                        //Since ending tags can't have arguments, they are handled first
+                        $this->pushToken(Token::TAG, $this->blockEndingTags[$tag]);
+                    } else {
+                        $this->processTag($tag);
+                    }
 
-                return;
+                    return;
+
+                case '"':
+                case "'":
+                    $tagExpression .= $this->tokenizeString($this->parts[$this->position]);
+                    break;
+
+                default:
+                    $tagExpression .= $this->parts[$this->position];
+                    break;
             }
-            $tagExpression .= $this->parts[$this->position];
+
         }
         throw new SyntaxException('Unterminated tag', $this->line);
+    }
+
+    private function tokenizeString($delimiter)
+    {
+        $string = $delimiter;
+        while (isset($this->parts[++$this->position])) {
+            $part = $this->parts[$this->position];
+            if ($part === $delimiter) {
+                $inString = false;
+                //Let's walk from the previous character backwards
+                $offset = strlen($string);
+                while ($offset > 0 && $string[--$offset] === '\\') {
+                    //If we find one backslash, we flip back the flag to true
+                    //2 backslashes, flag is false... even = the string has ended
+                    $inString = !$inString;
+                }
+
+                if (!$inString) {
+                    return $string . $delimiter;
+                }
+            }
+            $string .= $part;
+        }
+        throw new SyntaxException('Unterminated string', $this->line);
     }
 
     private function processTag($tag)
