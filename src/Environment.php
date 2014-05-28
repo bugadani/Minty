@@ -10,6 +10,7 @@
 namespace Modules\Templating;
 
 use Modules\Templating\Compiler\Compiler;
+use Modules\Templating\Compiler\ExpressionParser;
 use Modules\Templating\Compiler\FunctionCompiler;
 use Modules\Templating\Compiler\NodeTreeTraverser;
 use Modules\Templating\Compiler\NodeVisitor;
@@ -112,7 +113,7 @@ class Environment
     public function getParser()
     {
         if (!isset($this->parser)) {
-            $this->parser = new Parser($this);
+            $this->parser = new Parser($this, new ExpressionParser($this));
         }
 
         return $this->parser;

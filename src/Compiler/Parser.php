@@ -33,9 +33,9 @@ class Parser
      */
     private $environment;
 
-    public function __construct(Environment $environment)
+    public function __construct(Environment $environment, ExpressionParser $expressionParser)
     {
-        $this->expressionParser = new ExpressionParser($environment);
+        $this->expressionParser = $expressionParser;
         $this->tags             = $environment->getTags();
         $this->environment      = $environment;
     }
