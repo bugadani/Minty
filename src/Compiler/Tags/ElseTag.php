@@ -18,10 +18,4 @@ class ElseTag extends MetaTag
     {
         return 'else';
     }
-
-    public function tokenize(Tokenizer $tokenizer, $expression)
-    {
-        $tokenizer->pushToken(Token::EXPRESSION_START, 'else');
-        $tokenizer->pushToken(Token::EXPRESSION_END);
-    }
 }

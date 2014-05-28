@@ -18,11 +18,4 @@ class CaseTag extends MetaTag
     {
         return 'case';
     }
-
-    public function tokenize(Tokenizer $tokenizer, $expression)
-    {
-        $tokenizer->pushToken(Token::EXPRESSION_START, 'case');
-        $tokenizer->tokenizeExpression($expression);
-        $tokenizer->pushToken(Token::EXPRESSION_END);
-    }
 }
