@@ -129,13 +129,13 @@ class Tokenizer
         while (isset($this->parts[++$this->position])) {
             switch ($this->parts[$this->position]) {
                 case $this->delimiters['comment'][0]:
-                    $this->pushToken(Token::TEXT, $currentText);
+                    $this->pushTextToken($currentText);
                     $currentText = '';
                     $this->tokenizeComment();
                     break;
 
                 case $this->delimiters['tag'][0]:
-                    $this->pushToken(Token::TEXT, $currentText);
+                    $this->pushTextToken($currentText);
                     $currentText = '';
                     $this->tokenizeTag();
                     break;
@@ -146,7 +146,7 @@ class Tokenizer
             }
         }
 
-        $this->pushToken(Token::TEXT, $currentText);
+        $this->pushTextToken($currentText);
         $this->pushToken(Token::EOF);
 
         $this->tokens->rewind();
@@ -170,8 +170,14 @@ class Tokenizer
         $tagExpression = '';
         while (isset($this->parts[++$this->position])) {
             if ($this->parts[$this->position] === $this->delimiters['tag'][1]) {
-                if (!$this->processTag(trim($tagExpression))) {
+                $tag = trim($tagExpression);
+                if ($tag === 'raw') {
                     $this->tokenizeRawBlock();
+                } elseif (isset($this->blockEndingTags[$tag])) {
+                    //Since ending tags can't have arguments, they are handled first
+                    $this->pushToken(Token::TAG, $this->blockEndingTags[$tag]);
+                } else {
+                    $this->processTag($tag);
                 }
 
                 return;
@@ -179,6 +185,28 @@ class Tokenizer
             $tagExpression .= $this->parts[$this->position];
         }
         throw new SyntaxException('Unterminated tag', $this->line);
+    }
+
+    private function processTag($tag)
+    {
+        //Try to find the tag name
+        preg_match("/(.*?)([ (\n\t].*|)$/ADs", $tag, $parts);
+        list(, $tagName, $expression) = $parts;
+
+        //If the tag name is unknown, try to use the fallback
+        if (!isset($this->tags[$tagName])) {
+            //This is problematic when someone wants to print a variable named like a tag...
+            $tagName    = $this->fallbackTagName;
+            $expression = $tag;
+
+            if (!isset($this->tags[$tagName])) {
+                throw new ParseException("Unknown tag \"{$tagName}\"", $this->line);
+            }
+        }
+
+        $tag = $this->tags[$tagName];
+        $tag->addNameToken($this);
+        $tag->tokenize($this, $expression);
     }
 
     private function tokenizeRawBlock()
@@ -200,7 +228,7 @@ class Tokenizer
                     //Check if the tag is closed
                     if (isset($this->parts[++$pos]) && $this->parts[$pos] === $tagClosingDelimiter) {
                         $this->position += 2;
-                        $this->pushToken(Token::TEXT, $text);
+                        $this->pushTextToken($text);
 
                         return;
                     }
@@ -210,41 +238,6 @@ class Tokenizer
         }
 
         throw new SyntaxException('Unterminated raw block', $this->line);
-    }
-
-    private function processTag($tag)
-    {
-        //Since ending tags can't have arguments, they are handled first
-        if (isset($this->blockEndingTags[$tag])) {
-            $this->pushToken(Token::TAG, $this->blockEndingTags[$tag]);
-
-            return true;
-        }
-
-        //Raw shouldn't have arguments so don't run it through preg_match.
-        //Also, it's handled in tokenizeRawBlock so return
-        if ($tag === 'raw') {
-            return false;
-        }
-
-        preg_match("/(.*?)([ (\n\t].*|)$/ADs", $tag, $parts);
-        list(, $tagName, $expression) = $parts;
-
-        //If the tag name is unknown, try to use the fallback
-        if (!isset($this->tags[$tagName])) {
-            $tagName    = $this->fallbackTagName;
-            $expression = $tag;
-
-            if (!isset($this->tags[$tagName])) {
-                throw new ParseException("Unknown tag \"{$tagName}\"", $this->line);
-            }
-        }
-
-        $tag = $this->tags[$tagName];
-        $tag->addNameToken($this);
-        $tag->tokenize($this, $expression);
-
-        return true;
     }
 
     private function tokenizeExpressionPart($part)
@@ -273,6 +266,7 @@ class Tokenizer
                     //strip backslashes from double-slashes and escaped string delimiters
                     $part = strtr($part, $escapedCharacters[$part[0]]);
                     $this->pushToken(Token::STRING, substr($part, 1, -1));
+                    $this->line += substr_count($part, "\n");
                     break;
 
                 case ':':
@@ -318,12 +312,15 @@ class Tokenizer
 
     public function pushToken($type, $value = null)
     {
-        if ($type === Token::TEXT) {
-            if ($value === '') {
-                return;
-            }
-        }
         $this->tokens->push(new Token($type, $value, $this->line));
+    }
+
+    public function pushTextToken($value)
+    {
+        if ($value === '') {
+            return;
+        }
+        $this->pushToken(Token::TEXT, $value);
         $this->line += substr_count($value, "\n");
     }
 }
