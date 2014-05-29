@@ -11,6 +11,7 @@ namespace Modules\Templating\Compiler\Tags;
 
 use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\Nodes\TagNode;
+use Modules\Templating\Compiler\Nodes\VariableNode;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
 use Modules\Templating\Compiler\Tag;
@@ -28,23 +29,6 @@ class ForTag extends Tag
     public function getTag()
     {
         return 'for';
-    }
-
-    public function tokenize(Tokenizer $tokenizer, $expression)
-    {
-        $tokenizer->pushToken(Token::EXPRESSION_START, $this->getTag());
-
-        list($vars, $source) = explode(' in ', $expression, 2);
-        if (strpos($vars, ':') !== false) {
-            list($key, $vars) = explode(':', $vars, 2);
-            $tokenizer->tokenizeExpression(trim($key));
-            $tokenizer->pushToken(Token::PUNCTUATION, ':');
-        }
-        $tokenizer->tokenizeExpression(trim($vars));
-
-        $tokenizer->pushToken(Token::IDENTIFIER, 'in');
-        $tokenizer->tokenizeExpression($source);
-        $tokenizer->pushToken(Token::EXPRESSION_END);
     }
 
     public function compile(Compiler $compiler, TagNode $node)
@@ -94,7 +78,7 @@ class ForTag extends Tag
             ->bracketed($node->getChild('loop_body'));
 
         if ($node->hasChild('else')) {
-            //bracket opened in line 75
+            //bracket opened after if-empty check
             $compiler->closeBracket();
         }
         if ($data['save_temp_var']) {
@@ -123,16 +107,15 @@ class ForTag extends Tag
             'create_stack'  => true
         ));
 
-        $loopVar = $parser->parseExpression($stream);
-        if ($stream->current()->test(Token::PUNCTUATION, ':')) {
-            $node->addChild($loopVar, 'loop_key');
-            $loopVar = $parser->parseExpression($stream);
+        $loopVar = $stream->expect(Token::VARIABLE)->getValue();
+        if ($stream->nextTokenIf(Token::PUNCTUATION, ':')) {
+            $node->addChild(new VariableNode($loopVar), 'loop_key');
+            $loopVar = $stream->expect(Token::VARIABLE)->getValue();
         }
-
-        $stream->expectCurrent(Token::IDENTIFIER, 'in');
+        $stream->expect(Token::OPERATOR, 'in');
 
         $node->addChild($parser->parseExpression($stream), 'source');
-        $node->addChild($loopVar, 'loop_variable');
+        $node->addChild(new VariableNode($loopVar), 'loop_variable');
         $node->addChild($parser->parse($stream, $elseTest), 'loop_body');
 
         if ($stream->current()->test(Token::EXPRESSION_START, 'else')) {
