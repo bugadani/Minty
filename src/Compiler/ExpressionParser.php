@@ -148,7 +148,8 @@ class ExpressionParser
 
     private function parsePostfixOperator()
     {
-        if ($token = $this->stream->nextTokenIf(Token::OPERATOR, $this->unaryPostfixTest)) {
+        $token = $this->stream->next();
+        if ($token->test(Token::OPERATOR, $this->unaryPostfixTest)) {
             $operator = $this->unaryPostfixOperators->getOperator($token->getValue());
             $this->popOperatorsCompared($operator);
 
@@ -159,9 +160,10 @@ class ExpressionParser
             );
 
             $this->operandStack->push($node);
+            $token = $this->stream->next();
         }
 
-        return $this->stream->next();
+        return $token;
     }
 
     private function parseArray()
