@@ -364,7 +364,7 @@ class Compiler
         );
     }
 
-    private function addCompiledTemplateMethod($name, $template)
+    private function addMethod($name, $template)
     {
         $this->indented('public function %s()', $name);
         $this->indented('{');
@@ -382,22 +382,15 @@ class Compiler
         $this->indent();
 
         if ($this->extendsTemplate()) {
-            $this->indented('public function getParentTemplate()');
-            $this->indented('{');
-            $this->indent();
-            $this->indented('return \'%s\';', $extendedTemplate);
-            $this->outdent();
-            $this->indented('}');
-            $this->newline();
+            $body = "\n";
+            $body .= str_repeat('    ', $this->indentation);
+            $body .= "return '{$extendedTemplate}';";
+            $this->addMethod('getParentTemplate', $body);
         } else {
-            $this->addCompiledTemplateMethod('render', $body);
+            $this->addMethod('render', $body);
         }
 
-        foreach ($this->templates as $name => $templateNode) {
-            $this->currentTemplate = $name;
-            $this->addCompiledTemplateMethod($name, $this->compileToString($templateNode, 2));
-        }
-
+        $this->compileTemplates();
         $this->compileEmbeddedTemplateMethod();
 
         $this->outdent();
@@ -405,6 +398,19 @@ class Compiler
         $this->newline();
 
         return $this->popSourceStack();
+    }
+
+    private function compileTemplates()
+    {
+        $templates       = $this->templates;
+        $this->templates = array();
+        foreach ($templates as $name => $templateNode) {
+            $this->currentTemplate = $name;
+            $this->addMethod($name, $this->compileToString($templateNode, 2));
+        }
+        if (!empty($templates)) {
+            $this->compileTemplates();
+        }
     }
 
     private function compileEmbeddedTemplateMethod()
