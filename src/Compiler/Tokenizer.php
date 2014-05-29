@@ -119,7 +119,7 @@ class Tokenizer
         arsort($patternParts);
         $pattern = implode('|', array_keys($patternParts));
 
-        $template = str_replace(array("\n\r", "\r"), "\n", $template);
+        $template = str_replace(array("\r\n", "\n\r", "\r"), "\n", $template);
         $this->parts = preg_split("/({$pattern}|[\"'])/", $template, -1, PREG_SPLIT_DELIM_CAPTURE);
 
         $currentText = '';
