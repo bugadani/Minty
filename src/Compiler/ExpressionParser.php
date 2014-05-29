@@ -144,7 +144,10 @@ class ExpressionParser
             );
         }
         $this->operandStack->push($operand);
+    }
 
+    private function parsePostfixOperator()
+    {
         if ($token = $this->stream->nextTokenIf(Token::OPERATOR, $this->unaryPostfixTest)) {
             $operator = $this->unaryPostfixOperators->getOperator($token->getValue());
             $this->popOperatorsCompared($operator);
@@ -157,6 +160,8 @@ class ExpressionParser
 
             $this->operandStack->push($node);
         }
+
+        return $this->stream->next();
     }
 
     private function parseArray()
@@ -242,7 +247,7 @@ class ExpressionParser
             }
         } while (!$done);
 
-        return $this->stream->next();
+        return $this->parsePostfixOperator();
     }
 
     /**
