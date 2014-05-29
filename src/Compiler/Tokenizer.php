@@ -107,6 +107,7 @@ class Tokenizer
     {
         $this->line   = 1;
         $this->tokens = new Stream();
+        $this->position = -1;
 
         $patternParts = array();
         foreach ($this->delimiters as $delimiters) {
@@ -116,11 +117,10 @@ class Tokenizer
             }
         }
         arsort($patternParts);
+        $pattern = implode('|', array_keys($patternParts));
 
-        $pattern     = implode('|', array_keys($patternParts));
+        $template = str_replace(array("\n\r", "\r"), "\n", $template);
         $this->parts = preg_split("/({$pattern}|[\"'])/", $template, -1, PREG_SPLIT_DELIM_CAPTURE);
-
-        $this->position = -1;
 
         $currentText = '';
         while (isset($this->parts[++$this->position])) {
