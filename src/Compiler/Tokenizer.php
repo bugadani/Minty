@@ -226,7 +226,7 @@ class Tokenizer
 
         //If the tag name is unknown, try to use the fallback
         if (!isset($this->tags[$tagName])) {
-            //This is problematic when someone wants to print a variable named like a tag...
+            //This is problematic when someone wants to call a function named like a tag...
             $tagName    = $this->fallbackTagName;
             $expression = $tag;
 
