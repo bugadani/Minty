@@ -34,13 +34,6 @@ class Compiler
         return $this->environment;
     }
 
-    public function newline()
-    {
-        $this->source .= "\n";
-
-        return $this;
-    }
-
     public function indented($string)
     {
         $this->source .= "\n";

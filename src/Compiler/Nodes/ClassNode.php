@@ -109,8 +109,7 @@ class ClassNode extends Node
         }
 
         $compiler->outdent();
-        $compiler->indented('}');
-        $compiler->newline();
+        $compiler->indented("}\n");
     }
 
     private function compileConstructor(Compiler $compiler)
