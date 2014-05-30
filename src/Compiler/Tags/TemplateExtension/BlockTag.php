@@ -31,30 +31,28 @@ class BlockTag extends Tag
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        $compiler->indented(
-            '$this->%s();',
-            $compiler->addTemplate(
-                $node->getData('template'),
-                $node->getChild('body')
-            )
-        );
+        $compiler->indented('$this->%s();', $node->getData('template'));
     }
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $node = new TagNode($this, array(
-            'template' => $stream->expect(Token::IDENTIFIER)->getValue()
-        ));
+        $methodName = $stream->expect(Token::IDENTIFIER)->getValue();
         $stream->expect(Token::EXPRESSION_END);
 
-        $bodyNode = $parser->parse(
-            $stream,
-            function (Token $token) {
-                return $token->test(Token::TAG, 'endblock');
-            }
+        $parser->enterBlock($methodName);
+        $parser->getCurrentClassNode()->addChild(
+            $parser->parse(
+                $stream,
+                function (Token $token) {
+                    return $token->test(Token::TAG, 'endblock');
+                }
+            ),
+            $methodName
         );
-        $node->addChild($bodyNode, 'body');
+        $parser->leaveBlock();
 
-        return $node;
+        return new TagNode($this, array(
+            'template' => $methodName
+        ));
     }
 }

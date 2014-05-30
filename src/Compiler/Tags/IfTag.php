@@ -47,13 +47,19 @@ class IfTag extends Tag
 
             $compiler
                 ->compileNode($branch->getChild('condition'))
-                ->add(') ')
-                ->bracketed($branch->getChild('body'));
+                ->add(') {')
+                ->indent()
+                ->compileNode($branch->getChild('body'))
+                ->outdent()
+                ->indented('}');
         }
         if ($else !== null) {
             $compiler
-                ->add(' else ')
-                ->bracketed($else);
+                ->add(' else {')
+                ->indent()
+                ->compileNode($else)
+                ->outdent()
+                ->indented('}');
         }
     }
 

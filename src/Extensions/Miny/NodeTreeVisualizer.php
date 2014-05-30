@@ -14,10 +14,10 @@ use Miny\Log\Log;
 use Modules\Templating\Compiler\Node;
 use Modules\Templating\Compiler\Nodes\DataNode;
 use Modules\Templating\Compiler\Nodes\IdentifierNode;
-use Modules\Templating\Compiler\Nodes\VariableNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Nodes\RootNode;
 use Modules\Templating\Compiler\Nodes\TagNode;
+use Modules\Templating\Compiler\Nodes\VariableNode;
 use Modules\Templating\Compiler\NodeVisitor;
 
 /**

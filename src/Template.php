@@ -33,10 +33,17 @@ abstract class Template
      */
     private $variables = array();
 
+    private $parentTemplate = false;
+
     public function __construct(TemplateLoader $loader, Environment $environment)
     {
         $this->loader      = $loader;
         $this->environment = $environment;
+    }
+
+    protected function setParentTemplate($parentTemplate)
+    {
+        $this->parentTemplate = $parentTemplate;
     }
 
     public function getLoader()
@@ -188,7 +195,7 @@ abstract class Template
 
     public function getParentTemplate()
     {
-        return false;
+        return $this->parentTemplate;
     }
 
     public function __set($key, $value)

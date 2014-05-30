@@ -54,7 +54,8 @@ class SwitchTag extends Tag
             ->indented('switch(')
             ->compileNode($node->getData('tested'))
             ->add(')')
-            ->openBracket();
+            ->add(' {')
+            ->indent();
 
         foreach ($node->getChildren() as $branch) {
             $this->compileCaseLabel($compiler, $branch);
@@ -64,7 +65,9 @@ class SwitchTag extends Tag
                 ->indented('break;')
                 ->outdent();
         }
-        $compiler->closeBracket();
+        $compiler
+            ->outdent()
+            ->indented('}');
     }
 
     public function parse(Parser $parser, Stream $stream)

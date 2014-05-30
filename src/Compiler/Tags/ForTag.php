@@ -16,7 +16,6 @@ use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
 use Modules\Templating\Compiler\Tag;
 use Modules\Templating\Compiler\Token;
-use Modules\Templating\Compiler\Tokenizer;
 
 class ForTag extends Tag
 {
@@ -37,7 +36,8 @@ class ForTag extends Tag
         if ($data['save_temp_var']) {
             $compiler
                 ->indented('if (isset($temp))')
-                ->openBracket();
+                ->add(' {')
+                ->indent();
 
             if ($data['create_stack']) {
                 $compiler->indented('$stack = array();');
@@ -45,7 +45,8 @@ class ForTag extends Tag
 
             $compiler
                 ->indented('$stack[] = $temp;')
-                ->closeBracket();
+                ->outdent()
+                ->indented('}');
         }
 
         if ($node->hasChild('else')) {
@@ -54,9 +55,14 @@ class ForTag extends Tag
                 ->compileNode($node->getChild('source'))
                 ->add(';')
                 ->indented('if(empty($temp))')
-                ->bracketed($node->getChild('else'))
+                ->add(' {')
+                ->indent()
+                ->compileNode($node->getChild('else'))
+                ->outdent()
+                ->indented('}')
                 ->add(' else')
-                ->openBracket()
+                ->add(' {')
+                ->indent()
                 ->indented('foreach($temp');
         } else {
             $compiler
@@ -74,12 +80,17 @@ class ForTag extends Tag
 
         $compiler
             ->compileNode($node->getChild('loop_variable'))
-            ->add(') ')
-            ->bracketed($node->getChild('loop_body'));
+            ->add(') {')
+            ->indent()
+            ->compileNode($node->getChild('loop_body'))
+            ->outdent()
+            ->indented('}');
 
         if ($node->hasChild('else')) {
             //bracket opened after if-empty check
-            $compiler->closeBracket();
+            $compiler
+                ->outdent()
+                ->indented('}');
         }
         if ($data['save_temp_var']) {
             $compiler->indented('$temp = array_pop($stack);');

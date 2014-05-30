@@ -9,9 +9,6 @@
 
 namespace Modules\Templating\Compiler\Tags;
 
-use Modules\Templating\Compiler\Token;
-use Modules\Templating\Compiler\Tokenizer;
-
 class ElseTag extends MetaTag
 {
     public function getTag()

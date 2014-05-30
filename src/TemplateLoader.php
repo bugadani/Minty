@@ -12,6 +12,7 @@ namespace Modules\Templating;
 use Miny\Log\AbstractLog;
 use Miny\Log\Log;
 use Modules\Templating\Compiler\Exceptions\TemplatingException;
+use Modules\Templating\Compiler\Nodes\ClassNode;
 use RuntimeException;
 
 class TemplateLoader
@@ -66,11 +67,7 @@ class TemplateLoader
             return;
         }
 
-        //Compile and store the template
-        $this->saveCompiledTemplate(
-            $this->compileTemplateByName($template),
-            $this->getCachePath($template)
-        );
+        $this->compileTemplateByName($template);
     }
 
     /**
@@ -81,24 +78,19 @@ class TemplateLoader
     private function compileTemplateByName($template)
     {
         $this->log('Compiling %s', $template);
-        //Get the desired class name for the template
-        $class = $this->loader->getTemplateClassName($template);
-        $this->log('Compiled class name is %s', $class);
 
         //Read the template
         $templateSource = $this->loader->load($template);
 
         //Compile and optimize the template
         try {
-            $compiled = $this->compileString($templateSource, $class);
+            $this->compileString($templateSource, $template);
         } catch (TemplatingException $e) {
             $this->log('Failed to compile %s. Reason: %s.', $template, $e->getMessage());
             $this->log('Compiling an error template.', $template);
             $templateSource = $this->getErrorTemplate($e, $template, $templateSource);
-            $compiled       = $this->compileString($templateSource, $class);
+            $this->compileString($templateSource, $template);
         }
-
-        return $compiled;
     }
 
     /**
@@ -116,35 +108,46 @@ class TemplateLoader
 
     /**
      * @param $template
-     * @param $class
+     * @param $templateName
      *
      * @return mixed
      */
-    private function compileString($template, $class)
+    private function compileString($template, $templateName)
     {
+        //Get the desired class name for the template
+        $class = $this->loader->getTemplateClassName($templateName);
+        $this->log('Compiled class name is %s', $class);
+
         //Tokenize and parse the template
         $stream = $this->environment->getTokenizer()->tokenize($template);
-        $node   = $this->environment->getParser()->parse($stream);
+        $node   = $this->environment->getParser()->parseTemplate($stream, $templateName);
 
         //Run the Node Tree Visitors
         $this->environment->getNodeTreeTraverser()->traverse($node);
+
+        /** @var $relatedTemplates ClassNode[] */
+        $relatedTemplates = $node->getChildren();
+        $relatedNames     = array(
+            $relatedTemplates[0]->getTemplateName()
+        );
+
+        foreach ($relatedTemplates as $related) {
+            if ($related->hasParentTemplate()) {
+                $relatedNames[] = $related->getParentTemplate();
+            }
+        }
 
         //Compile the template
         $compiler = $this->environment->getCompiler();
         $compiled = $compiler->compile($node, $class);
 
-        //Fetch template names related to the current (extended, embedded templates)
-        $relatedTemplateNames = $compiler->getEmbeddedTemplateNames();
-        if ($compiler->extendsTemplate()) {
-            $relatedTemplateNames[] = $compiler->getExtendedTemplate();
-        }
+        //Compile and store the template
+        $this->saveCompiledTemplate($compiled, $this->getCachePath($templateName));
 
         //Compile the related templates
-        foreach ($relatedTemplateNames as $template) {
+        foreach (array_unique($relatedNames) as $template) {
             $this->compileIfNeeded($template);
         }
-
-        return $compiled;
     }
 
     private function getErrorTemplate(TemplatingException $exception, $template, $source)

@@ -27,11 +27,13 @@ class ParentTag extends Tag
     {
         $stream->next();
 
-        return new TagNode($this);
+        return new TagNode($this, array(
+            'blockName' => $parser->getCurrentBlock()
+        ));
     }
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        $compiler->indented('parent::%s();', $compiler->getCurrentTemplate());
+        $compiler->indented('parent::%s();', $node->getData('blockName'));
     }
 }
