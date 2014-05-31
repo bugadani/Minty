@@ -24,13 +24,14 @@ class Module extends \Miny\Modules\Module
     {
         return array(
             'options' => array(
-                'global_variables' => array(),
-                'cache_namespace'  => 'Application\\Templating\\Cached',
-                'cache_path'       => 'templates/compiled/%s.php',
-                'autoescape'       => true,
-                'fallback_tag'     => 'print',
-                'template_loader'  => __NAMESPACE__ . '\\TemplateLoaders\\FileLoader',
-                'debug'            => $this->application->isDeveloperEnvironment()
+                'global_variables'    => array(),
+                'cache_namespace'     => 'Application\\Templating\\Cached',
+                'cache_path'          => 'templates/compiled/%s.php',
+                'template_base_class' => 'Modules\\Templating\\Template',
+                'autoescape'          => true,
+                'fallback_tag'        => 'print',
+                'template_loader'     => __NAMESPACE__ . '\\TemplateLoaders\\FileLoader',
+                'debug'               => $this->application->isDeveloperEnvironment()
             ),
             'codes'   => array()
         );

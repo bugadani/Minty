@@ -52,7 +52,10 @@ class EmbedTag extends Tag
 
         /** @var $classNode ClassNode */
         $classNode = $fileNode->addChild(
-            new ClassNode($fileNode->getNextEmbeddedTemplateName())
+            new ClassNode(
+                $parser->getEnvironment(),
+                $fileNode->getNextEmbeddedTemplateName()
+            )
         );
         $classNode->setParentTemplate(
             $stream->expect(Token::STRING)->getValue()

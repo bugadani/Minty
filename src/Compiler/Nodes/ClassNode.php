@@ -11,15 +11,23 @@ namespace Modules\Templating\Compiler\Nodes;
 
 use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\Node;
+use Modules\Templating\Environment;
 
 class ClassNode extends Node
 {
     private $templateName;
     private $parentTemplateName;
+    private $namespace;
+    private $baseClass;
 
-    public function __construct($templateName)
+    public function __construct(Environment $env, $templateName)
     {
         $this->templateName = $templateName;
+        $this->namespace    = $env->getOption('cache_namespace', 'Application\\Templating\\Cached');
+        $this->baseClass    = $env->getOption(
+            'template_base_class',
+            'Modules\\Templating\\Template'
+        );
     }
 
     public function hasParentTemplate()
@@ -44,14 +52,15 @@ class ClassNode extends Node
 
     public function getNameSpace()
     {
-        $lastPos   = strrpos($this->templateName, '/');
-        $namespace = 'Application\\Templating\\Cached';
+        $lastPos    = strrpos($this->templateName, '/');
+        $baseString = $this->namespace;
+
         if ($lastPos !== false) {
             $directory = substr($this->templateName, 0, $lastPos);
-            $namespace .= '\\' . strtr($directory, '/', '\\');
+            $baseString .= '\\' . strtr($directory, '/', '\\');
         }
 
-        return $namespace;
+        return $baseString;
     }
 
     public function addChild(Node $node, $key = null)
@@ -74,7 +83,7 @@ class ClassNode extends Node
     public function getParentClassName()
     {
         if (!isset($this->parentTemplateName)) {
-            return 'Modules\\Templating\\Template';
+            return $this->baseClass;
         }
 
         $path      = strtr($this->parentTemplateName, '/', '\\');
@@ -82,8 +91,7 @@ class ClassNode extends Node
         $className = substr($path, $pos);
         $namespace = substr($path, 0, $pos);
 
-        return 'Application\\Templating\\Cached\\' . $namespace . 'Template_' . $className;
-
+        return "{$this->namespace}\\{$namespace}Template_{$className}";
     }
 
     public function compile(Compiler $compiler)

@@ -106,7 +106,12 @@ class Parser
         $fileNode = new FileNode();
 
         $this->fileNode  = $fileNode;
-        $this->classNode = $fileNode->addChild(new ClassNode($className));
+        $this->classNode = $fileNode->addChild(
+            new ClassNode(
+                $this->environment,
+                $className
+            )
+        );
         $this->classNode->addChild($this->parse($stream), 'render');
 
         return $fileNode;
