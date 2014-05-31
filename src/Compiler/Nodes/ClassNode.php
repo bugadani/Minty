@@ -124,7 +124,7 @@ class ClassNode extends Node
             $compiler->indented('$this->setParentTemplate("%s");', $this->parentTemplateName);
         }
         $compiler->outdent();
-        $compiler->indented('}');
+        $compiler->indented("}\n");
     }
 
     private function compileMethod(Compiler $compiler, $method, RootNode $body)
@@ -134,6 +134,6 @@ class ClassNode extends Node
         $compiler->indent();
         $compiler->compileNode($body);
         $compiler->outdent();
-        $compiler->indented('}');
+        $compiler->indented("}\n");
     }
 }
