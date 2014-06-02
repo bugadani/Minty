@@ -100,9 +100,7 @@ class Compiler
 
     public function compileData($data)
     {
-        if (is_array($data)) {
-            $this->compileArray($data, true);
-        } elseif (is_numeric($data)) {
+        if (is_numeric($data)) {
             $old = setlocale(LC_NUMERIC, 0);
             if ($old) {
                 setlocale(LC_NUMERIC, 'C');
@@ -115,6 +113,8 @@ class Compiler
             $this->add($data ? 'true' : 'false');
         } elseif ($data === null) {
             $this->add('null');
+        } elseif (is_array($data)) {
+            $this->compileArray($data, true);
         } elseif ($data instanceof Node) {
             $data->compile($this);
         } else {

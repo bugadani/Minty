@@ -30,4 +30,19 @@ class DataNode extends Node
     {
         return $this->data;
     }
+
+    public function stringify()
+    {
+        if (is_bool($this->data)) {
+            return ($this->data ? 'true' : 'false');
+        } elseif (is_scalar($this->data)) {
+            return $this->data;
+        } elseif (is_array($this->data)) {
+            $count = count($this->data);
+
+            return "array [{$count}]";
+        } else {
+            return 'object';
+        }
+    }
 }

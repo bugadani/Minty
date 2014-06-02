@@ -13,9 +13,10 @@ use Closure;
 use Modules\Templating\Compiler\Exceptions\ParseException;
 use Modules\Templating\Compiler\Exceptions\SyntaxException;
 use Modules\Templating\Compiler\Nodes\ClassNode;
+use Modules\Templating\Compiler\Nodes\DataNode;
 use Modules\Templating\Compiler\Nodes\FileNode;
 use Modules\Templating\Compiler\Nodes\RootNode;
-use Modules\Templating\Compiler\Nodes\TextNode;
+use Modules\Templating\Compiler\Nodes\PrintNode;
 use Modules\Templating\Environment;
 
 class Parser
@@ -71,7 +72,8 @@ class Parser
 
         switch ($token->getType()) {
             case Token::TEXT:
-                $node = new TextNode($value);
+                $node = new PrintNode();
+                $node->addChild(new DataNode($value), 'expression');
                 break;
 
             case Token::TAG:

@@ -12,25 +12,14 @@ namespace Modules\Templating\Compiler\Nodes;
 use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\Node;
 
-class TextNode extends Node
+class PrintNode extends Node
 {
-    private $text;
-
-    public function __construct($text)
-    {
-        $this->text = $text;
-    }
-
-    public function getText()
-    {
-        return $this->text;
-    }
 
     public function compile(Compiler $compiler)
     {
         $compiler
             ->indented('echo ')
-            ->compileData($this->text)
+            ->compileNode($this->getChild('expression'))
             ->add(';');
     }
 }

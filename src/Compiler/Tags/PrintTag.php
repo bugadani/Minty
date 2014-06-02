@@ -16,7 +16,7 @@ use Modules\Templating\Compiler\Nodes\FunctionNode;
 use Modules\Templating\Compiler\Nodes\IdentifierNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Nodes\TagNode;
-use Modules\Templating\Compiler\Nodes\TextNode;
+use Modules\Templating\Compiler\Nodes\PrintNode;
 use Modules\Templating\Compiler\Operators\FilterOperator;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
@@ -41,8 +41,12 @@ class PrintTag extends Tag
             $node = new TagNode($this);
             $node->addChild($parser->parseExpression($stream), 'value');
         } else {
-            $expression = $this->ensureSafe($parser->getEnvironment(), $expression);
-            $node       = new TextNode($expression);
+            $node = new PrintNode();
+            if (!$this->isSafe($parser->getEnvironment(), $expression)) {
+                $function = new FunctionNode('filter', array($expression));
+                $expression->setParent($function);
+                $expression = $function;
+            }
         }
         $node->addChild($expression, 'expression');
 
@@ -60,6 +64,9 @@ class PrintTag extends Tag
 
     public function isSafe(Environment $env, Node $node)
     {
+        if ($env->getOption('autoescape') === false) {
+            return true;
+        }
         if ($node instanceof DataNode) {
             return true;
         }
@@ -89,18 +96,6 @@ class PrintTag extends Tag
             return $safe;
         }
 
-    }
-
-    public function ensureSafe(Environment $env, Node $node)
-    {
-        if ($env->getOption('autoescape') === false) {
-            return true;
-        }
-        if ($this->isSafe($env, $node)) {
-            return $node;
-        }
-
-        return new FunctionNode('filter', array($node));
     }
 
     public function compile(Compiler $compiler, TagNode $node)

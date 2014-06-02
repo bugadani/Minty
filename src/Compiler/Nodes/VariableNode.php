@@ -10,26 +10,13 @@
 namespace Modules\Templating\Compiler\Nodes;
 
 use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Node;
 
-class VariableNode extends Node
+class VariableNode extends IdentifierNode
 {
-    private $name;
-
-    public function __construct($name)
-    {
-        $this->name = $name;
-    }
-
-    public function getName()
-    {
-        return $this->name;
-    }
-
     public function compile(Compiler $compiler)
     {
         $compiler
             ->add('$this->')
-            ->add($this->name);
+            ->add($this->getName());
     }
 }

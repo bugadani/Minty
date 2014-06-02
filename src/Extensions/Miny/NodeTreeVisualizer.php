@@ -17,7 +17,6 @@ use Modules\Templating\Compiler\Nodes\IdentifierNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Nodes\RootNode;
 use Modules\Templating\Compiler\Nodes\TagNode;
-use Modules\Templating\Compiler\Nodes\VariableNode;
 use Modules\Templating\Compiler\NodeVisitor;
 
 /**
@@ -68,7 +67,8 @@ class NodeTreeVisualizer extends NodeVisitor
         $string .= get_class($node);
 
         if ($node instanceof RootNode) {
-            $string .= ' (' . count($node->getChildren()) . ')';
+            $childCount = count($node->getChildren());
+            $string .= " ({$childCount})";
         } elseif ($node instanceof TagNode) {
             $string .= " ({$node->getTag()->getTag()})";
         } elseif ($node instanceof OperatorNode) {
@@ -77,20 +77,11 @@ class NodeTreeVisualizer extends NodeVisitor
                 $symbols = implode(', ', $symbols);
             }
             $string .= " ({$symbols})";
-        } elseif ($node instanceof IdentifierNode || $node instanceof VariableNode) {
+        } elseif ($node instanceof IdentifierNode) {
+            //Variable, name or function
             $string .= " ({$node->getName()})";
         } elseif ($node instanceof DataNode) {
-            $data = $node->getData();
-            if (is_bool($data)) {
-                $string .= '(' . ($data ? 'true' : 'false') . ')';
-            } elseif (is_scalar($data)) {
-                $string .= "({$data})";
-            } elseif (is_array($data)) {
-                $count = count($data);
-                $string .= "(array({$count}))";
-            } else {
-                $string .= '(object)';
-            }
+            $string .= " ({$node->stringify()})";
         }
 
         return $string;
