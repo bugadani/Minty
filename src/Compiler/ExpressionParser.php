@@ -151,7 +151,9 @@ class ExpressionParser
         $token = $this->stream->next();
         if ($token->test(Token::OPERATOR, $this->unaryPostfixTest)) {
             $operator = $this->unaryPostfixOperators->getOperator($token->getValue());
-            $this->popOperatorsCompared($operator);
+            while ($this->compareToStackTop($operator)) {
+                $this->popOperator();
+            }
 
             $node = new OperatorNode($operator);
             $node->addOperand(
@@ -287,21 +289,13 @@ class ExpressionParser
         return null;
     }
 
-    /**
-     * @return ConditionalOperator
-     */
-    private function getConditionalOperator()
+    private function parseConditional()
     {
+        //Only instantiate ConditionalOperator when there is a possibility of it being used
         if (!isset($this->conditionalOperator)) {
             $this->conditionalOperator = new ConditionalOperator();
         }
-
-        return $this->conditionalOperator;
-    }
-
-    private function parseConditional()
-    {
-        $node = new OperatorNode($this->getConditionalOperator());
+        $node = new OperatorNode($this->conditionalOperator);
         $node->addOperand(
             OperatorNode::OPERAND_LEFT,
             $this->operandStack->pop()
@@ -324,13 +318,6 @@ class ExpressionParser
         $this->operandStack->push($node);
     }
 
-    private function popOperatorsCompared(Operator $operator)
-    {
-        while ($this->compareToStackTop($operator)) {
-            $this->popOperator();
-        }
-    }
-
     private function popOperator()
     {
         $operator = $this->operatorStack->pop();
@@ -350,7 +337,9 @@ class ExpressionParser
 
     private function pushOperator(Operator $operator)
     {
-        $this->popOperatorsCompared($operator);
+        while ($this->compareToStackTop($operator)) {
+            $this->popOperator();
+        }
         $this->operatorStack->push($operator);
     }
 

@@ -16,34 +16,34 @@ use Modules\Templating\Environment;
 class Tokenizer
 {
     /**
-     * @var Stream
-     */
-    private $tokens;
-    private $operators;
-    private $delimiters;
-
-    /**
      * @var Tag[]
      */
     private $tags;
-
+    private $operators;
+    private $delimiters;
     private $expressionPartsPattern;
-    private $punctuation;
-    private $line;
+    private $tokenSplitPattern;
     private $fallbackTagName;
     private $blockEndPrefix;
     private $blockEndingTags = array();
-    private $parts;
-    private $position;
+    private $punctuation = array(',', '[', ']', '(', ')', ':', '?', '=>');
     private $literals = array(
         'null'  => null,
         'true'  => true,
         'false' => false
     );
 
+    // State properties
+    /**
+     * @var Stream
+     */
+    private $tokens;
+    private $line;
+    private $parts;
+    private $position;
+
     public function __construct(Environment $environment)
     {
-        $this->punctuation     = array(',', '[', ']', '(', ')', ':', '?', '=>');
         $this->fallbackTagName = $environment->getOption('fallback_tag', false);
         $this->blockEndPrefix  = $environment->getOption('block_end_prefix', 'end');
         $this->operators       = $environment->getOperatorSymbols();
@@ -62,6 +62,7 @@ class Tokenizer
             }
         }
 
+        $this->tokenSplitPattern      = $this->getTokenSplitPattern();
         $this->expressionPartsPattern = $this->getExpressionPartsPattern(
             array(
                 '$[a-zA-Z]+[a-zA-Z_\-0-9]*',
@@ -103,12 +104,8 @@ class Tokenizer
         return "/({$patterns}|[{$signs}])/i";
     }
 
-    public function tokenize($template)
+    private function getTokenSplitPattern()
     {
-        $this->line     = 1;
-        $this->tokens   = new Stream();
-        $this->position = -1;
-
         $patternParts = array();
         foreach ($this->delimiters as $delimiters) {
             foreach ($delimiters as $delimiter) {
@@ -119,8 +116,17 @@ class Tokenizer
         arsort($patternParts);
         $pattern = implode('|', array_keys($patternParts));
 
+        return "/({$pattern}|[\"'])/";
+    }
+
+    public function tokenize($template)
+    {
+        $this->line     = 1;
+        $this->tokens   = new Stream();
+        $this->position = -1;
+
         $template    = str_replace(array("\r\n", "\n\r", "\r"), "\n", $template);
-        $this->parts = preg_split("/({$pattern}|[\"'])/", $template, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $this->parts = preg_split($this->tokenSplitPattern, $template, 0, PREG_SPLIT_DELIM_CAPTURE);
 
         $currentText = '';
         while (isset($this->parts[++$this->position])) {
@@ -166,7 +172,9 @@ class Tokenizer
     {
         $tagExpression = '';
         while (isset($this->parts[++$this->position])) {
-            switch ($this->parts[$this->position]) {
+            $part = $this->parts[$this->position];
+
+            switch ($part) {
                 case $this->delimiters['tag'][1]:
                     $tag = trim($tagExpression);
                     if ($tag === 'raw') {
@@ -182,11 +190,11 @@ class Tokenizer
 
                 case '"':
                 case "'":
-                    $tagExpression .= $this->tokenizeString($this->parts[$this->position]);
+                    $tagExpression .= $this->tokenizeString($part);
                     break;
 
                 default:
-                    $tagExpression .= $this->parts[$this->position];
+                    $tagExpression .= $part;
                     break;
             }
 
@@ -199,10 +207,12 @@ class Tokenizer
         $string = $delimiter;
         while (isset($this->parts[++$this->position])) {
             $part = $this->parts[$this->position];
+
+            $string .= $part;
             if ($part === $delimiter) {
                 $inString = false;
                 //Let's walk from the previous character backwards
-                $offset = strlen($string);
+                $offset = strlen($string) - 1;
                 while ($offset > 0 && $string[--$offset] === '\\') {
                     //If we find one backslash, we flip back the flag to true
                     //2 backslashes, flag is false... even = the string has ended
@@ -210,10 +220,9 @@ class Tokenizer
                 }
 
                 if (!$inString) {
-                    return $string . $delimiter;
+                    return $string;
                 }
             }
-            $string .= $part;
         }
         throw new SyntaxException('Unterminated string', $this->line);
     }
@@ -258,7 +267,7 @@ class Tokenizer
 
                     //Check if the tag is closed
                     if (isset($this->parts[++$pos]) && $this->parts[$pos] === $tagClosingDelimiter) {
-                        $this->position += 2;
+                        $this->position = $pos;
                         $this->pushTextToken($text);
 
                         return;
@@ -267,7 +276,6 @@ class Tokenizer
             }
             $text .= $this->parts[$this->position];
         }
-
         throw new SyntaxException('Unterminated raw block', $this->line);
     }
 
@@ -318,8 +326,6 @@ class Tokenizer
                     break;
             }
         }
-
-
     }
 
     public function tokenizeExpression($expression)
@@ -328,7 +334,8 @@ class Tokenizer
             return;
         }
         $flags = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
-        foreach (preg_split($this->expressionPartsPattern, $expression, null, $flags) as $part) {
+        $parts = preg_split($this->expressionPartsPattern, $expression, 0, $flags);
+        foreach ($parts as $part) {
             //We can safely skip spaces
             if ($part !== ' ') {
                 if (trim($part) === '') {
@@ -348,10 +355,9 @@ class Tokenizer
 
     public function pushTextToken($value)
     {
-        if ($value === '') {
-            return;
+        if ($value !== '') {
+            $this->pushToken(Token::TEXT, $value);
+            $this->line += substr_count($value, "\n");
         }
-        $this->pushToken(Token::TEXT, $value);
-        $this->line += substr_count($value, "\n");
     }
 }

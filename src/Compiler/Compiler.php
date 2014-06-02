@@ -39,11 +39,10 @@ class Compiler
         $this->source .= "\n";
         $this->source .= str_repeat('    ', $this->indentation);
         if (func_num_args() > 1) {
-            $args = array_slice(func_get_args(), 1);
-            $this->source .= vsprintf($string, $args);
-        } else {
-            $this->source .= $string;
+            $args   = array_slice(func_get_args(), 1);
+            $string = vsprintf($string, $args);
         }
+        $this->source .= $string;
 
         return $this;
     }
@@ -57,41 +56,52 @@ class Compiler
 
     public function string($string)
     {
-        return "'" . strtr($string, array("'" => "\\'")) . "'";
+        $string = strtr($string, array("'" => "\\'"));
+
+        return "'{$string}'";
+    }
+
+    public function compileArray(array $array, $writeKeys = true)
+    {
+        $this->add('array(');
+        $this->internalCompileList($array, $writeKeys);
+
+        return $this->add(')');
     }
 
     public function compileArgumentList(array $arguments)
     {
         $this->add('(');
+        $this->internalCompileList($arguments);
+
+        return $this->add(')');
+    }
+
+    /**
+     * @param array $array
+     * @param       $writeKeys
+     */
+    private function internalCompileList(array $array, $writeKeys = false)
+    {
         $first = true;
-        foreach ($arguments as $argument) {
+        foreach ($array as $key => $value) {
             if (!$first) {
                 $this->add(', ');
             } else {
                 $first = false;
             }
-            $this->compileData($argument);
+            if ($writeKeys) {
+                $this->compileData($key);
+                $this->add(' => ');
+            }
+            $this->compileData($value);
         }
-
-        return $this->add(')');
     }
 
     public function compileData($data)
     {
         if (is_array($data)) {
-            $this->add('array(');
-            $first = true;
-            foreach ($data as $key => $value) {
-                if (!$first) {
-                    $this->add(', ');
-                } else {
-                    $first = false;
-                }
-                $this->compileData($key);
-                $this->add(' => ');
-                $this->compileData($value);
-            }
-            $this->add(')');
+            $this->compileArray($data, true);
         } elseif (is_numeric($data)) {
             $old = setlocale(LC_NUMERIC, 0);
             if ($old) {

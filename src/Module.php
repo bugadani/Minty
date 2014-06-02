@@ -32,8 +32,7 @@ class Module extends \Miny\Modules\Module
                 'fallback_tag'        => 'print',
                 'template_loader'     => __NAMESPACE__ . '\\TemplateLoaders\\FileLoader',
                 'debug'               => $this->application->isDeveloperEnvironment()
-            ),
-            'codes'   => array()
+            )
         );
     }
 
@@ -107,14 +106,9 @@ class Module extends \Miny\Modules\Module
 
     public function handleResponseCodes(Request $request, Response $response)
     {
-        $container = $this->application->getContainer();
-
-        $handlers = $this->getConfiguration('codes');
-        if (!is_array($handlers) || empty($handlers)) {
-            return;
-        }
         $responseCode = $response->getCode();
-        foreach ($handlers as $key => $handler) {
+        foreach ($this->getConfiguration('codes', array()) as $key => $handler) {
+
             if (!is_array($handler)) {
                 if (!$response->isCode($key)) {
                     continue;
@@ -122,64 +116,59 @@ class Module extends \Miny\Modules\Module
                 $templateName = $handler;
             } else {
                 if (isset($handler['codes'])) {
-                    if (!in_array($responseCode, $handler['codes'])) {
-                        continue;
-                    }
+                    $codeMatches = in_array($responseCode, $handler['codes']);
                 } elseif (isset($handler['code'])) {
-                    if (!$response->isCode($handler['code'])) {
-                        continue;
-                    }
+                    $codeMatches = $response->isCode($handler['code']);
                 } else {
                     throw new UnexpectedValueException('Response code handler must contain key "code" or "codes".');
                 }
+
+                if (!$codeMatches) {
+                    continue;
+                }
+
                 if (!isset($handler['template'])) {
                     throw new UnexpectedValueException('Response code handler must specify a template.');
                 }
                 $templateName = $handler['template'];
             }
-            break;
-        }
-        if (!isset($templateName)) {
-            return;
-        }
 
-        /** @var $loader TemplateLoader */
-        $loader   = $container->get(__NAMESPACE__ . '\\TemplateLoader');
-        $template = $loader->load($templateName);
-        $template->set(
-            array(
-                'request'  => $request,
-                'response' => $response
-            )
-        );
-        $template->render();
+            $this->display(
+                $templateName,
+                array(
+                    'request'  => $request,
+                    'response' => $response
+                )
+            );
+        }
     }
 
     public function handleException(\Exception $exception)
     {
-        $container = $this->application->getContainer();
-
         if (!$this->hasConfiguration('exceptions')) {
             return;
         }
-        /** @var $loader TemplateLoader */
-        $loader   = $container->get(__NAMESPACE__ . '\\TemplateLoader');
         $handlers = $this->getConfiguration('exceptions');
         if (!is_array($handlers)) {
-            $templateName = $handlers;
+            $this->display($handlers, array('exception' => $exception));
         } else {
             foreach ($handlers as $class => $handler) {
                 if ($exception instanceof $class) {
-                    $templateName = $handler;
-                    break;
+                    $this->display($handler, array('exception' => $exception));
+
+                    return;
                 }
             }
-            if (!isset($templateName)) {
-                return;
-            }
         }
-        $template = $loader->load($templateName);
-        $template->set(array('exception' => $exception));
+    }
+
+    private function display($template, array $data)
+    {
+        $container = $this->application->getContainer();
+        /** @var $loader TemplateLoader */
+        $loader   = $container->get(__NAMESPACE__ . '\\TemplateLoader');
+        $template = $loader->load($template);
+        $template->set($data);
         $template->render();
     }
 }
