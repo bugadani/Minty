@@ -28,15 +28,14 @@ class IsSetOperator extends Operator
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
-        $operand = $node->getOperand(OperatorNode::OPERAND_LEFT);
+        $operand = $node->getChild(OperatorNode::OPERAND_LEFT);
         if ($operand instanceof VariableNode || $operand instanceof ArrayIndexNode) {
             $compiler->add('isset(')
                 ->compileNode($operand)
                 ->add(')');
-        } elseif ($operand instanceof OperatorNode && $operand->getOperator(
-            ) instanceof PropertyAccessOperator
-        ) {
-            $right = $operand->getOperand(OperatorNode::OPERAND_RIGHT);
+        } elseif ($operand instanceof OperatorNode && $operand->getOperator() instanceof PropertyAccessOperator) {
+            $right = $operand->getChild(OperatorNode::OPERAND_RIGHT);
+            $left = $operand->getChild(OperatorNode::OPERAND_LEFT);
 
             if ($right instanceof FunctionNode) {
                 $compiler->add('$this->hasMethod(');
@@ -45,7 +44,7 @@ class IsSetOperator extends Operator
             }
 
             $compiler
-                ->compileNode($operand->getOperand(OperatorNode::OPERAND_LEFT))
+                ->compileNode($left)
                 ->add(', ');
 
             if ($right instanceof IdentifierNode) {

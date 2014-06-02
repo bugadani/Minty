@@ -24,7 +24,7 @@ class FalseCoalescingOperator extends Operator
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
-        $left = $node->getOperand(OperatorNode::OPERAND_LEFT);
+        $left = $node->getChild(OperatorNode::OPERAND_LEFT);
 
         $compiler->add('(');
         if ($left instanceof IdentifierNode) {
@@ -43,7 +43,7 @@ class FalseCoalescingOperator extends Operator
         }
 
         $compiler->add(' : (')
-            ->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT))
+            ->compileNode($node->getChild(OperatorNode::OPERAND_RIGHT))
             ->add(')');
     }
 }

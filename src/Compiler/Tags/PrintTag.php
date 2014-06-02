@@ -78,19 +78,19 @@ class PrintTag extends Tag
         }
         if ($node->getOperator() instanceof FilterOperator) {
             /** @var $filter IdentifierNode|FunctionNode */
-            $filter = $node->getOperand(OperatorNode::OPERAND_RIGHT);
+            $filter = $node->getChild(OperatorNode::OPERAND_RIGHT);
 
             return $this->isFunctionSafe($env, $filter->getName());
         } else {
             $safe = true;
-            if ($node->hasOperand(OperatorNode::OPERAND_LEFT)) {
-                $safe &= $this->isSafe($env, $node->getOperand(OperatorNode::OPERAND_LEFT));
+            if ($node->hasChild(OperatorNode::OPERAND_LEFT)) {
+                $safe &= $this->isSafe($env, $node->getChild(OperatorNode::OPERAND_LEFT));
             }
-            if ($node->hasOperand(OperatorNode::OPERAND_MIDDLE)) {
-                $safe &= $this->isSafe($env, $node->getOperand(OperatorNode::OPERAND_MIDDLE));
+            if ($node->hasChild(OperatorNode::OPERAND_MIDDLE)) {
+                $safe &= $this->isSafe($env, $node->getChild(OperatorNode::OPERAND_MIDDLE));
             }
-            if ($node->hasOperand(OperatorNode::OPERAND_RIGHT)) {
-                $safe &= $this->isSafe($env, $node->getOperand(OperatorNode::OPERAND_RIGHT));
+            if ($node->hasChild(OperatorNode::OPERAND_RIGHT)) {
+                $safe &= $this->isSafe($env, $node->getChild(OperatorNode::OPERAND_RIGHT));
             }
 
             return $safe;

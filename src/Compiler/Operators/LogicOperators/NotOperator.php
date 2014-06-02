@@ -25,6 +25,6 @@ class NotOperator extends Operator
     {
         $compiler
             ->add('!')
-            ->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT));
+            ->compileNode($node->getChild(OperatorNode::OPERAND_RIGHT));
     }
 }

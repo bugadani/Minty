@@ -31,17 +31,19 @@ class ConditionalOperator extends Operator
     {
         $compiler
             ->add('((')
-            ->compileNode($node->getOperand(OperatorNode::OPERAND_LEFT))
+            ->compileNode($node->getChild(OperatorNode::OPERAND_LEFT))
             ->add(') ?');
-        if ($node->hasOperand(2)) {
+
+        if ($node->hasChild(OperatorNode::OPERAND_MIDDLE)) {
             $compiler
                 ->add(' (')
-                ->compileNode($node->getOperand(OperatorNode::OPERAND_MIDDLE))
+                ->compileNode($node->getChild(OperatorNode::OPERAND_MIDDLE))
                 ->add(') ');
         }
+
         $compiler
             ->add(': (')
-            ->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT))
+            ->compileNode($node->getChild(OperatorNode::OPERAND_RIGHT))
             ->add('))');
     }
 }

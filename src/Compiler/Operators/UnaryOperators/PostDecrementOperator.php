@@ -25,7 +25,7 @@ class PostDecrementOperator extends Operator
     {
         $compiler
             ->add('(')
-            ->compileNode($node->getOperand(OperatorNode::OPERAND_LEFT))
+            ->compileNode($node->getChild(OperatorNode::OPERAND_LEFT))
             ->add('--)');
     }
 }

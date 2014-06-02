@@ -25,8 +25,8 @@ class PropertyAccessOperator extends Operator
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
-        $object = $node->getOperand(OperatorNode::OPERAND_LEFT);
-        $right  = $node->getOperand(OperatorNode::OPERAND_RIGHT);
+        $object = $node->getChild(OperatorNode::OPERAND_LEFT);
+        $right  = $node->getChild(OperatorNode::OPERAND_RIGHT);
 
         if ($right instanceof FunctionNode) {
             $right->setObject($object);

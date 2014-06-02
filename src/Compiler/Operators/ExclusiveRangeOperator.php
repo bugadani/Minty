@@ -25,9 +25,9 @@ class ExclusiveRangeOperator extends Operator
     {
         $compiler
             ->add('range(')
-            ->compileNode($node->getOperand(OperatorNode::OPERAND_LEFT))
+            ->compileNode($node->getChild(OperatorNode::OPERAND_LEFT))
             ->add(', ')
-            ->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT))
+            ->compileNode($node->getChild(OperatorNode::OPERAND_RIGHT))
             ->add(' - 1)');
     }
 }

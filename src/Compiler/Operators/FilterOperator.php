@@ -26,8 +26,8 @@ class FilterOperator extends Operator
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
-        $data   = $node->getOperand(OperatorNode::OPERAND_LEFT);
-        $filter = $node->getOperand(OperatorNode::OPERAND_RIGHT);
+        $data   = $node->getChild(OperatorNode::OPERAND_LEFT);
+        $filter = $node->getChild(OperatorNode::OPERAND_RIGHT);
         if ($filter instanceof FunctionNode) {
             $arguments = $filter->getArguments();
             array_unshift($arguments, $data);

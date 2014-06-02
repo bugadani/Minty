@@ -28,6 +28,9 @@ class ArrayIndexNode extends Node
     {
         $this->identifier = $identifier;
         $this->key        = $key;
+
+        $identifier->setParent($this);
+        $key->setParent($this);
     }
 
     public function compile(Compiler $compiler)

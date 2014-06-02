@@ -22,16 +22,16 @@ abstract class FunctionOperator extends Operator
             ->add($this->getFunctionName())
             ->add('(');
 
-        if ($node->hasOperand(OperatorNode::OPERAND_LEFT)) {
-            $compiler->compileNode($node->getOperand(OperatorNode::OPERAND_LEFT));
+        if ($node->hasChild(OperatorNode::OPERAND_LEFT)) {
+            $compiler->compileNode($node->getChild(OperatorNode::OPERAND_LEFT));
 
-            if ($node->hasOperand(OperatorNode::OPERAND_RIGHT)) {
+            if ($node->hasChild(OperatorNode::OPERAND_RIGHT)) {
                 $compiler
                     ->add(', ')
-                    ->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT));
+                    ->compileNode($node->getChild(OperatorNode::OPERAND_RIGHT));
             }
-        } elseif ($node->hasOperand(OperatorNode::OPERAND_RIGHT)) {
-            $compiler->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT));
+        } elseif ($node->hasChild(OperatorNode::OPERAND_RIGHT)) {
+            $compiler->compileNode($node->getChild(OperatorNode::OPERAND_RIGHT));
         }
 
         $compiler->add(')');

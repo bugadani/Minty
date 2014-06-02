@@ -20,9 +20,9 @@ abstract class SimpleBinaryOperator extends Operator
     {
         $compiler
             ->add('(')
-            ->compileNode($node->getOperand(OperatorNode::OPERAND_LEFT))
+            ->compileNode($node->getChild(OperatorNode::OPERAND_LEFT))
             ->add($this->compileOperator())
-            ->compileNode($node->getOperand(OperatorNode::OPERAND_RIGHT))
+            ->compileNode($node->getChild(OperatorNode::OPERAND_RIGHT))
             ->add(')');
     }
 

@@ -156,9 +156,9 @@ class ExpressionParser
             }
 
             $node = new OperatorNode($operator);
-            $node->addOperand(
-                OperatorNode::OPERAND_LEFT,
-                $this->operandStack->pop()
+            $node->addChild(
+                $this->operandStack->pop(),
+                OperatorNode::OPERAND_LEFT
             );
 
             $this->operandStack->push($node);
@@ -296,23 +296,23 @@ class ExpressionParser
             $this->conditionalOperator = new ConditionalOperator();
         }
         $node = new OperatorNode($this->conditionalOperator);
-        $node->addOperand(
-            OperatorNode::OPERAND_LEFT,
-            $this->operandStack->pop()
+        $node->addChild(
+            $this->operandStack->pop(),
+            OperatorNode::OPERAND_LEFT
         );
 
         // Check whether the current expression is a simplified conditional expression (expr1 ?: expr3)
         if (!$this->stream->nextTokenIf(Token::PUNCTUATION, ':')) {
-            $node->addOperand(
-                OperatorNode::OPERAND_MIDDLE,
-                $this->parseExpression(true)
+            $node->addChild(
+                $this->parseExpression(true),
+                OperatorNode::OPERAND_MIDDLE
             );
             $this->stream->expectCurrent(Token::PUNCTUATION, ':');
         }
 
-        $node->addOperand(
-            OperatorNode::OPERAND_RIGHT,
-            $this->parseExpression(true)
+        $node->addChild(
+            $this->parseExpression(true),
+            OperatorNode::OPERAND_RIGHT
         );
 
         $this->operandStack->push($node);
@@ -322,14 +322,14 @@ class ExpressionParser
     {
         $operator = $this->operatorStack->pop();
         $node     = new OperatorNode($operator);
-        $node->addOperand(
-            OperatorNode::OPERAND_RIGHT,
-            $this->operandStack->pop()
+        $node->addChild(
+            $this->operandStack->pop(),
+            OperatorNode::OPERAND_RIGHT
         );
         if ($this->binaryOperators->exists($operator)) {
-            $node->addOperand(
-                OperatorNode::OPERAND_LEFT,
-                $this->operandStack->pop()
+            $node->addChild(
+                $this->operandStack->pop(),
+                OperatorNode::OPERAND_LEFT
             );
         }
         $this->operandStack->push($node);

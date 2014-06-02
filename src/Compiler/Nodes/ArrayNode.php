@@ -29,7 +29,13 @@ class ArrayNode extends Node
     public function add(Node $value, Node $key = null)
     {
         $this->values[] = $value;
-        $this->keys[]   = $key;
+        $value->setParent($this);
+
+        if ($key) {
+            $this->keys[$this->itemCount] = $key;
+            $key->setParent($this);
+        }
+
         ++$this->itemCount;
     }
 
@@ -40,7 +46,7 @@ class ArrayNode extends Node
             if ($i !== 0) {
                 $compiler->add(', ');
             }
-            if ($this->keys[$i] !== null) {
+            if (isset($this->keys[$i])) {
                 $this->keys[$i]->compile($compiler);
                 $compiler->add(' => ');
             }

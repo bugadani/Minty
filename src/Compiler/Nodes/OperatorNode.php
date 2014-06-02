@@ -10,7 +10,6 @@
 namespace Modules\Templating\Compiler\Nodes;
 
 use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Exceptions\SyntaxException;
 use Modules\Templating\Compiler\Node;
 use Modules\Templating\Compiler\Operator;
 
@@ -28,31 +27,6 @@ class OperatorNode extends Node
     public function __construct(Operator $operator)
     {
         $this->operator = $operator;
-    }
-
-    public function addOperand($type, Node $value = null)
-    {
-        $this->addChild($value, $type);
-    }
-
-    public function hasOperand($type)
-    {
-        return $this->hasChild($type);
-    }
-
-    /**
-     * @param $type
-     *
-     * @return Node
-     * @throws SyntaxException
-     */
-    public function getOperand($type)
-    {
-        if (!$this->hasChild($type)) {
-            throw new SyntaxException('Operator has a missing operand.');
-        }
-
-        return $this->getChild($type);
     }
 
     public function getOperator()
