@@ -29,11 +29,9 @@ class ListTag extends Tag
         $node = new TagNode($this);
 
         $node->addChild($parser->parseExpression($stream), 'expression');
-
         $stream->expectCurrent(Token::IDENTIFIER, 'using');
-
-        $node->addData('template', $stream->next()->getValue());
-        $stream->expect(Token::EXPRESSION_END);
+        $node->addChild($parser->parseExpression($stream), 'template');
+        $stream->expectCurrent(Token::EXPRESSION_END);
 
         return $node;
     }
@@ -46,14 +44,12 @@ class ListTag extends Tag
             ->add(';');
 
         $compiler
-            ->indented('if(is_array($list_source) || $list_source instanceof \Traversable)')
-            ->add(' {')
+            ->indented('if(is_array($list_source) || $list_source instanceof \Traversable) {')
             ->indent()
             ->indented('$template = $this->getLoader()->load(')
-            ->add($compiler->string($node->getData('template')))
+            ->compileNode($node->getChild('template'))
             ->add(');')
-            ->indented('foreach ($list_source as $element)')
-            ->add(' {')
+            ->indented('foreach ($list_source as $element) {')
             ->indent()
             ->indented('$template->clean();')
             ->indented('$template->loadGlobals();')

@@ -44,14 +44,16 @@ class IncludeTag extends Tag
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        $compiler->indented('$template = $this->getLoader()->load(');
-        $node->getChild('template')->compile($compiler);
-        $compiler->add(');');
+        $compiler
+            ->indented('$template = $this->getLoader()->load(')
+            ->compileNode($node->getChild('template'))
+            ->add(');');
 
         if ($node->hasChild('arguments')) {
-            $compiler->indented('$template->set(');
-            $node->getChild('arguments')->compile($compiler);
-            $compiler->add(');');
+            $compiler
+                ->indented('$template->set(')
+                ->compileNode($node->getChild('arguments'))
+                ->add(');');
         }
         $compiler->indented('$template->render();');
     }

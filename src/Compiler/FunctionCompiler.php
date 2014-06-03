@@ -23,7 +23,7 @@ class FunctionCompiler
         } elseif ($function instanceof MethodFunction) {
             $compiler
                 ->add('$this->getExtension(')
-                ->add($compiler->string($function->getExtensionName()))
+                ->compileString($function->getExtensionName())
                 ->add(')->')
                 ->add($function->getMethod());
         } elseif ($function instanceof CallbackFunction) {

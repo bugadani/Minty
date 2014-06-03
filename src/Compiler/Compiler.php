@@ -54,11 +54,11 @@ class Compiler
         return $this;
     }
 
-    public function string($string)
+    public function compileString($string)
     {
         $string = strtr($string, array("'" => "\\'"));
 
-        return "'{$string}'";
+        return $this->add("'{$string}'");
     }
 
     public function compileArray(array $array, $writeKeys = true)
@@ -114,11 +114,11 @@ class Compiler
         } elseif ($data === null) {
             $this->add('null');
         } elseif (is_array($data)) {
-            $this->compileArray($data, true);
+            $this->compileArray($data);
         } elseif ($data instanceof Node) {
-            $data->compile($this);
+            $this->compileNode($data);
         } else {
-            $this->add($this->string($data));
+            $this->compileString($data);
         }
 
         return $this;
@@ -133,7 +133,7 @@ class Compiler
 
     public function outdent()
     {
-        if ($this->indentation == 0) {
+        if ($this->indentation === 0) {
             throw new BadMethodCallException('Cannot outdent more.');
         }
         $this->indentation--;
@@ -152,7 +152,7 @@ class Compiler
     {
         $this->source = '';
 
-        $node->compile($this);
+        $this->compileNode($node);
 
         return $this->source;
     }
