@@ -45,17 +45,17 @@ class IncludeTag extends Tag
     public function compile(Compiler $compiler, TagNode $node)
     {
         $compiler
-            ->indented('$template = $this->getLoader()->load(')
-            ->compileNode($node->getChild('template'))
-            ->add(');');
+            ->indented('$this->getLoader()->render(')
+            ->compileNode($node->getChild('template'));
 
         if ($node->hasChild('arguments')) {
             $compiler
-                ->indented('$template->set(')
-                ->compileNode($node->getChild('arguments'))
-                ->add(');');
+                ->add(', ')
+                ->compileNode($node->getChild('arguments'));
         }
-        $compiler->indented('$template->render();');
+
+        $compiler
+            ->add(');');
     }
 
     public function parse(Parser $parser, Stream $stream)

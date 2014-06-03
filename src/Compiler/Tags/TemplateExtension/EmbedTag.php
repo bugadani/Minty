@@ -36,14 +36,15 @@ class EmbedTag extends Tag
             '$embedded = new %s($this->getLoader(), $this->getEnvironment());',
             $node->getData('template')
         );
-
+        $compiler->indented('$context = $loader->createContext(');
         if ($node->hasChild('arguments')) {
-            $compiler->indented('$embedded->set(');
-            $node->getChild('arguments')->compile($compiler);
-            $compiler->add(');');
+            $compiler
+                ->compileNode($node->getChild('arguments'));
         }
+        $compiler
+            ->add(');')
+            ->indented('$embedded->render($context);');
 
-        $compiler->indented('$embedded->render();');
     }
 
     public function parse(Parser $parser, Stream $stream)
@@ -58,7 +59,8 @@ class EmbedTag extends Tag
             )
         );
         $classNode->setParentTemplate(
-            $stream->expect(Token::STRING)->getValue()
+            $stream->expect(Token::STRING)->getValue(),
+            true
         );
 
         $node = new TagNode($this, array(

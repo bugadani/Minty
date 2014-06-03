@@ -11,12 +11,11 @@ namespace Modules\Templating\Compiler\Nodes;
 
 use Modules\Templating\Compiler\Compiler;
 
-class VariableNode extends IdentifierNode
+class TempVariableNode extends IdentifierNode
 {
     public function compile(Compiler $compiler)
     {
         $compiler
-            ->add('$context->')
-            ->add($this->getName());
+            ->add('$' . $this->getName());
     }
 }

@@ -22,22 +22,12 @@ abstract class Template
     private $environment;
 
     private $parentTemplate = false;
-
-    /**
-     * @var Context
-     */
-    private $context;
+    private $parentOf;
 
     public function __construct(TemplateLoader $loader, Environment $environment)
     {
         $this->loader      = $loader;
         $this->environment = $environment;
-        $this->context     = new Context($environment);
-    }
-
-    public function getContext()
-    {
-        return $this->context;
     }
 
     protected function setParentTemplate($parentTemplate)
@@ -53,21 +43,6 @@ abstract class Template
     public function getEnvironment()
     {
         return $this->environment;
-    }
-
-    public function clean()
-    {
-        $this->context->clean();
-    }
-
-    public function loadGlobals()
-    {
-        $this->set($this->environment->getOption('global_variables'));
-    }
-
-    public function set($variables)
-    {
-        $this->context->add($variables);
     }
 
     public function getExtension($name)
@@ -99,32 +74,6 @@ abstract class Template
         }
     }
 
-    public function extract($source, $keys)
-    {
-        if (is_string($keys)) {
-            $keys = array($keys);
-        }
-        foreach ($keys as $key) {
-            $this->context->$key = $this->getProperty($source, $key);
-        }
-    }
-
-    public function hasProperty($structure, $key)
-    {
-        if (is_array($structure)) {
-            return (isset($structure[$key]));
-        }
-        if ($structure instanceof \ArrayAccess) {
-            if (isset($structure[$key])) {
-                return true;
-            }
-        }
-        if (is_object($structure)) {
-            return isset($structure->$key);
-        }
-        throw new \UnexpectedValueException('Variable is not an array or an object.');
-    }
-
     public function hasMethod($object, $method)
     {
         if (!is_object($object)) {
@@ -132,22 +81,6 @@ abstract class Template
         }
 
         return method_exists($object, $method);
-    }
-
-    public function getProperty($structure, $key)
-    {
-        if (is_array($structure) || $structure instanceof \ArrayAccess) {
-            if (isset($structure[$key])) {
-                return $structure[$key];
-            }
-        }
-        if (is_object($structure)) {
-            return $structure->$key;
-        }
-        if (!$this->environment->getOption('strict_mode', true)) {
-            return $key;
-        }
-        throw new \UnexpectedValueException('Variable is not an array or an object.');
     }
 
     public function isEmpty($data)
@@ -191,30 +124,41 @@ abstract class Template
         return $this->parentTemplate;
     }
 
-    public function __set($key, $value)
-    {
-        $this->context->__set($key, $value);
-    }
-
-    public function __unset($key)
-    {
-        $this->context->__unset($key);
-    }
-
-    public function &__get($key)
-    {
-        return $this->context->__get($key);
-    }
-
-    public function __isset($key)
-    {
-        return $this->context->__isset($key);
-    }
-
     public function getEmbeddedTemplates()
     {
         return array();
     }
 
-    abstract public function render();
+    public function renderBlock($blockName, Context $context, $parentBlock = false)
+    {
+        $methodName = $blockName . 'Block';
+
+        if ($this->parentOf) {
+            $self = $this->parentOf;
+        } else {
+            $self = $this;
+        }
+
+        if (!method_exists($self, $methodName) || $parentBlock) {
+            if ($this->parentOf) {
+                $parent = $this;
+            } else {
+                $parent = $this->loader->load($this->parentTemplate);
+            }
+            if (method_exists($parent, $methodName)) {
+                $parent->$methodName($context);
+            }
+        } else {
+            $self->$methodName($context);
+        }
+    }
+
+    public function render(Context $context)
+    {
+        $parent           = $this->loader->load($this->parentTemplate);
+        $oldParentOf      = $parent->parentOf;
+        $parent->parentOf = $this;
+        $parent->render($context);
+        $parent->parentOf = $oldParentOf;
+    }
 }

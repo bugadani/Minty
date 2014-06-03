@@ -81,6 +81,7 @@ use Modules\Templating\Compiler\Tags\TemplateExtension\EmbedTag;
 use Modules\Templating\Compiler\Tags\TemplateExtension\ExtendsTag;
 use Modules\Templating\Compiler\Tags\TemplateExtension\IncludeTag;
 use Modules\Templating\Compiler\Tags\TemplateExtension\ParentTag;
+use Modules\Templating\Context;
 use Modules\Templating\Extension;
 use Traversable;
 
@@ -209,6 +210,7 @@ class Core extends Extension
             new MethodFunction('cycle', 'cycleFunction'),
             new SimpleFunction('default', null, array('compiler' => '\Modules\Templating\Extensions\Compilers\DefaultCompiler')),
             new MethodFunction('date_format', 'dateFormatFunction'),
+            new MethodFunction('extract', 'extractFunction', array('needs_context' => true)),
             new MethodFunction('first', 'firstFunction'),
             new SimpleFunction('format', 'sprintf'),
             new SimpleFunction('is_int'),
@@ -310,6 +312,16 @@ class Core extends Extension
     public function dateFormatFunction($date, $format)
     {
         return date($format, strtotime($date));
+    }
+
+    public function extractFunction(Context $context, $source, $keys)
+    {
+        if (is_string($keys)) {
+            $keys = array($keys);
+        }
+        foreach ($keys as $key) {
+            $context->$key = $context->getProperty($source, $key);
+        }
     }
 
     public function firstFunction($data, $number = 1)

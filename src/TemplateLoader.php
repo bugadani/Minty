@@ -33,6 +33,11 @@ class TemplateLoader
     private $loader;
 
     /**
+     * @var Template[]
+     */
+    private $loadedTemplates = array();
+
+    /**
      * @param Environment            $environment
      * @param AbstractTemplateLoader $loader
      * @param AbstractLog|null       $log
@@ -203,6 +208,9 @@ class TemplateLoader
      */
     public function load($template)
     {
+        if(isset($this->loadedTemplates[$template])) {
+            return $this->loadedTemplates[$template];
+        }
         $class = $this->loader->getTemplateClassName($template);
 
         $this->log('Loading %s', $template);
@@ -224,10 +232,17 @@ class TemplateLoader
         foreach ($object->getEmbeddedTemplates() as $file) {
             $this->compileIfNeeded($file);
         }
-
-        $object->loadGlobals();
+        $this->loadedTemplates[$template] = $object;
 
         return $object;
+    }
+
+    public function render($template, $variables = array())
+    {
+        $object = $this->load($template);
+        $object->render(
+            $this->createContext($variables)
+        );
     }
 
     private function getCachePath($template)
@@ -236,5 +251,13 @@ class TemplateLoader
             $this->environment->getOption('cache_path'),
             $this->loader->getCacheKey($template)
         );
+    }
+
+    public function createContext($variables = array())
+    {
+        $context = new Context($this->environment, $variables);
+        $context->add($this->environment->getOption('global_variables'));
+
+        return $context;
     }
 }

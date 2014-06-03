@@ -164,10 +164,10 @@ class Parser
         return $this->expressionParser->parse($stream);
     }
 
-    public function enterBlock($methodName)
+    public function enterBlock($blockName)
     {
         $this->blocks[] = $this->block;
-        $this->block    = $methodName;
+        $this->block    = $blockName;
     }
 
     public function leaveBlock()

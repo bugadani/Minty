@@ -33,7 +33,7 @@ class PropertyAccessOperator extends Operator
             $compiler->compileNode($right);
         } else {
             $compiler
-                ->add('$this->getProperty(')
+                ->add('$context->getProperty(')
                 ->compileNode($object)
                 ->add(', ');
             if ($right instanceof IdentifierNode) {

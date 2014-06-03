@@ -35,6 +35,7 @@ class FileNode extends RootNode
 
         $compiler->indented('use Modules\\Templating\\TemplateLoader;');
         $compiler->indented('use Modules\\Templating\\Environment;');
+        $compiler->indented('use Modules\\Templating\\Context;');
 
         $compiler->add("\n");
 

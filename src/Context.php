@@ -63,6 +63,38 @@ class Context
         return $this->variables;
     }
 
+    public function getProperty($structure, $key)
+    {
+        if (is_array($structure) || $structure instanceof \ArrayAccess) {
+            if (isset($structure[$key])) {
+                return $structure[$key];
+            }
+        }
+        if (is_object($structure)) {
+            return $structure->$key;
+        }
+        if (!$this->environment->getOption('strict_mode', true)) {
+            return $key;
+        }
+        throw new \UnexpectedValueException('Variable is not an array or an object.');
+    }
+
+    public function hasProperty($structure, $key)
+    {
+        if (is_array($structure)) {
+            return (isset($structure[$key]));
+        }
+        if ($structure instanceof \ArrayAccess) {
+            if (isset($structure[$key])) {
+                return true;
+            }
+        }
+        if (is_object($structure)) {
+            return isset($structure->$key);
+        }
+        throw new \UnexpectedValueException('Variable is not an array or an object.');
+    }
+
     /**
      * @param $variables
      *
@@ -73,10 +105,10 @@ class Context
     {
         if (is_array($variables)) {
             //do nothing
-        } elseif (!$variables instanceof \Traversable) {
-            $variables = iterator_to_array($variables);
         } elseif (method_exists($variables, 'toArray')) {
             $variables = $variables->toArray();
+        } elseif ($variables instanceof \Traversable) {
+            $variables = iterator_to_array($variables);
         } else {
             throw new \InvalidArgumentException('Set expects an array as parameter.');
         }

@@ -63,6 +63,11 @@ class FunctionNode extends IdentifierNode
                 ->compileArgumentList($this->arguments);
         } elseif ($environment->hasFunction($name)) {
             $function = $environment->getFunction($name);
+
+            if($function->getOption('needs_context')) {
+                array_unshift($this->arguments, new TempVariableNode('context'));
+            }
+
             $environment
                 ->getFunctionCompiler($function->getOption('compiler'))
                 ->compile($compiler, $function, $this->arguments);

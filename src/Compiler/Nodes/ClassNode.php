@@ -17,6 +17,7 @@ class ClassNode extends Node
 {
     private $templateName;
     private $parentTemplateName;
+    private $embeddedTemplateClass = false;
     private $namespace;
     private $baseClass;
 
@@ -35,9 +36,10 @@ class ClassNode extends Node
         return isset($this->parentTemplateName);
     }
 
-    public function setParentTemplate($parentClass)
+    public function setParentTemplate($parentClass, $embedded = false)
     {
-        $this->parentTemplateName = $parentClass;
+        $this->parentTemplateName    = $parentClass;
+        $this->embeddedTemplateClass = $embedded;
     }
 
     public function getParentTemplate()
@@ -82,7 +84,7 @@ class ClassNode extends Node
 
     public function getParentClassName()
     {
-        if (!isset($this->parentTemplateName)) {
+        if (!$this->embeddedTemplateClass) {
             return $this->baseClass;
         }
 
@@ -137,7 +139,7 @@ class ClassNode extends Node
 
     private function compileMethod(Compiler $compiler, $method, RootNode $body)
     {
-        $compiler->indented('public function %s()', $method);
+        $compiler->indented('public function %s(Context $context)', $method);
         $compiler->indented('{');
         $compiler->indent();
         $compiler->compileNode($body);

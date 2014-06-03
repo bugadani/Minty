@@ -40,7 +40,7 @@ class IsSetOperator extends Operator
             if ($right instanceof FunctionNode) {
                 $compiler->add('$this->hasMethod(');
             } else {
-                $compiler->add('$this->hasProperty(');
+                $compiler->add('$context->hasProperty(');
             }
 
             $compiler

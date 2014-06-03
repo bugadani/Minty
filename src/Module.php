@@ -168,7 +168,8 @@ class Module extends \Miny\Modules\Module
         /** @var $loader TemplateLoader */
         $loader   = $container->get(__NAMESPACE__ . '\\TemplateLoader');
         $template = $loader->load($template);
-        $template->set($data);
-        $template->render();
+        $template->render(
+            $loader->createContext($data)
+        );
     }
 }

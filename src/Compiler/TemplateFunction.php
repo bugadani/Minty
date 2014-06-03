@@ -28,8 +28,9 @@ abstract class TemplateFunction
     {
         $this->name    = $name;
         $defaults      = array(
-            'is_safe'  => false,
-            'compiler' => __NAMESPACE__ . '\\FunctionCompiler'
+            'is_safe'       => false,
+            'compiler'      => __NAMESPACE__ . '\\FunctionCompiler',
+            'needs_context' => false
         );
         $this->options = array_merge($defaults, $options);
     }
