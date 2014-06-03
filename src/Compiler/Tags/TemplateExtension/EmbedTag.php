@@ -11,6 +11,7 @@ namespace Modules\Templating\Compiler\Tags\TemplateExtension;
 
 use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\Nodes\ClassNode;
+use Modules\Templating\Compiler\Nodes\DataNode;
 use Modules\Templating\Compiler\Nodes\TagNode;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
@@ -59,8 +60,7 @@ class EmbedTag extends Tag
             )
         );
         $classNode->setParentTemplate(
-            $stream->expect(Token::STRING)->getValue(),
-            true
+            new DataNode($stream->expect(Token::STRING)->getValue())
         );
 
         $node = new TagNode($this, array(

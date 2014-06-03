@@ -13,6 +13,7 @@ use Miny\Log\AbstractLog;
 use Miny\Log\Log;
 use Modules\Templating\Compiler\Exceptions\TemplatingException;
 use Modules\Templating\Compiler\Nodes\ClassNode;
+use Modules\Templating\Compiler\Nodes\DataNode;
 use RuntimeException;
 
 class TemplateLoader
@@ -225,12 +226,13 @@ class TemplateLoader
         /** @var $object Template */
         $object = new $class($this, $this->environment);
 
-        $parent = $object->getParentTemplate();
-        if ($parent) {
-            $this->compileIfNeeded($parent);
-        }
-        foreach ($object->getEmbeddedTemplates() as $file) {
-            $this->compileIfNeeded($file);
+        $relatedTemplates = $object->getEmbeddedTemplates();
+        $relatedTemplates[] = $object->getParentTemplate();
+
+        foreach ($relatedTemplates as $file) {
+            if ($file instanceof DataNode) {
+                $this->compileIfNeeded($file->getData());
+            }
         }
         $this->loadedTemplates[$template] = $object;
 

@@ -27,10 +27,8 @@ class ExtendsTag extends Tag
     public function parse(Parser $parser, Stream $stream)
     {
         $parser->getCurrentClassNode()->setParentTemplate(
-            $stream->expect(Token::STRING)->getValue()
+            $parser->parseExpression($stream)
         );
-
-        $stream->next();
     }
 
     public function compile(Compiler $compiler, TagNode $node)

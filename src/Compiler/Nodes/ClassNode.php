@@ -17,7 +17,6 @@ class ClassNode extends Node
 {
     private $templateName;
     private $parentTemplateName;
-    private $embeddedTemplateClass = false;
     private $namespace;
     private $baseClass;
 
@@ -36,10 +35,9 @@ class ClassNode extends Node
         return isset($this->parentTemplateName);
     }
 
-    public function setParentTemplate($parentClass, $embedded = false)
+    public function setParentTemplate(Node $parentClass)
     {
-        $this->parentTemplateName    = $parentClass;
-        $this->embeddedTemplateClass = $embedded;
+        $this->parentTemplateName = $parentClass;
     }
 
     public function getParentTemplate()
@@ -98,6 +96,16 @@ class ClassNode extends Node
             /** @var $body RootNode */
             $body = $this->getChild('__main_template_block');
             $this->compileBlock($compiler, 'displayTemplate', $body);
+        } elseif (!$this->parentTemplateName instanceof DataNode) {
+            $compiler->indented('public function displayTemplate(Context $context)');
+            $compiler->indented('{');
+            $compiler->indent();
+            $compiler->indented('$this->setParentTemplate(')
+                ->compileNode($this->parentTemplateName)
+                ->add(');');
+            $compiler->indented('parent::displayTemplate($context);');
+            $compiler->outdent();
+            $compiler->indented("}\n");
         }
         $this->removeChild('__main_template_block');
 
@@ -119,8 +127,10 @@ class ClassNode extends Node
         $compiler->indented('{');
         $compiler->indent();
         $compiler->indented('parent::__construct($loader, $environment);');
-        if ($this->hasParentTemplate()) {
-            $compiler->indented('$this->setParentTemplate("%s");', $this->parentTemplateName);
+        if ($this->hasParentTemplate() && $this->parentTemplateName instanceof DataNode) {
+            $compiler->indented('$this->setParentTemplate(')
+                ->compileNode($this->parentTemplateName)
+                ->add(');');
         }
         $compiler->indented('$this->setBlocks(')
             ->compileArray(array_keys($this->getChildren()), false)
