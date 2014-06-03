@@ -9,13 +9,6 @@
 
 namespace Modules\Templating;
 
-use ArrayAccess;
-use BadMethodCallException;
-use InvalidArgumentException;
-use OutOfBoundsException;
-use Traversable;
-use UnexpectedValueException;
-
 abstract class Template
 {
     /**
@@ -28,17 +21,23 @@ abstract class Template
      */
     private $environment;
 
-    /**
-     * @var array
-     */
-    private $variables = array();
-
     private $parentTemplate = false;
+
+    /**
+     * @var Context
+     */
+    private $context;
 
     public function __construct(TemplateLoader $loader, Environment $environment)
     {
         $this->loader      = $loader;
         $this->environment = $environment;
+        $this->context     = new Context($environment);
+    }
+
+    public function getContext()
+    {
+        return $this->context;
     }
 
     protected function setParentTemplate($parentTemplate)
@@ -58,7 +57,7 @@ abstract class Template
 
     public function clean()
     {
-        $this->variables = array();
+        $this->context->clean();
     }
 
     public function loadGlobals()
@@ -68,13 +67,7 @@ abstract class Template
 
     public function set($variables)
     {
-        if (!is_array($variables)) {
-            if (!method_exists($variables, 'toArray')) {
-                throw new InvalidArgumentException('Set expects an array as parameter.');
-            }
-            $variables = $variables->toArray();
-        }
-        $this->variables = array_merge($this->variables, $variables);
+        $this->context->add($variables);
     }
 
     public function getExtension($name)
@@ -102,7 +95,7 @@ abstract class Template
             case 'json':
                 return json_encode($data);
             default:
-                throw new BadMethodCallException("Filter is not found for {$for}");
+                throw new \BadMethodCallException("Filter is not found for {$for}");
         }
     }
 
@@ -112,7 +105,7 @@ abstract class Template
             $keys = array($keys);
         }
         foreach ($keys as $key) {
-            $this->$key = $this->getProperty($source, $key);
+            $this->context->$key = $this->getProperty($source, $key);
         }
     }
 
@@ -121,7 +114,7 @@ abstract class Template
         if (is_array($structure)) {
             return (isset($structure[$key]));
         }
-        if ($structure instanceof ArrayAccess) {
+        if ($structure instanceof \ArrayAccess) {
             if (isset($structure[$key])) {
                 return true;
             }
@@ -129,13 +122,13 @@ abstract class Template
         if (is_object($structure)) {
             return isset($structure->$key);
         }
-        throw new UnexpectedValueException('Variable is not an array or an object.');
+        throw new \UnexpectedValueException('Variable is not an array or an object.');
     }
 
     public function hasMethod($object, $method)
     {
         if (!is_object($object)) {
-            throw new UnexpectedValueException('Variable is not an object.');
+            throw new \UnexpectedValueException('Variable is not an object.');
         }
 
         return method_exists($object, $method);
@@ -143,7 +136,7 @@ abstract class Template
 
     public function getProperty($structure, $key)
     {
-        if (is_array($structure) || $structure instanceof ArrayAccess) {
+        if (is_array($structure) || $structure instanceof \ArrayAccess) {
             if (isset($structure[$key])) {
                 return $structure[$key];
             }
@@ -154,7 +147,7 @@ abstract class Template
         if (!$this->environment->getOption('strict_mode', true)) {
             return $key;
         }
-        throw new UnexpectedValueException('Variable is not an array or an object.');
+        throw new \UnexpectedValueException('Variable is not an array or an object.');
     }
 
     public function isEmpty($data)
@@ -174,13 +167,13 @@ abstract class Template
         if (is_string($haystack)) {
             return strpos($haystack, $needle) !== false;
         }
-        if ($haystack instanceof Traversable) {
+        if ($haystack instanceof \Traversable) {
             $haystack = iterator_to_array($haystack);
         }
         if (is_array($haystack)) {
             return in_array($needle, $haystack);
         }
-        throw new InvalidArgumentException('The in keyword expects an array, a string or a Traversable instance');
+        throw new \InvalidArgumentException('The in keyword expects an array, a string or a Traversable instance');
     }
 
     public function startsWith($data, $str)
@@ -200,28 +193,22 @@ abstract class Template
 
     public function __set($key, $value)
     {
-        $this->variables[$key] = $value;
+        $this->context->__set($key, $value);
     }
 
     public function __unset($key)
     {
-        unset($this->variables[$key]);
+        $this->context->__unset($key);
     }
 
     public function &__get($key)
     {
-        if (isset($this->variables[$key])) {
-            return $this->variables[$key];
-        }
-        if (!$this->environment->getOption('strict_mode', true)) {
-            return $key;
-        }
-        throw new OutOfBoundsException("Variable {$key} is not set.");
+        return $this->context->__get($key);
     }
 
     public function __isset($key)
     {
-        return isset($this->variables[$key]);
+        return $this->context->__isset($key);
     }
 
     public function getEmbeddedTemplates()
