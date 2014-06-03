@@ -23,11 +23,17 @@ abstract class Template
 
     private $parentTemplate = false;
     private $parentOf;
+    private $blocks;
 
     public function __construct(TemplateLoader $loader, Environment $environment)
     {
         $this->loader      = $loader;
         $this->environment = $environment;
+    }
+
+    protected function setBlocks(array $blocks)
+    {
+        $this->blocks = $blocks;
     }
 
     protected function setParentTemplate($parentTemplate)
@@ -131,34 +137,51 @@ abstract class Template
 
     public function renderBlock($blockName, Context $context, $parentBlock = false)
     {
-        $methodName = $blockName . 'Block';
-
         if ($this->parentOf) {
-            $self = $this->parentOf;
+            $base = $this->parentOf;
         } else {
-            $self = $this;
+            $base = $this;
         }
-
-        if (!method_exists($self, $methodName) || $parentBlock) {
-            if (!$this->parentOf || $parentBlock) {
-                $parent = $this->loader->load($this->parentTemplate);
-            } else {
-                $parent = $this;
-            }
-            if (method_exists($parent, $methodName)) {
-                $parent->$methodName($context);
-            }
+        $blockPresent = in_array($blockName, $base->blocks);
+        if ($parentBlock || !$blockPresent) {
+            $this->renderParentBlock($base, $blockName, $context);
+        } elseif ($blockPresent) {
+            $base->{'block_' . $blockName}($context);
         } else {
-            $self->$methodName($context);
+            throw new \RuntimeException("Block {$blockName} was not found.");
         }
     }
 
-    public function render(Context $context)
+    public function displayTemplate(Context $context)
     {
-        $parent           = $this->loader->load($this->parentTemplate);
+        //if this method is called the template must extend an other
+        $parent = $this->loader->load($this->parentTemplate);
+
         $oldParentOf      = $parent->parentOf;
         $parent->parentOf = $this;
-        $parent->render($context);
+
+        $parent->displayTemplate($context);
+
         $parent->parentOf = $oldParentOf;
+    }
+
+    /**
+     * @param Template $parent
+     * @param          $blockName
+     * @param Context  $context
+     *
+     * @throws \RuntimeException
+     */
+    private function renderParentBlock(Template $parent, $blockName, Context $context)
+    {
+        while ($parent->parentTemplate) {
+            $parent = $this->loader->load($parent->parentTemplate);
+            if (in_array($blockName, $parent->blocks)) {
+                $parent->{'block_' . $blockName}($context);
+
+                return;
+            }
+        }
+        throw new \RuntimeException("Parent for block '{$blockName}' was not found.");
     }
 }

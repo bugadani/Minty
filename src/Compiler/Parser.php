@@ -114,7 +114,7 @@ class Parser
                 $className
             )
         );
-        $this->classNode->addChild($this->parse($stream), 'render');
+        $this->classNode->addChild($this->parse($stream), '__main_template_block');
 
         return $fileNode;
     }

@@ -49,10 +49,7 @@ class ControllerHandler
                 return;
             }
         }
-        $layout = $this->templateLoader->load($this->currentLayout);
-        $layout->render(
-            $this->templateLoader->createContext($this->assignedVariables)
-        );
+        $this->templateLoader->render($this->currentLayout, $this->assignedVariables);
     }
 
     public function layout($template)

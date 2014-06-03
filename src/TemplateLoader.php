@@ -240,7 +240,7 @@ class TemplateLoader
     public function render($template, $variables = array())
     {
         $object = $this->load($template);
-        $object->render(
+        $object->displayTemplate(
             $this->createContext($variables)
         );
     }

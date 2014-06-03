@@ -93,14 +93,18 @@ class ClassNode extends Node
         $this->compileConstructor($compiler);
 
         //if this is a template which extends an other, don't generate a render method
-        if ($this->hasParentTemplate()) {
-            $this->removeChild('render');
+        if (!$this->hasParentTemplate()) {
+            //compile the main block method
+            /** @var $body RootNode */
+            $body = $this->getChild('__main_template_block');
+            $this->compileBlock($compiler, 'displayTemplate', $body);
         }
+        $this->removeChild('__main_template_block');
 
-        //compile methods
+        //compile blocks
         foreach ($this->getChildren() as $method => $body) {
             /** @var $body RootNode */
-            $this->compileMethod($compiler, $method, $body);
+            $this->compileBlock($compiler, 'block_' . $method, $body);
         }
 
         $compiler->outdent();
@@ -118,11 +122,14 @@ class ClassNode extends Node
         if ($this->hasParentTemplate()) {
             $compiler->indented('$this->setParentTemplate("%s");', $this->parentTemplateName);
         }
+        $compiler->indented('$this->setBlocks(')
+            ->compileArray(array_keys($this->getChildren()), false)
+            ->add(');');
         $compiler->outdent();
         $compiler->indented("}\n");
     }
 
-    private function compileMethod(Compiler $compiler, $method, RootNode $body)
+    private function compileBlock(Compiler $compiler, $method, RootNode $body)
     {
         $compiler->indented('public function %s(Context $context)', $method);
         $compiler->indented('{');

@@ -39,7 +39,6 @@ class BlockTag extends Tag
     public function parse(Parser $parser, Stream $stream)
     {
         $templateName = $stream->expect(Token::IDENTIFIER)->getValue();
-        $methodName   = $templateName . 'Block';
         $stream->expect(Token::EXPRESSION_END);
 
         $parser->enterBlock($templateName);
@@ -50,7 +49,7 @@ class BlockTag extends Tag
                     return $token->test(Token::TAG, 'endblock');
                 }
             ),
-            $methodName
+            $templateName
         );
         $parser->leaveBlock();
 
