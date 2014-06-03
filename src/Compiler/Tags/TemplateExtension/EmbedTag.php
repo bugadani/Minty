@@ -36,7 +36,7 @@ class EmbedTag extends Tag
             '$embedded = new %s($this->getLoader(), $this->getEnvironment());',
             $node->getData('template')
         );
-        $compiler->indented('$context = $loader->createContext(');
+        $compiler->indented('$context = $this->getLoader()->createContext(');
         if ($node->hasChild('arguments')) {
             $compiler
                 ->compileNode($node->getChild('arguments'));

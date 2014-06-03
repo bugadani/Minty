@@ -82,26 +82,11 @@ class ClassNode extends Node
         return 'Template_' . substr($path, $pos);
     }
 
-    public function getParentClassName()
-    {
-        if (!$this->embeddedTemplateClass) {
-            return $this->baseClass;
-        }
-
-        $path      = strtr($this->parentTemplateName, '/', '\\');
-        $pos       = strrpos('\\' . $path, '\\');
-        $className = substr($path, $pos);
-        $namespace = substr($path, 0, $pos);
-
-        return "{$this->namespace}\\{$namespace}Template_{$className}";
-    }
-
     public function compile(Compiler $compiler)
     {
         //compile constructor
-        $parentClass = $this->getParentClassName();
-        $className   = $this->getClassName();
-        $compiler->indented("class {$className} extends \\{$parentClass}");
+        $className = $this->getClassName();
+        $compiler->indented("class {$className} extends \\{$this->baseClass}");
         $compiler->indented('{');
         $compiler->indent();
 

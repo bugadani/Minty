@@ -140,10 +140,10 @@ abstract class Template
         }
 
         if (!method_exists($self, $methodName) || $parentBlock) {
-            if ($this->parentOf) {
-                $parent = $this;
-            } else {
+            if (!$this->parentOf || $parentBlock) {
                 $parent = $this->loader->load($this->parentTemplate);
+            } else {
+                $parent = $this;
             }
             if (method_exists($parent, $methodName)) {
                 $parent->$methodName($context);
