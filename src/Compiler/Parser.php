@@ -89,7 +89,7 @@ class Parser
             default:
                 $type = $token->getTypeString();
                 $line = $token->getLine();
-                throw new SyntaxException("Unexpected {$type} ({$value}) token", $line);
+                throw new ParseException("Unexpected {$type} ({$value}) token", $line);
         }
         if (isset($node)) {
             $node->setParent($root);
