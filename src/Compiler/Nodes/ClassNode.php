@@ -82,7 +82,9 @@ class ClassNode extends Node
 
     public function compile(Compiler $compiler)
     {
-        //compile constructor
+        //this is needed to convince PHPStorm that compileBlock receives a RootNode
+        /** @var $body RootNode */
+
         $className = $this->getClassName();
         $compiler->indented("class {$className} extends \\{$this->baseClass}");
         $compiler->indented('{');
@@ -90,13 +92,13 @@ class ClassNode extends Node
 
         $this->compileConstructor($compiler);
 
-        //if this is a template which extends an other, don't generate a render method
+        //if this is a template which extends an other, don't generate code for the default block
         if (!$this->hasParentTemplate()) {
             //compile the main block method
-            /** @var $body RootNode */
             $body = $this->getChild('__main_template_block');
             $this->compileBlock($compiler, 'displayTemplate', $body);
         } elseif (!$this->parentTemplateName instanceof DataNode) {
+            //compile a default displayTemplate that sets the parent template
             $compiler->indented('public function displayTemplate(Context $context)');
             $compiler->indented('{');
             $compiler->indent();
@@ -111,7 +113,6 @@ class ClassNode extends Node
 
         //compile blocks
         foreach ($this->getChildren() as $method => $body) {
-            /** @var $body RootNode */
             $this->compileBlock($compiler, 'block_' . $method, $body);
         }
 
