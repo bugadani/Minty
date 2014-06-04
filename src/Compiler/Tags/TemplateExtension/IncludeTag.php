@@ -11,6 +11,7 @@ namespace Modules\Templating\Compiler\Tags\TemplateExtension;
 
 use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\Nodes\TagNode;
+use Modules\Templating\Compiler\Nodes\TempVariableNode;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
 use Modules\Templating\Compiler\Tag;
@@ -25,36 +26,13 @@ class IncludeTag extends Tag
         return 'include';
     }
 
-    public function tokenize(Tokenizer $tokenizer, $expression)
-    {
-        $tokenizer->pushToken(Token::EXPRESSION_START, $this->getTag());
-
-        if (!strpos($expression, 'using')) {
-            $tokenizer->tokenizeExpression($expression);
-        } else {
-            list($template, $source) = explode('using', $expression);
-            $tokenizer->tokenizeExpression($template);
-            $tokenizer->pushToken(Token::EXPRESSION_END);
-            $tokenizer->pushToken(Token::EXPRESSION_START, 'using');
-            $tokenizer->tokenizeExpression($source);
-        }
-
-        $tokenizer->pushToken(Token::EXPRESSION_END);
-    }
-
     public function compile(Compiler $compiler, TagNode $node)
     {
         $compiler
             ->indented('$this->getLoader()->render(')
-            ->compileNode($node->getChild('template'));
-
-        if ($node->hasChild('arguments')) {
-            $compiler
-                ->add(', ')
-                ->compileNode($node->getChild('arguments'));
-        }
-
-        $compiler
+            ->compileNode($node->getChild('template'))
+            ->add(', ')
+            ->compileNode($node->getChild('arguments'))
             ->add(');');
     }
 
@@ -62,10 +40,15 @@ class IncludeTag extends Tag
     {
         $node = new TagNode($this);
 
-        $node->addChild($parser->parseExpression($stream), 'template');
-        if ($stream->nextTokenIf(Token::EXPRESSION_START, 'using')) {
-            $node->addChild($parser->parseExpression($stream), 'arguments');
+        $templateName = $parser->parseExpression($stream);
+        if ($stream->current()->test(Token::IDENTIFIER, 'using')) {
+            $contextNode = $parser->parseExpression($stream);
+        } else {
+            $contextNode = new TempVariableNode('context');
         }
+
+        $node->addChild($templateName, 'template');
+        $node->addChild($contextNode, 'arguments');
 
         return $node;
     }

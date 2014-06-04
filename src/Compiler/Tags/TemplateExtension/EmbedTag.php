@@ -11,8 +11,8 @@ namespace Modules\Templating\Compiler\Tags\TemplateExtension;
 
 use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\Nodes\ClassNode;
-use Modules\Templating\Compiler\Nodes\DataNode;
 use Modules\Templating\Compiler\Nodes\TagNode;
+use Modules\Templating\Compiler\Nodes\TempVariableNode;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
 use Modules\Templating\Compiler\Tag;
@@ -37,15 +37,23 @@ class EmbedTag extends Tag
             '$embedded = new %s($this->getLoader(), $this->getEnvironment());',
             $node->getData('template')
         );
-        $compiler->indented('$context = $this->getLoader()->createContext(');
-        if ($node->hasChild('arguments')) {
-            $compiler
-                ->compileNode($node->getChild('arguments'));
-        }
-        $compiler
-            ->add(');')
-            ->indented('$embedded->render($context);');
 
+        $compiler
+            ->indented('$embedded->setParentTemplate(')
+            ->compileNode($node->getChild('parentTemplate'))
+            ->add(');');
+
+        $compiler
+            ->indented('$embedded->displayTemplate(')
+            ->indent()
+            ->indented('$this->getLoader()->createContext(')
+            ->indent()
+            ->indented('')
+            ->compileNode($node->getChild('arguments'))
+            ->outdent()
+            ->indented(')')
+            ->outdent()
+            ->indented(');');
     }
 
     public function parse(Parser $parser, Stream $stream)
@@ -59,20 +67,24 @@ class EmbedTag extends Tag
                 $fileNode->getNextEmbeddedTemplateName()
             )
         );
-        $classNode->setParentTemplate(
-            new DataNode($stream->expect(Token::STRING)->getValue())
-        );
 
         $node = new TagNode($this, array(
             'template' => $classNode->getClassName()
         ));
+        $node->addChild(
+            $parser->parseExpression($stream),
+            'parentTemplate'
+        );
 
         $oldClassNode = $parser->getCurrentClassNode();
         $parser->setCurrentClassNode($classNode);
-        if ($stream->nextTokenIf(Token::IDENTIFIER, 'using')) {
-            $node->addChild($parser->parseExpression($stream), 'arguments');
+        if ($stream->current()->test(Token::IDENTIFIER, 'using')) {
+            $contextNode = $parser->parseExpression($stream);
+        } else {
+            $contextNode = new TempVariableNode('context');
         }
-        $stream->expect(Token::EXPRESSION_END);
+        $node->addChild($contextNode, 'arguments');
+        $stream->expectCurrent(Token::EXPRESSION_END);
 
         $classNode->addChild(
             $parser->parse(
@@ -81,7 +93,7 @@ class EmbedTag extends Tag
                     return $token->test(Token::TAG, 'endembed');
                 }
             ),
-            'render'
+            '__main_template_block'
         );
         $parser->setCurrentClassNode($oldClassNode);
 

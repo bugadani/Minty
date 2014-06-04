@@ -34,7 +34,7 @@ class ParentTag extends Tag
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        $compiler->indented('parent::renderBlock(')
+        $compiler->indented('$this->renderBlock(')
             ->compileString($node->getData('blockName'))
             ->add(', $context, true);');
     }
