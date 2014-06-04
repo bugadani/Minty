@@ -11,12 +11,11 @@ namespace Modules\Templating\Compiler;
 
 use Closure;
 use Modules\Templating\Compiler\Exceptions\ParseException;
-use Modules\Templating\Compiler\Exceptions\SyntaxException;
 use Modules\Templating\Compiler\Nodes\ClassNode;
 use Modules\Templating\Compiler\Nodes\DataNode;
 use Modules\Templating\Compiler\Nodes\FileNode;
-use Modules\Templating\Compiler\Nodes\RootNode;
 use Modules\Templating\Compiler\Nodes\PrintNode;
+use Modules\Templating\Compiler\Nodes\RootNode;
 use Modules\Templating\Environment;
 
 class Parser

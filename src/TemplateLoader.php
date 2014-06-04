@@ -131,29 +131,11 @@ class TemplateLoader
         //Run the Node Tree Visitors
         $this->environment->getNodeTreeTraverser()->traverse($node);
 
-        /** @var $relatedTemplates ClassNode[] */
-        $relatedTemplates = $node->getChildren();
-        $relatedNames     = array(
-            $relatedTemplates[0]->getTemplateName()
-        );
-
-        foreach ($relatedTemplates as $related) {
-            if ($related->hasParentTemplate()) {
-                $relatedNames[] = $related->getParentTemplate();
-            }
-        }
-
         //Compile the template
-        $compiler = $this->environment->getCompiler();
-        $compiled = $compiler->compile($node, $class);
+        $compiled = $this->environment->getCompiler()->compile($node, $class);
 
         //Compile and store the template
         $this->saveCompiledTemplate($compiled, $this->getCachePath($templateName));
-
-        //Compile the related templates
-        foreach (array_unique($relatedNames) as $template) {
-            $this->compileIfNeeded($template);
-        }
     }
 
     private function getErrorTemplate(TemplatingException $exception, $template, $source)
