@@ -133,7 +133,10 @@ class Module extends \Miny\Modules\Module
                 $templateName = $handler['template'];
             }
 
-            $this->display(
+            $container = $this->application->getContainer();
+            /** @var $loader TemplateLoader */
+            $loader = $container->get(__NAMESPACE__ . '\\TemplateLoader');
+            $loader->render(
                 $templateName,
                 array(
                     'request'  => $request,
@@ -148,25 +151,21 @@ class Module extends \Miny\Modules\Module
         if (!$this->hasConfiguration('exceptions')) {
             return;
         }
+        $container = $this->application->getContainer();
+        /** @var $loader TemplateLoader */
+        $loader = $container->get(__NAMESPACE__ . '\\TemplateLoader');
+
         $handlers = $this->getConfiguration('exceptions');
         if (!is_array($handlers)) {
-            $this->display($handlers, array('exception' => $exception));
+            $loader->render($handlers, array('exception' => $exception));
         } else {
             foreach ($handlers as $class => $handler) {
                 if ($exception instanceof $class) {
-                    $this->display($handler, array('exception' => $exception));
+                    $loader->render($handler, array('exception' => $exception));
 
                     return;
                 }
             }
         }
-    }
-
-    private function display($template, array $data)
-    {
-        $container = $this->application->getContainer();
-        /** @var $loader TemplateLoader */
-        $loader = $container->get(__NAMESPACE__ . '\\TemplateLoader');
-        $loader->render($template, $data);
     }
 }
