@@ -43,7 +43,7 @@ class FileLoader extends AbstractTemplateLoader
             return false;
         }
 
-        if (!$this->environment->getOption('reload', false)) {
+        if (!$this->environment->getOption('debug', false)) {
             return true;
         }
 
@@ -52,7 +52,6 @@ class FileLoader extends AbstractTemplateLoader
         }
 
         return filemtime($this->getPath($template)) < filemtime($cachePath);
-
     }
 
     public function exists($template)
