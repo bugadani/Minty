@@ -239,6 +239,9 @@ class TemplateLoader
 
     public function createContext($variables = array())
     {
+        if($variables instanceof Context) {
+            return $variables;
+        }
         $context = new Context($this->environment, $variables);
         $context->add($this->environment->getOption('global_variables'));
 
