@@ -64,7 +64,7 @@ class FunctionNode extends IdentifierNode
         } elseif ($environment->hasFunction($name)) {
             $function = $environment->getFunction($name);
 
-            if($function->getOption('needs_context')) {
+            if ($function->getOption('needs_context')) {
                 array_unshift($this->arguments, new TempVariableNode('context'));
             }
 

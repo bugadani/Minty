@@ -87,12 +87,7 @@ class EmbedTag extends Tag
         $stream->expectCurrent(Token::EXPRESSION_END);
 
         $classNode->addChild(
-            $parser->parse(
-                $stream,
-                function (Token $token) {
-                    return $token->test(Token::TAG, 'endembed');
-                }
-            ),
+            $parser->parseBlock($stream, 'endembed'),
             '__main_template_block'
         );
         $parser->setCurrentClassNode($oldClassNode);

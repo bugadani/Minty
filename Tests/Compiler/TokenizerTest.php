@@ -217,8 +217,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
         $stream = $this->tokenizer->tokenize('"{ test }"');
         $stream->expect(Token::TEXT, '"');
         $stream->expect(Token::TAG, 'test');
-        $stream->expect(Token::EXPRESSION_START, 'test');
-        $stream->expect(Token::EXPRESSION_END);
         $stream->expect(Token::TEXT, '"');
         $stream->expect(Token::EOF);
     }
@@ -227,8 +225,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
     {
         $stream = $this->tokenizer->tokenize('{ testblock }{ endtestblock }');
         $stream->expect(Token::TAG, 'testblock');
-        $stream->expect(Token::EXPRESSION_START, 'testblock');
-        $stream->expect(Token::EXPRESSION_END);
         $stream->expect(Token::TAG, 'endtestblock');
         $stream->expect(Token::EOF);
     }
@@ -267,8 +263,6 @@ new line
         $this->assertEquals(8, $stream->expect(Token::TEXT, ' ')->getLine());
         $this->assertEquals(12, $stream->expect(Token::TEXT, ' ')->getLine());
         $this->assertEquals(12, $stream->expect(Token::TAG, 'test')->getLine());
-        $this->assertEquals(12, $stream->expect(Token::EXPRESSION_START, 'test')->getLine());
-        $this->assertEquals(12, $stream->expect(Token::EXPRESSION_END)->getLine());
         $this->assertEquals(12, $stream->expect(Token::TEXT, "\n")->getLine());
         $this->assertEquals(13, $stream->expect(Token::EOF)->getLine());
     }

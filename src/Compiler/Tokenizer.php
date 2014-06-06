@@ -244,9 +244,8 @@ class Tokenizer
             }
         }
 
-        $tag = $this->tags[$tagName];
-        $tag->addNameToken($this);
-        $tag->tokenize($this, $expression);
+        $this->pushToken(Token::TAG, $tagName);
+        $this->tokenizeExpression($tagName, $expression);
     }
 
     private function tokenizeRawBlock()
@@ -328,11 +327,12 @@ class Tokenizer
         }
     }
 
-    public function tokenizeExpression($expression)
+    public function tokenizeExpression($tagName, $expression)
     {
         if ($expression === null || $expression === '') {
             return;
         }
+        $this->pushToken(Token::EXPRESSION_START, $tagName);
         $flags = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
         $parts = preg_split($this->expressionPartsPattern, $expression, 0, $flags);
         foreach ($parts as $part) {
@@ -346,6 +346,7 @@ class Tokenizer
                 }
             }
         }
+        $this->pushToken(Token::EXPRESSION_END);
     }
 
     public function pushToken($type, $value = null)

@@ -14,7 +14,6 @@ use Modules\Templating\Compiler\Nodes\TagNode;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
 use Modules\Templating\Compiler\Tag;
-use Modules\Templating\Compiler\Token;
 
 class ExtendsTag extends Tag
 {

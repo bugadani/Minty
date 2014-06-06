@@ -133,6 +133,16 @@ class Parser
         return $this->fileNode;
     }
 
+    public function parseBlock(Stream $stream, $endTags)
+    {
+        return $this->parse(
+            $stream,
+            function (Token $token) use ($endTags) {
+                return $token->test(Token::TAG, $endTags);
+            }
+        );
+    }
+
     public function parse(Stream $stream, Closure $endCondition = null)
     {
         ++$this->level;

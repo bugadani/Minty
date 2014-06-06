@@ -43,12 +43,7 @@ class BlockTag extends Tag
 
         $parser->enterBlock($templateName);
         $parser->getCurrentClassNode()->addChild(
-            $parser->parse(
-                $stream,
-                function (Token $token) {
-                    return $token->test(Token::TAG, 'endblock');
-                }
-            ),
+            $parser->parseBlock($stream, 'endblock'),
             $templateName
         );
         $parser->leaveBlock();

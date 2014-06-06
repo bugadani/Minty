@@ -102,17 +102,6 @@ class ForTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $elseTest = function (Token $token) {
-            if ($token->test(Token::EXPRESSION_START, 'else')) {
-                return true;
-            }
-
-            return $token->test(Token::TAG, 'endfor');
-        };
-        $endTest  = function (Token $token) {
-            return $token->test(Token::TAG, 'endfor');
-        };
-
         $node = new TagNode($this, array(
             'save_temp_var' => true,
             'create_stack'  => true
@@ -127,11 +116,10 @@ class ForTag extends Tag
 
         $node->addChild($parser->parseExpression($stream), 'source');
         $node->addChild(new VariableNode($loopVar), 'loop_variable');
-        $node->addChild($parser->parse($stream, $elseTest), 'loop_body');
+        $node->addChild($parser->parseBlock($stream, array('else', 'endfor')), 'loop_body');
 
-        if ($stream->current()->test(Token::EXPRESSION_START, 'else')) {
-            $stream->expect(Token::EXPRESSION_END);
-            $node->addChild($parser->parse($stream, $endTest), 'else');
+        if ($stream->current()->test(Token::TAG, 'else')) {
+            $node->addChild($parser->parseBlock($stream, 'endfor'), 'else');
         }
 
         return $node;

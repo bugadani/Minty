@@ -12,7 +12,6 @@ namespace Modules\Templating;
 use Miny\Log\AbstractLog;
 use Miny\Log\Log;
 use Modules\Templating\Compiler\Exceptions\TemplatingException;
-use Modules\Templating\Compiler\Nodes\ClassNode;
 use Modules\Templating\Compiler\Nodes\DataNode;
 use RuntimeException;
 
@@ -191,7 +190,7 @@ class TemplateLoader
      */
     public function load($template)
     {
-        if(isset($this->loadedTemplates[$template])) {
+        if (isset($this->loadedTemplates[$template])) {
             return $this->loadedTemplates[$template];
         }
         $class = $this->loader->getTemplateClassName($template);
@@ -208,7 +207,7 @@ class TemplateLoader
         /** @var $object Template */
         $object = new $class($this, $this->environment);
 
-        $relatedTemplates = $object->getEmbeddedTemplates();
+        $relatedTemplates   = $object->getEmbeddedTemplates();
         $relatedTemplates[] = $object->getParentTemplate();
 
         foreach ($relatedTemplates as $file) {
@@ -239,7 +238,7 @@ class TemplateLoader
 
     public function createContext($variables = array())
     {
-        if($variables instanceof Context) {
+        if ($variables instanceof Context) {
             return $variables;
         }
         $context = new Context($this->environment, $variables);

@@ -19,11 +19,6 @@ use Modules\Templating\Compiler\Tokenizer;
 abstract class MetaTag extends Tag
 {
 
-    public function addNameToken(Tokenizer $tokenizer)
-    {
-
-    }
-
     public function parse(Parser $parser, Stream $stream)
     {
 
