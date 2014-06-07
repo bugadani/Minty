@@ -78,7 +78,7 @@ class IfTag extends Tag
             $body = $parser->parseBlock($stream, array('else', 'elseif', 'endif'));
             $branchNode->addChild($body, 'body');
 
-            $token = $stream->expectCurrent(Token::TAG);
+            $token   = $stream->expectCurrent(Token::TAG);
             $tagName = $token->getValue();
             if ($tagName === 'else') {
                 $condition = null;

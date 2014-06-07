@@ -2,7 +2,6 @@
 
 namespace Modules\Templating\Compiler;
 
-use Modules\Templating\Compiler\Exceptions\ParseException;
 use Modules\Templating\Environment;
 
 class ParserTest extends \PHPUnit_Framework_TestCase

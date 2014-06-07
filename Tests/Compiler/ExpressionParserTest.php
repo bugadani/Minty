@@ -72,7 +72,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
 
         $multLeftNode  = $multNode->getChild(OperatorNode::OPERAND_LEFT);
         $multRightNode = $multNode->getChild(OperatorNode::OPERAND_RIGHT);
-        $dataNode = $plusNode->getChild(OperatorNode::OPERAND_RIGHT);
+        $dataNode      = $plusNode->getChild(OperatorNode::OPERAND_RIGHT);
 
         $this->assertSame($this->multiplyOperator, $multNode->getOperator());
         $this->assertSame($this->plusOperator, $plusNode->getOperator());
