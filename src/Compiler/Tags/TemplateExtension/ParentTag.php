@@ -25,8 +25,6 @@ class ParentTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $stream->next();
-
         return new TagNode($this, array(
             'blockName' => $parser->getCurrentBlock()
         ));

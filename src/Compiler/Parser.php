@@ -9,7 +9,6 @@
 
 namespace Modules\Templating\Compiler;
 
-use Closure;
 use Modules\Templating\Compiler\Exceptions\ParseException;
 use Modules\Templating\Compiler\Nodes\ClassNode;
 use Modules\Templating\Compiler\Nodes\DataNode;
@@ -41,6 +40,7 @@ class Parser
      * @var FileNode
      */
     private $fileNode;
+
     /**
      * @var ClassNode
      */
@@ -80,7 +80,7 @@ class Parser
                     $line = $token->getLine();
                     throw new ParseException("Unknown {$value} tag", $line);
                 }
-                $stream->next();
+                $stream->nextTokenIf(Token::EXPRESSION_START, $value);
 
                 $node = $this->tags[$value]->parse($this, $stream);
                 break;
@@ -113,7 +113,10 @@ class Parser
                 $className
             )
         );
-        $this->classNode->addChild($this->parse($stream), '__main_template_block');
+        $this->classNode->addChild(
+            $this->parseBlock($stream, null, Token::EOF),
+            '__main_template_block'
+        );
 
         return $fileNode;
     }
@@ -133,31 +136,16 @@ class Parser
         return $this->fileNode;
     }
 
-    public function parseBlock(Stream $stream, $endTags)
-    {
-        return $this->parse(
-            $stream,
-            function (Token $token) use ($endTags) {
-                return $token->test(Token::TAG, $endTags);
-            }
-        );
-    }
-
-    public function parse(Stream $stream, Closure $endCondition = null)
+    public function parseBlock(Stream $stream, $endTags, $type = Token::TAG)
     {
         ++$this->level;
         $root  = new RootNode();
         $token = $stream->next();
 
-        if ($endCondition) {
-            while (!$endCondition($token)) {
-                $token = $this->parseToken($stream, $root);
-            }
-        } else {
-            while (!$token->test(Token::EOF)) {
-                $token = $this->parseToken($stream, $root);
-            }
+        while (!$token->test($type, $endTags)) {
+            $token = $this->parseToken($stream, $root);
         }
+
         --$this->level;
 
         return $root;
