@@ -61,7 +61,7 @@ class Token
             return true;
         }
         if (is_callable($value)) {
-            return $value($this->value);
+            return call_user_func($value, $this->value);
         }
 
         return false;
