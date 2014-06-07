@@ -122,7 +122,7 @@ class ExpressionParser
     private function parseIdentifier($identifier)
     {
         if ($this->stream->nextTokenIf(Token::PUNCTUATION, '(')) {
-            // function call
+            //function call
             $node = new FunctionNode(
                 $identifier,
                 $this->parseArgumentList()
@@ -170,12 +170,12 @@ class ExpressionParser
 
     private function parseArray()
     {
-        //iterate over tokens
         $node  = new ArrayNode();
         $token = $this->stream->current();
 
+        //iterate over tokens
         while (!$token->test(Token::PUNCTUATION, ']')) {
-            // Checking here allows for a trailing comma.
+            //Checking here allows for a trailing comma.
             if ($this->stream->nextTokenIf(Token::PUNCTUATION, ']')) {
                 break;
             }
@@ -357,6 +357,7 @@ class ExpressionParser
                 return false;
             }
 
+            //e.g. (5 divisible by 2 disivible by 3) is not considered valid
             $symbols = $operator->operators();
             if (is_array($symbols)) {
                 $symbols = implode(', ', $symbols);

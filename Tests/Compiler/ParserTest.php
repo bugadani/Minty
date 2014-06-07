@@ -2,6 +2,7 @@
 
 namespace Modules\Templating\Compiler;
 
+use Modules\Templating\Compiler\Exceptions\ParseException;
 use Modules\Templating\Environment;
 
 class ParserTest extends \PHPUnit_Framework_TestCase
@@ -94,8 +95,8 @@ class ParserTest extends \PHPUnit_Framework_TestCase
         $this->parser->parseTemplate($stream, 'foo');
     }
 
-    public function testParseBlockStopsAtClosingTag(){
-
+    public function testParseBlockStopsAtClosingTag()
+    {
         $stream = new Stream(array(
             new Token(Token::TAG, 'testblock'),
             new Token(Token::TAG, 'test'),
@@ -106,5 +107,29 @@ class ParserTest extends \PHPUnit_Framework_TestCase
 
         $this->parser->parseBlock($stream, 'endtestblock');
         $this->assertTrue($stream->current()->test(Token::TAG, 'endtestblock'));
+    }
+
+    /**
+     * @expectedException \Modules\Templating\Compiler\Exceptions\ParseException
+     */
+    public function testExceptionIsThrownForUnknownTags()
+    {
+        $stream = new Stream(array(
+            new Token(Token::TAG, 'footag'),
+            new Token(Token::EOF)
+        ));
+        $this->parser->parseTemplate($stream, 'foo');
+    }
+
+    /**
+     * @expectedException \Modules\Templating\Compiler\Exceptions\ParseException
+     */
+    public function testExceptionIsThrownForTokensThatAreNotExpected()
+    {
+        $stream = new Stream(array(
+            new Token(Token::LITERAL, 'foo'),
+            new Token(Token::EOF)
+        ));
+        $this->parser->parseTemplate($stream, 'foo');
     }
 }
