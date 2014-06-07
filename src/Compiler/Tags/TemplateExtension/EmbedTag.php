@@ -39,11 +39,6 @@ class EmbedTag extends Tag
         );
 
         $compiler
-            ->indented('$embedded->setParentTemplate(')
-            ->compileNode($node->getChild('parentTemplate'))
-            ->add(');');
-
-        $compiler
             ->indented('$embedded->displayTemplate(')
             ->indent()
             ->indented('$this->getLoader()->createContext(')
@@ -71,10 +66,7 @@ class EmbedTag extends Tag
         $node = new TagNode($this, array(
             'template' => $classNode->getClassName()
         ));
-        $node->addChild(
-            $parser->parseExpression($stream),
-            'parentTemplate'
-        );
+        $classNode->setParentTemplate($parser->parseExpression($stream));
 
         $oldClassNode = $parser->getCurrentClassNode();
         $parser->setCurrentClassNode($classNode);
