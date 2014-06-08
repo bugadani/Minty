@@ -126,7 +126,9 @@ class Tokenizer
         $this->position = -1;
 
         $template    = str_replace(array("\r\n", "\n\r", "\r"), "\n", $template);
-        $this->parts = preg_split($this->tokenSplitPattern, $template, 0, PREG_SPLIT_DELIM_CAPTURE);
+
+        $flags       = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
+        $this->parts = preg_split($this->tokenSplitPattern, $template, 0, $flags);
 
         $currentText = '';
         while (isset($this->parts[++$this->position])) {

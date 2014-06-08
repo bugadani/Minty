@@ -166,7 +166,6 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
      */
     public function testArraySyntaxElements($stream)
     {
-
         $this->assertInstanceOf(
             '\\Modules\\Templating\\Compiler\\Nodes\\ArrayNode',
             $this->expressionParser->parse($stream)
