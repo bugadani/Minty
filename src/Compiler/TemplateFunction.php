@@ -30,7 +30,8 @@ abstract class TemplateFunction
         $defaults      = array(
             'is_safe'       => false,
             'compiler'      => __NAMESPACE__ . '\\FunctionCompiler',
-            'needs_context' => false
+            'needs_context' => false,
+            'needs_environment' => false
         );
         $this->options = array_merge($defaults, $options);
     }

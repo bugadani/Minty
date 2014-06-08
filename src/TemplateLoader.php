@@ -72,7 +72,7 @@ class TemplateLoader
         $this->log('Compiling %s', $template);
 
         //Read the template
-        $templateSource = $this->loader->load($template);
+        $templateSource = $this->getSource($template);
 
         //Compile and optimize the template
         try {
@@ -83,6 +83,16 @@ class TemplateLoader
             $templateSource = $this->getErrorTemplate($e, $template, $templateSource);
             $this->compileString($templateSource, $template);
         }
+    }
+
+    /**
+     * @param $template The template name
+     *
+     * @return string
+     */
+    public function getSource($template)
+    {
+        return $this->loader->load($template);
     }
 
     /**

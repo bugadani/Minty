@@ -82,6 +82,7 @@ use Modules\Templating\Compiler\Tags\TemplateExtension\ExtendsTag;
 use Modules\Templating\Compiler\Tags\TemplateExtension\IncludeTag;
 use Modules\Templating\Compiler\Tags\TemplateExtension\ParentTag;
 use Modules\Templating\Context;
+use Modules\Templating\Environment;
 use Modules\Templating\Extension;
 use Traversable;
 
@@ -240,6 +241,7 @@ class Core extends Extension
             new MethodFunction('shuffle', 'shuffleFunction'),
             new MethodFunction('slice', 'sliceFunction'),
             new MethodFunction('sort', 'sortFunction'),
+            new MethodFunction('source', 'sourceFunction'),
             new MethodFunction('spacify', 'spacifyFunction'),
             new MethodFunction('split', 'splitFunction'),
             new SimpleFunction('striptags', 'strip_tags', array('is_safe' => true)),
@@ -479,6 +481,11 @@ class Core extends Extension
         }
 
         return $data;
+    }
+
+    public function sourceFunction(Environment $environment, $template)
+    {
+        return $environment->getTemplateLoader()->getSource($template);
     }
 
     public function spacifyFunction($string, $delimiter = ' ')

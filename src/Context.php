@@ -23,6 +23,11 @@ class Context
         $this->variables   = $this->ensureArray($variables);
     }
 
+    public function getEnvironment()
+    {
+        return $this->environment;
+    }
+
     public function clean()
     {
         $this->variables = array();

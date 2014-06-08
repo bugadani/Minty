@@ -64,15 +64,16 @@ class Module extends \Miny\Modules\Module
     public function setupEnvironment(Container $container)
     {
         $env = new Environment($this->getConfiguration('options'));
+        //Environment is a dependency of TemplateLoader so this line is needed
+        //to avoid infinite recursion
+        $container->setInstance($env);
+        $env->setTemplateLoader($container->get(__NAMESPACE__ . '\\TemplateLoader'));
 
         $env->addExtension(new Core());
         $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Optimizer'));
         $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Miny'));
 
         if ($env->getOption('debug', false)) {
-            //Environment is a dependency of Debug extension so this line is needed
-            //to avoid infinite recursion
-            $container->setInstance($env);
             $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Debug'));
 
             if ($env->getOption('enable_node_tree_visualizer', false)) {

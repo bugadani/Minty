@@ -88,11 +88,29 @@ class Environment
     private $nodeTreeTraverser;
 
     /**
+     * @var TemplateLoader
+     */
+    private $templateLoader;
+
+    /**
      * @param array $options
      */
     public function __construct(array $options = array())
     {
         $this->options = $options;
+    }
+
+    public function setTemplateLoader(TemplateLoader $templateLoader)
+    {
+        $this->templateLoader = $templateLoader;
+    }
+
+    /**
+     * @return TemplateLoader
+     */
+    public function getTemplateLoader()
+    {
+        return $this->templateLoader;
     }
 
     /**
