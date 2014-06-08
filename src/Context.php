@@ -112,6 +112,8 @@ class Context
     {
         if (is_array($variables)) {
             //do nothing
+        } elseif ($variables === null) {
+            $variables = array();
         } elseif (method_exists($variables, 'toArray')) {
             $variables = $variables->toArray();
         } elseif ($variables instanceof \Traversable) {
