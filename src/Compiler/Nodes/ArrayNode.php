@@ -47,10 +47,10 @@ class ArrayNode extends Node
                 $compiler->add(', ');
             }
             if (isset($this->keys[$i])) {
-                $this->keys[$i]->compile($compiler);
+                $compiler->compileNode($this->keys[$i]);
                 $compiler->add(' => ');
             }
-            $this->values[$i]->compile($compiler);
+            $compiler->compileNode($this->values[$i]);
         }
         $compiler->add(')');
     }
