@@ -125,7 +125,7 @@ class Tokenizer
         $this->tokens   = new Stream();
         $this->position = -1;
 
-        $template    = str_replace(array("\r\n", "\n\r", "\r"), "\n", $template);
+        $template = str_replace(array("\r\n", "\n\r", "\r"), "\n", $template);
 
         $flags       = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
         $this->parts = preg_split($this->tokenSplitPattern, $template, 0, $flags);
