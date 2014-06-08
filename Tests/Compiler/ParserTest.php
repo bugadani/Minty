@@ -108,6 +108,39 @@ class ParserTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($stream->current()->test(Token::TAG, 'endtestblock'));
     }
 
+    public function testMainScopeChangesToFalseInBlocks()
+    {
+        $test = $this;
+        $this->tag->expects($this->once())
+            ->method('parse')
+            ->will(
+                $this->returnCallback(
+                    function (Parser $parser) use ($test) {
+                        $test->assertFalse($parser->inMainScope());
+                    }
+                )
+            );
+        $this->blockTag->expects($this->once())
+            ->method('parse')
+            ->will(
+                $this->returnCallback(
+                    function (Parser $parser, Stream $stream) use ($test) {
+                        $test->assertTrue($parser->inMainScope());
+                        $parser->parseBlock($stream, 'endtestblock');
+                    }
+                )
+            );
+        $stream = new Stream(array(
+            new Token(Token::TAG, 'testblock'),
+            new Token(Token::TAG, 'test'),
+            new Token(Token::TEXT, 'this will be skipped'),
+            new Token(Token::TAG, 'endtestblock'),
+            new Token(Token::EOF)
+        ));
+
+        $this->parser->parseTemplate($stream, 'foo');
+    }
+
     /**
      * @expectedException \Modules\Templating\Compiler\Exceptions\ParseException
      */
@@ -130,5 +163,26 @@ class ParserTest extends \PHPUnit_Framework_TestCase
             new Token(Token::EOF)
         ));
         $this->parser->parseTemplate($stream, 'foo');
+    }
+
+    /**
+     * @expectedException \Modules\Templating\Compiler\Exceptions\ParseException
+     */
+    public function testExceptionIsThrownWhenNotInBlock()
+    {
+        $this->parser->getCurrentBlock();
+    }
+
+    public function testBlocksCanBeNested()
+    {
+        $this->parser->enterBlock('a');
+        $this->parser->enterBlock('b');
+        $this->parser->enterBlock('c');
+        $this->assertEquals('c', $this->parser->getCurrentBlock());
+        $this->parser->leaveBlock();
+        $this->assertEquals('b', $this->parser->getCurrentBlock());
+        $this->parser->leaveBlock();
+        $this->assertEquals('a', $this->parser->getCurrentBlock());
+        $this->parser->leaveBlock();
     }
 }
