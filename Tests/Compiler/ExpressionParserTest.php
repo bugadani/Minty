@@ -113,4 +113,63 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(6, $plusLeftNode->getData());
         $this->assertEquals(7, $plusRightNode->getData());
     }
+
+    public function simpleArrayProvider()
+    {
+        return array(
+            array(
+                new Stream(array(
+                    new Token(Token::PUNCTUATION, '['),
+                    new Token(Token::STRING, 'foo'),
+                    new Token(Token::PUNCTUATION, ':'),
+                    new Token(Token::STRING, 'bar'),
+                    new Token(Token::PUNCTUATION, ']'),
+                    new Token(Token::EOF)
+                ))
+            ),
+            array(
+                new Stream(array(
+                    new Token(Token::PUNCTUATION, '['),
+                    new Token(Token::STRING, 'foo'),
+                    new Token(Token::PUNCTUATION, '=>'),
+                    new Token(Token::STRING, 'bar'),
+                    new Token(Token::PUNCTUATION, ']'),
+                    new Token(Token::EOF)
+                ))
+            ),
+            array(
+                new Stream(array(
+                    new Token(Token::PUNCTUATION, '['),
+                    new Token(Token::STRING, 'foo'),
+                    new Token(Token::PUNCTUATION, ','),
+                    new Token(Token::STRING, 'bar'),
+                    new Token(Token::PUNCTUATION, ']'),
+                    new Token(Token::EOF)
+                ))
+            ),
+            array(
+                new Stream(array(
+                    new Token(Token::PUNCTUATION, '['),
+                    new Token(Token::STRING, 'foo'),
+                    new Token(Token::PUNCTUATION, '=>'),
+                    new Token(Token::STRING, 'bar'),
+                    new Token(Token::PUNCTUATION, ','),
+                    new Token(Token::PUNCTUATION, ']'),
+                    new Token(Token::EOF)
+                ))
+            )
+        );
+    }
+
+    /**
+     * @dataProvider simpleArrayProvider
+     */
+    public function testArraySyntaxElements($stream)
+    {
+
+        $this->assertInstanceOf(
+            '\\Modules\\Templating\\Compiler\\Nodes\\ArrayNode',
+            $this->expressionParser->parse($stream)
+        );
+    }
 }
