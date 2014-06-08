@@ -11,6 +11,7 @@ namespace Modules\Templating;
 
 use Miny\Log\AbstractLog;
 use Miny\Log\Log;
+use Modules\Templating\Compiler\Exceptions\TemplateNotFoundException;
 use Modules\Templating\Compiler\Exceptions\TemplatingException;
 use Modules\Templating\Compiler\Nodes\DataNode;
 use RuntimeException;
@@ -63,25 +64,11 @@ class TemplateLoader
 
     private function compileIfNeeded($template)
     {
-        if (!$this->loader->exists($template)) {
-            $this->log('Template %s is not found', $template);
-            throw new RuntimeException("Template not found: {$template}");
-        }
         if ($this->loader->isCacheFresh($template)) {
             //The template is already compiled and up to date
             return;
         }
 
-        $this->compileTemplateByName($template);
-    }
-
-    /**
-     * @param $template
-     *
-     * @return string
-     */
-    private function compileTemplateByName($template)
-    {
         $this->log('Compiling %s', $template);
 
         //Read the template
@@ -182,6 +169,24 @@ class TemplateLoader
         "{parent}{{$closingTagPrefix}block}";
     }
 
+    private function findFirstExistingTemplate($templates)
+    {
+        if (is_array($templates)) {
+            foreach ($templates as $template) {
+                if ($this->loader->exists($template)) {
+                    return $template;
+                }
+            }
+            $this->log('Template %s were not found', implode(', ', $templates));
+            throw new TemplateNotFoundException(implode(', ', $templates));
+        } elseif (!$this->loader->exists($templates)) {
+            $this->log('Template %s was not found', $templates);
+            throw new TemplateNotFoundException($templates);
+        }
+
+        return $templates;
+    }
+
     /**
      * @param $template
      *
@@ -190,6 +195,7 @@ class TemplateLoader
      */
     public function load($template)
     {
+        $template = $this->findFirstExistingTemplate($template);
         if (isset($this->loadedTemplates[$template])) {
             return $this->loadedTemplates[$template];
         }
@@ -197,12 +203,6 @@ class TemplateLoader
 
         $this->log('Loading %s', $template);
         $this->compileIfNeeded($template);
-
-        if (!class_exists($class)) {
-            $file = $this->getCachePath($template);
-            $this->log('Template %s was not found in file %s', $class, $file);
-            throw new RuntimeException("Template not found: {$template}");
-        }
 
         /** @var $object Template */
         $object = new $class($this, $this->environment);

@@ -9,6 +9,8 @@
 
 namespace Modules\Templating;
 
+use Modules\Templating\Compiler\Exceptions\TemplateNotFoundException;
+
 abstract class Template
 {
     /**
@@ -21,8 +23,19 @@ abstract class Template
      */
     private $environment;
 
+    /**
+     * @var bool|string The name of the parent template if there is one
+     */
     private $parentTemplate = false;
+
+    /**
+     * @var Template
+     */
     private $parentOf;
+
+    /**
+     * @var array
+     */
     private $blocks;
 
     public function __construct(TemplateLoader $loader, Environment $environment)
@@ -39,6 +52,11 @@ abstract class Template
     protected function setParentTemplate($parentTemplate)
     {
         $this->parentTemplate = $parentTemplate;
+    }
+
+    public function getParentTemplate()
+    {
+        return $this->parentTemplate;
     }
 
     public function getLoader()
@@ -123,11 +141,6 @@ abstract class Template
     public function endsWith($data, $str)
     {
         return strpos($data, $str) === strlen($data) - strlen($str);
-    }
-
-    public function getParentTemplate()
-    {
-        return $this->parentTemplate;
     }
 
     public function getEmbeddedTemplates()
