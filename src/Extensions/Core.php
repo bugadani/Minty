@@ -241,7 +241,7 @@ class Core extends Extension
             new MethodFunction('shuffle', 'shuffleFunction'),
             new MethodFunction('slice', 'sliceFunction'),
             new MethodFunction('sort', 'sortFunction'),
-            new MethodFunction('source', 'sourceFunction'),
+            new MethodFunction('source', 'sourceFunction', array('needs_environment' => true)),
             new MethodFunction('spacify', 'spacifyFunction'),
             new MethodFunction('split', 'splitFunction'),
             new SimpleFunction('striptags', 'strip_tags', array('is_safe' => true)),
