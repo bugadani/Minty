@@ -41,16 +41,17 @@ class TemplateFunction
         if ($callback === null) {
             $callback = $name;
         }
-        if (!is_callable($callback)) {
-            throw new \InvalidArgumentException('$callback must be a callable value');
+        if (!is_callable($callback) && !isset($options['compiler'])) {
+            throw new \InvalidArgumentException("\$callback for function {$name} must be a callable value");
         }
-        $defaults      = array(
+        $this->callback = $callback;
+        $defaults       = array(
             'is_safe'           => false,
             'compiler'          => __NAMESPACE__ . '\\FunctionCompiler',
             'needs_context'     => false,
             'needs_environment' => false
         );
-        $this->options = array_merge($defaults, $options);
+        $this->options  = array_merge($defaults, $options);
     }
 
     public function getOption($key)

@@ -45,7 +45,7 @@ class Module extends \Miny\Modules\Module
         $container->addAlias(
             __NAMESPACE__ . '\\Environment',
             function (Container $container) use ($module) {
-                $module->setupEnvironment($container);
+                return $module->setupEnvironment($container);
             }
         );
         $container->addAlias(
