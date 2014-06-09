@@ -243,7 +243,7 @@ new line
 
  multiline comment
 
-#} {test}
+#} {test      }
 ';
         $stream   = $this->tokenizer->tokenize($template);
         $this->assertEquals(1, $stream->expect(Token::TEXT, "some text\n")->getLine());

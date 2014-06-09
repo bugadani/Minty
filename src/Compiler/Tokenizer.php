@@ -233,7 +233,7 @@ class Tokenizer
     {
         //Try to find the tag name
         preg_match('/(.*?)(\s.*|)$/ADs', $tag, $parts);
-        list(, $tagName, $expression) = $parts;
+        $tagName = $parts[1];
 
         //If the tag name is unknown, try to use the fallback
         if (!isset($this->tags[$tagName])) {
@@ -243,10 +243,31 @@ class Tokenizer
             if (!isset($this->tags[$tagName])) {
                 throw new ParseException("Unknown tag \"{$tagName}\"", $this->line);
             }
+        } else {
+            $expression = $parts[2];
         }
-
         $this->pushToken(Token::TAG, $tagName);
-        $this->tokenizeExpression($tagName, $expression);
+
+        //tokenize the tag expression if any
+        if ($expression !== '') {
+            $this->pushToken(Token::EXPRESSION_START, $tagName);
+
+            $flags = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
+            $parts = preg_split($this->expressionPartsPattern, $expression, 0, $flags);
+
+            foreach ($parts as $part) {
+                //We can safely skip spaces
+                if ($part !== ' ') {
+                    if (trim($part) === '') {
+                        //Whitespace strings only matter for line numbering
+                        $this->line += substr_count($part, "\n");
+                    } else {
+                        $this->tokenizeExpressionPart($part);
+                    }
+                }
+            }
+            $this->pushToken(Token::EXPRESSION_END);
+        }
     }
 
     private function tokenizeRawBlock()
@@ -326,28 +347,6 @@ class Tokenizer
                     break;
             }
         }
-    }
-
-    public function tokenizeExpression($tagName, $expression)
-    {
-        if ($expression === null || $expression === '') {
-            return;
-        }
-        $this->pushToken(Token::EXPRESSION_START, $tagName);
-        $flags = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
-        $parts = preg_split($this->expressionPartsPattern, $expression, 0, $flags);
-        foreach ($parts as $part) {
-            //We can safely skip spaces
-            if ($part !== ' ') {
-                if (trim($part) === '') {
-                    //Whitespace strings only matter for line numbering
-                    $this->line += substr_count($part, "\n");
-                } else {
-                    $this->tokenizeExpressionPart($part);
-                }
-            }
-        }
-        $this->pushToken(Token::EXPRESSION_END);
     }
 
     public function pushToken($type, $value = null)
