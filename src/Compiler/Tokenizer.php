@@ -232,12 +232,11 @@ class Tokenizer
     private function processTag($tag)
     {
         //Try to find the tag name
-        preg_match("/(.*?)([ (\n\t].*|)$/ADs", $tag, $parts);
+        preg_match('/(.*?)(\s.*|)$/ADs', $tag, $parts);
         list(, $tagName, $expression) = $parts;
 
         //If the tag name is unknown, try to use the fallback
         if (!isset($this->tags[$tagName])) {
-            //This is problematic when someone wants to call a function named like a tag...
             $tagName    = $this->fallbackTagName;
             $expression = $tag;
 

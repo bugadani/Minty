@@ -56,6 +56,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
         $mockEnv->getBinaryOperators()->addOperator($otherOperator);
         $mockEnv->addTag($testTag);
         $mockEnv->addTag($testBlockTag);
+        $mockEnv->addFunction(new TemplateFunction('test', function(){}));
 
         $this->tokenizer   = new Tokenizer($mockEnv);
         $this->environment = $mockEnv;
@@ -315,5 +316,22 @@ new line
 
         $tokenizer = new Tokenizer($this->environment);
         $tokenizer->tokenize('{foo tag}');
+
+        return $tokenizer;
+    }
+
+    /**
+     * @depends testTokenizerUsesFallbackTagForUnknownTags
+     */
+    public function testFunctionWithSameNameAsTagIsNotTokenizedAsTag(Tokenizer $tokenizer)
+    {
+        $stream = $tokenizer->tokenize('{test()}');
+        $stream->expect(Token::TAG, 'fallback');
+        $stream->expect(Token::EXPRESSION_START, 'fallback');
+        $stream->expect(Token::IDENTIFIER, 'test');
+        $stream->expect(Token::PUNCTUATION, '(');
+        $stream->expect(Token::PUNCTUATION, ')');
+        $stream->expect(Token::EXPRESSION_END);
+        $stream->expect(Token::EOF);
     }
 }
