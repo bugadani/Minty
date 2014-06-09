@@ -29,7 +29,6 @@ abstract class Extension
     public function registerFunctions(Environment $environment)
     {
         foreach ($this->getFunctions() as $function) {
-            $function->setExtensionName($this->extensionName);
             $environment->addFunction($function);
         }
     }

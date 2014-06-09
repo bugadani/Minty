@@ -12,8 +12,6 @@ namespace Modules\Templating\Extensions;
 use ArrayAccess;
 use Countable;
 use InvalidArgumentException;
-use Modules\Templating\Compiler\Functions\MethodFunction;
-use Modules\Templating\Compiler\Functions\SimpleFunction;
 use Modules\Templating\Compiler\Operator;
 use Modules\Templating\Compiler\Operators\ArithmeticOperators\AdditionOperator;
 use Modules\Templating\Compiler\Operators\ArithmeticOperators\DivisionOperator;
@@ -81,6 +79,7 @@ use Modules\Templating\Compiler\Tags\TemplateExtension\EmbedTag;
 use Modules\Templating\Compiler\Tags\TemplateExtension\ExtendsTag;
 use Modules\Templating\Compiler\Tags\TemplateExtension\IncludeTag;
 use Modules\Templating\Compiler\Tags\TemplateExtension\ParentTag;
+use Modules\Templating\Compiler\TemplateFunction;
 use Modules\Templating\Context;
 use Modules\Templating\Environment;
 use Modules\Templating\Extension;
@@ -200,367 +199,369 @@ class Core extends Extension
         return $tags;
     }
 
-    public function getFunctions()
+    function template_function_gets()
     {
         return array(
-            new SimpleFunction('abs'),
-            new MethodFunction('arguments', 'argumentsFunction', array('is_safe' => true)),
-            new MethodFunction('batch', 'batchFunction'),
-            new SimpleFunction('capitalize', 'ucfirst'),
-            new SimpleFunction('count'),
-            new MethodFunction('cycle', 'cycleFunction'),
-            new SimpleFunction('default', null, array('compiler' => '\Modules\Templating\Extensions\Compilers\DefaultCompiler')),
-            new MethodFunction('date_format', 'dateFormatFunction'),
-            new MethodFunction('extract', 'extractFunction', array('needs_context' => true)),
-            new MethodFunction('first', 'firstFunction'),
-            new SimpleFunction('format', 'sprintf'),
-            new SimpleFunction('is_int'),
-            new SimpleFunction('is_numeric'),
-            new SimpleFunction('is_string'),
-            new MethodFunction('join', 'joinFunction'),
-            new SimpleFunction('json_encode'),
-            new SimpleFunction('keys', 'array_keys'),
-            new MethodFunction('last', 'lastFunction'),
-            new MethodFunction('length', 'lengthFunction', array('is_safe' => true)),
-            new MethodFunction('link_to', 'linkToFunction', array('is_safe' => true)),
-            new SimpleFunction('lower', 'strtolower'),
-            new SimpleFunction('ltrim'),
-            new MethodFunction('max', 'maxFunction'),
-            new SimpleFunction('merge', 'array_merge'),
-            new MethodFunction('min', 'minFunction'),
-            new SimpleFunction('nl2br', 'nl2br', array('is_safe' => true)),
-            new SimpleFunction('number_format'),
-            new MethodFunction('pluck', 'pluckFunction'),
-            new MethodFunction('random', 'randomFunction'),
-            new SimpleFunction('range'),
-            new MethodFunction('raw', 'rawFunction', array('is_safe' => true)),
-            new MethodFunction('regexp_replace', 'regexpReplaceFunction'),
-            new MethodFunction('replace', 'replaceFunction'),
-            new MethodFunction('reverse', 'reverseFunction'),
-            new SimpleFunction('rtrim'),
-            new MethodFunction('shuffle', 'shuffleFunction'),
-            new MethodFunction('slice', 'sliceFunction'),
-            new MethodFunction('sort', 'sortFunction'),
-            new MethodFunction('source', 'sourceFunction', array('needs_environment' => true)),
-            new MethodFunction('spacify', 'spacifyFunction'),
-            new MethodFunction('split', 'splitFunction'),
-            new SimpleFunction('striptags', 'strip_tags', array('is_safe' => true)),
-            new SimpleFunction('title_case', 'ucwords'),
-            new SimpleFunction('trim'),
-            new MethodFunction('truncate', 'truncateFunction'),
-            new SimpleFunction('upper', 'strtoupper'),
-            new MethodFunction('url_encode', 'urlEncodeFunction'),
-            new MethodFunction('without', 'withoutFunction'),
-            new SimpleFunction('wordwrap'),
+            new TemplateFunction('abs'),
+            new TemplateFunction('arguments', 'template_function_arguments', array('is_safe' => true)),
+            new TemplateFunction('batch', 'template_function_batch'),
+            new TemplateFunction('capitalize', 'ucfirst'),
+            new TemplateFunction('count'),
+            new TemplateFunction('cycle', 'template_function_cycle'),
+            new TemplateFunction('default', null, array('compiler' => '\Modules\Templating\Extensions\Compilers\DefaultCompiler')),
+            new TemplateFunction('date_format', 'template_function_dateFormat'),
+            new TemplateFunction('extract', 'template_function_extract', array('needs_context' => true)),
+            new TemplateFunction('first', 'template_function_first'),
+            new TemplateFunction('format', 'sprintf'),
+            new TemplateFunction('is_int'),
+            new TemplateFunction('is_numeric'),
+            new TemplateFunction('is_string'),
+            new TemplateFunction('join', 'template_function_join'),
+            new TemplateFunction('json_encode'),
+            new TemplateFunction('keys', 'array_keys'),
+            new TemplateFunction('last', 'template_function_last'),
+            new TemplateFunction('length', 'template_function_length', array('is_safe' => true)),
+            new TemplateFunction('link_to', 'template_function_linkTo', array('is_safe' => true)),
+            new TemplateFunction('lower', 'strtolower'),
+            new TemplateFunction('ltrim'),
+            new TemplateFunction('max', 'template_function_max'),
+            new TemplateFunction('merge', 'array_merge'),
+            new TemplateFunction('min', 'template_function_min'),
+            new TemplateFunction('nl2br', 'nl2br', array('is_safe' => true)),
+            new TemplateFunction('number_format'),
+            new TemplateFunction('pluck', 'template_function_pluck'),
+            new TemplateFunction('random', 'template_function_random'),
+            new TemplateFunction('range'),
+            new TemplateFunction('raw', 'template_function_raw', array('is_safe' => true)),
+            new TemplateFunction('regexp_replace', 'template_function_regexpReplace'),
+            new TemplateFunction('replace', 'template_function_replace'),
+            new TemplateFunction('reverse', 'template_function_reverse'),
+            new TemplateFunction('rtrim'),
+            new TemplateFunction('shuffle', 'template_function_shuffle'),
+            new TemplateFunction('slice', 'template_function_slice'),
+            new TemplateFunction('sort', 'template_function_sort'),
+            new TemplateFunction('source', 'template_function_source', array('needs_environment' => true)),
+            new TemplateFunction('spacify', 'template_function_spacify'),
+            new TemplateFunction('split', 'template_function_split'),
+            new TemplateFunction('striptags', 'strip_tags', array('is_safe' => true)),
+            new TemplateFunction('title_case', 'ucwords'),
+            new TemplateFunction('trim'),
+            new TemplateFunction('truncate', 'template_function_truncate'),
+            new TemplateFunction('upper', 'strtoupper'),
+            new TemplateFunction('url_encode', 'template_function_urlEncode'),
+            new TemplateFunction('without', 'template_function_without'),
+            new TemplateFunction('wordwrap'),
         );
     }
+}
 
-    /* Helper functions */
+/* Helper functions */
 
-    /**
-     * @param $data
-     *
-     * @return array
-     * @throws \InvalidArgumentException
-     */
-    private function traversableToArray($data)
-    {
-        if ($data instanceof Traversable) {
-            return iterator_to_array($data);
-        }
-        if (is_array($data)) {
-            return $data;
-        }
-
-        throw new InvalidArgumentException('Expected an array or traversable object.');
+/**
+ * @param $data
+ *
+ * @return array
+ * @throws \InvalidArgumentException
+ */
+function traversableToArray($data)
+{
+    if ($data instanceof Traversable) {
+        return iterator_to_array($data);
+    }
+    if (is_array($data)) {
+        return $data;
     }
 
-    /* Template functions */
+    throw new InvalidArgumentException('Expected an array or traversable object.');
+}
 
-    public function argumentsFunction(array $args)
-    {
-        $string = '';
-        foreach ($args as $name => $value) {
-            $string .= " {$name}=\"{$value}\"";
-        }
+/* Template functions */
 
-        return $string;
+function template_function_arguments(array $args)
+{
+    $string = '';
+    foreach ($args as $name => $value) {
+        $string .= " {$name}=\"{$value}\"";
     }
 
-    public function batchFunction($data, $size, $preserveKeys = true, $noItem = null)
-    {
-        $data   = $this->traversableToArray($data);
-        $result = array_chunk($data, abs($size), $preserveKeys);
-        if ($noItem == null) {
-            return $result;
-        }
-        $last          = count($result) - 1;
-        $result[$last] = array_pad($result[$last], $size, $noItem);
+    return $string;
+}
 
+function template_function_batch($data, $size, $preserveKeys = true, $noItem = null)
+{
+    $data   = traversableToArray($data);
+    $result = array_chunk($data, abs($size), $preserveKeys);
+    if ($noItem == null) {
         return $result;
     }
+    $last          = count($result) - 1;
+    $result[$last] = array_pad($result[$last], $size, $noItem);
 
-    public function cycleFunction(&$array)
-    {
+    return $result;
+}
+
+function template_function_cycle(&$array)
+{
+    $element = each($array);
+    if ($element === false) {
+        reset($array);
         $element = each($array);
-        if ($element === false) {
-            reset($array);
-            $element = each($array);
+    }
+
+    return $element['value'];
+}
+
+function template_function_dateFormat($date, $format)
+{
+    return date($format, strtotime($date));
+}
+
+function template_function_extract(Context $context, $source, $keys)
+{
+    if (is_string($keys)) {
+        $keys = array($keys);
+    }
+    foreach ($keys as $key) {
+        $context->$key = $context->getProperty($source, $key);
+    }
+}
+
+function template_function_first($data, $number = 1)
+{
+    return template_function_slice($data, 0, $number);
+}
+
+function template_function_join($data, $glue = '')
+{
+    $data = traversableToArray($data);
+
+    return implode($glue, $data);
+}
+
+function template_function_last($data, $number = 1)
+{
+    return template_function_slice($data, -$number, null);
+}
+
+function template_function_length($data)
+{
+    if (is_string($data)) {
+        return strlen($data);
+    }
+    if (is_array($data) || $data instanceof Countable) {
+        return count($data);
+    }
+    throw new InvalidArgumentException('Reverse expects an array, a string or a Countable instance');
+}
+
+function template_function_linkTo($label, $url, array $args = array())
+{
+    $args['href'] = $url;
+
+    $arguments = template_function_arguments($args);
+
+    return "<a{$arguments}>{$label}</a>";
+}
+
+function template_function_max()
+{
+    $values = func_get_args();
+    $max    = null;
+    foreach ($values as $value) {
+        if ($value > $max || $max === null) {
+            $max = $value;
         }
-
-        return $element['value'];
     }
 
-    public function dateFormatFunction($date, $format)
-    {
-        return date($format, strtotime($date));
-    }
+    return $max;
+}
 
-    public function extractFunction(Context $context, $source, $keys)
-    {
-        if (is_string($keys)) {
-            $keys = array($keys);
-        }
-        foreach ($keys as $key) {
-            $context->$key = $context->getProperty($source, $key);
+function template_function_min()
+{
+    $min = null;
+    foreach (func_get_args() as $value) {
+        if ($value < $min || $min === null) {
+            $min = $value;
         }
     }
 
-    public function firstFunction($data, $number = 1)
-    {
-        return $this->sliceFunction($data, 0, $number);
+    return $min;
+}
+
+function template_function_pluck($array, $key)
+{
+    if (!is_array($array) && !$array instanceof Traversable) {
+        throw new InvalidArgumentException('Pluck expects a two-dimensional array as the first argument.');
     }
+    $return = array();
 
-    public function joinFunction($data, $glue = '')
-    {
-        $data = $this->traversableToArray($data);
-
-        return implode($glue, $data);
-    }
-
-    public function lastFunction($data, $number = 1)
-    {
-        return $this->sliceFunction($data, -$number, null);
-    }
-
-    public function lengthFunction($data)
-    {
-        if (is_string($data)) {
-            return strlen($data);
-        }
-        if (is_array($data) || $data instanceof Countable) {
-            return count($data);
-        }
-        throw new InvalidArgumentException('Reverse expects an array, a string or a Countable instance');
-    }
-
-    public function linkToFunction($label, $url, array $args = array())
-    {
-        $args['href'] = $url;
-
-        return '<a' . $this->argumentsFunction($args) . '>' . $label . '</a>';
-    }
-
-    public function maxFunction()
-    {
-        $values = func_get_args();
-        $max    = null;
-        foreach ($values as $value) {
-            if ($value > $max || $max === null) {
-                $max = $value;
+    foreach ($array as $element) {
+        if (is_array($element) || $element instanceof ArrayAccess) {
+            if (isset($element[$key])) {
+                $return[] = $element[$key];
             }
         }
-
-        return $max;
     }
 
-    public function minFunction()
-    {
-        $min = null;
-        foreach (func_get_args() as $value) {
-            if ($value < $min || $min === null) {
-                $min = $value;
+    return $return;
+}
+
+function template_function_random($data = null)
+{
+    if ($data === null) {
+        return rand();
+    }
+    if (is_numeric($data)) {
+        return rand(0, $data);
+    }
+    if (is_string($data)) {
+        $data = str_split($data);
+    } else {
+        $data = traversableToArray($data);
+    }
+
+    return $data[array_rand($data)];
+}
+
+function template_function_raw($data)
+{
+    return $data;
+}
+
+function template_function_regexpReplace($string, $pattern, $replace)
+{
+    return preg_replace($pattern, $replace, $string);
+}
+
+function template_function_replace($string, $search, $replace)
+{
+    return str_replace($search, $replace, $string);
+}
+
+function template_function_reverse($data, $preserveKeys = false)
+{
+    if (is_string($data)) {
+        return strrev($data);
+    }
+    $data = traversableToArray($data);
+
+    return array_reverse($data, $preserveKeys);
+}
+
+function template_function_shuffle($data)
+{
+    if (is_string($data)) {
+        return str_shuffle($data);
+    }
+    $data = traversableToArray($data);
+    shuffle($data);
+
+    return $data;
+}
+
+function template_function_slice($data, $start, $length, $preserveKeys = false)
+{
+    if (is_string($data)) {
+        if ($length === null) {
+            return substr($data, $start);
+        }
+
+        return substr($data, $start, $length);
+    }
+    $data = traversableToArray($data);
+
+    return array_slice($data, $start, $length, $preserveKeys);
+}
+
+function template_function_sort($data, $reverse = false)
+{
+    $data = traversableToArray($data);
+    if ($reverse) {
+        arsort($data);
+    } else {
+        asort($data);
+    }
+
+    return $data;
+}
+
+function template_function_source(Environment $environment, $template)
+{
+    return $environment->getTemplateLoader()->getSource($template);
+}
+
+function template_function_spacify($string, $delimiter = ' ')
+{
+    if (!is_string($string)) {
+        throw new InvalidArgumentException('Spacify expects a string.');
+    }
+
+    return implode($delimiter, str_split($string));
+}
+
+function template_function_split($string, $delimiter = '', $limit = null)
+{
+    if (!is_string($string)) {
+        throw new InvalidArgumentException('Split expects a string');
+    }
+    if ($delimiter === '') {
+        return str_split($string, $limit ? : 1);
+    } elseif ($limit === null) {
+        return explode($delimiter, $string);
+    }
+
+    return explode($delimiter, $string, $limit);
+}
+
+function template_function_truncate($string, $length, $ellipsis = '...')
+{
+    if (strlen($string) > $length) {
+        $string = template_function_first($string, $length);
+        $string .= $ellipsis;
+    }
+
+    return $string;
+}
+
+function template_function_urlEncode($data, $raw)
+{
+    if ($data instanceof Traversable) {
+        $data = iterator_to_array($data);
+    }
+    if (is_array($data)) {
+        return http_build_query($data, '', '&');
+    }
+    if ($raw) {
+        return rawurlencode($data);
+    }
+
+    return urlencode($data);
+}
+
+function template_function_without($data, $without)
+{
+    if (is_string($data)) {
+        if (!is_string($without) && !is_array($without)) {
+            if (!$without instanceof Traversable) {
+                throw new InvalidArgumentException('Without expects string or array arguments.');
             }
+            $without = iterator_to_array($without);
         }
 
-        return $min;
+        return str_replace($without, '', $data);
     }
-
-    public function pluckFunction($array, $key)
-    {
-        if (!is_array($array) && !$array instanceof Traversable) {
-            throw new InvalidArgumentException('Pluck expects a two-dimensional array as the first argument.');
-        }
-        $return = array();
-
-        foreach ($array as $element) {
-            if (is_array($element) || $element instanceof ArrayAccess) {
-                if (isset($element[$key])) {
-                    $return[] = $element[$key];
-                }
-            }
-        }
-
-        return $return;
+    if ($data instanceof Traversable) {
+        $data = iterator_to_array($data);
+    } elseif (!is_array($data)) {
+        throw new InvalidArgumentException('Without expects string or array arguments.');
     }
-
-    public function randomFunction($data = null)
-    {
-        if ($data === null) {
-            return rand();
-        }
-        if (is_numeric($data)) {
-            return rand(0, $data);
-        }
-        if (is_string($data)) {
-            $data = str_split($data);
+    if (!is_array($without)) {
+        if ($without instanceof Traversable) {
+            $without = iterator_to_array($without);
         } else {
-            $data = $this->traversableToArray($data);
+            $without = array($without);
         }
-
-        return $data[array_rand($data)];
     }
 
-    public function rawFunction($data)
-    {
-        return $data;
-    }
-
-    public function regexpReplaceFunction($string, $pattern, $replace)
-    {
-        return preg_replace($pattern, $replace, $string);
-    }
-
-    public function replaceFunction($string, $search, $replace)
-    {
-        return str_replace($search, $replace, $string);
-    }
-
-    public function reverseFunction($data, $preserveKeys = false)
-    {
-        if (is_string($data)) {
-            return strrev($data);
-        }
-        $data = $this->traversableToArray($data);
-
-        return array_reverse($data, $preserveKeys);
-    }
-
-    public function shuffleFunction($data)
-    {
-        if (is_string($data)) {
-            return str_shuffle($data);
-        }
-        $data = $this->traversableToArray($data);
-        shuffle($data);
-
-        return $data;
-    }
-
-    public function sliceFunction($data, $start, $length, $preserveKeys = false)
-    {
-        if (is_string($data)) {
-            if ($length === null) {
-                return substr($data, $start);
-            }
-
-            return substr($data, $start, $length);
-        }
-        $data = $this->traversableToArray($data);
-
-        return array_slice($data, $start, $length, $preserveKeys);
-    }
-
-    public function sortFunction($data, $reverse = false)
-    {
-        $data = $this->traversableToArray($data);
-        if ($reverse) {
-            arsort($data);
-        } else {
-            asort($data);
-        }
-
-        return $data;
-    }
-
-    public function sourceFunction(Environment $environment, $template)
-    {
-        return $environment->getTemplateLoader()->getSource($template);
-    }
-
-    public function spacifyFunction($string, $delimiter = ' ')
-    {
-        if (!is_string($string)) {
-            throw new InvalidArgumentException('Spacify expects a string.');
-        }
-
-        return implode($delimiter, str_split($string));
-    }
-
-    public function splitFunction($string, $delimiter = '', $limit = null)
-    {
-        if (!is_string($string)) {
-            throw new InvalidArgumentException('Split expects a string');
-        }
-        if ($delimiter === '') {
-            return str_split($string, $limit ? : 1);
-        } elseif ($limit === null) {
-            return explode($delimiter, $string);
-        }
-
-        return explode($delimiter, $string, $limit);
-    }
-
-    public function truncateFunction($string, $length, $ellipsis = '...')
-    {
-        if (strlen($string) > $length) {
-            $string = $this->firstFunction($string, $length);
-            $string .= $ellipsis;
-        }
-
-        return $string;
-    }
-
-    public function urlEncodeFunction($data, $raw)
-    {
-        if ($data instanceof Traversable) {
-            $data = iterator_to_array($data);
-        }
-        if (is_array($data)) {
-            return http_build_query($data, '', '&');
-        }
-        if ($raw) {
-            return rawurlencode($data);
-        }
-
-        return urlencode($data);
-    }
-
-    public function withoutFunction($data, $without)
-    {
-        if (is_string($data)) {
-            if (!is_string($without) && !is_array($without)) {
-                if (!$without instanceof Traversable) {
-                    throw new InvalidArgumentException('Without expects string or array arguments.');
-                }
-                $without = iterator_to_array($without);
-            }
-
-            return str_replace($without, '', $data);
-        }
-        if ($data instanceof Traversable) {
-            $data = iterator_to_array($data);
-        } elseif (!is_array($data)) {
-            throw new InvalidArgumentException('Without expects string or array arguments.');
-        }
-        if (!is_array($without)) {
-            if ($without instanceof Traversable) {
-                $without = iterator_to_array($without);
-            } else {
-                $without = array($without);
-            }
-        }
-
-        return array_diff($data, $without);
-    }
+    return array_diff($data, $without);
 }

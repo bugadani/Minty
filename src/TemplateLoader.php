@@ -86,7 +86,7 @@ class TemplateLoader
     }
 
     /**
-     * @param $template The template name
+     * @param string|array $template The template name
      *
      * @return string
      */

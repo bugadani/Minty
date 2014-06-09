@@ -9,27 +9,21 @@
 
 namespace Modules\Templating\Compiler;
 
-use Modules\Templating\Compiler\Functions\CallbackFunction;
-use Modules\Templating\Compiler\Functions\MethodFunction;
-use Modules\Templating\Compiler\Functions\SimpleFunction;
-
 class FunctionCompiler
 {
 
     public function compile(Compiler $compiler, TemplateFunction $function, array $arguments)
     {
-        if ($function instanceof SimpleFunction) {
-            $compiler->add($function->getFunction());
-        } elseif ($function instanceof MethodFunction) {
+        $callback = $function->getCallback();
+
+        //simple functions are compiled directly
+        if (is_string($callback) && strpos($callback, ':') === false) {
+            $compiler->add($callback);
+        } else {
             $compiler
-                ->add('$this->getExtension(')
-                ->compileString($function->getExtensionName())
-                ->add(')->')
-                ->add($function->getMethod());
-        } elseif ($function instanceof CallbackFunction) {
-            $compiler
-                ->add('$this->')
-                ->add($function->getFunctionName());
+                ->add('$this->getEnvironment()->getFunction(')
+                ->compileString($function->getFunctionName())
+                ->add(')->call');
         }
         $compiler->compileArgumentList($arguments);
     }

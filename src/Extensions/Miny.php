@@ -12,7 +12,7 @@ namespace Modules\Templating\Extensions;
 use Miny\Application\Dispatcher;
 use Miny\Factory\Container;
 use Miny\Router\RouteGenerator;
-use Modules\Templating\Compiler\Functions\MethodFunction;
+use Modules\Templating\Compiler\TemplateFunction;
 use Modules\Templating\Extension;
 
 class Miny extends Extension
@@ -56,16 +56,11 @@ class Miny extends Extension
     public function getFunctions()
     {
         $functions = array(
-            new MethodFunction('route', 'routeFunction'),
-            new MethodFunction('request', 'requestFunction'),
+            new TemplateFunction('route', array($this->routeGenerator, 'generate')),
+            new TemplateFunction('request', array($this, 'requestFunction')),
         );
 
         return $functions;
-    }
-
-    public function routeFunction($route, array $parameters = array())
-    {
-        return $this->routeGenerator->generate($route, $parameters);
     }
 
     public function requestFunction($url, $method = 'GET', array $post = array())

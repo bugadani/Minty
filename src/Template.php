@@ -9,8 +9,6 @@
 
 namespace Modules\Templating;
 
-use Modules\Templating\Compiler\Exceptions\TemplateNotFoundException;
-
 abstract class Template
 {
     /**
@@ -80,7 +78,7 @@ abstract class Template
             return $this->isEmpty(current($args));
         }
 
-        return $this->environment->getFunction($function)->callFunction($args);
+        throw new \BadFunctionCallException("Function {$function} does not exist.");
     }
 
     public function filter($data, $for = 'html')

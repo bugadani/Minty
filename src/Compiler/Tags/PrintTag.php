@@ -59,7 +59,7 @@ class PrintTag extends Tag
             return true;
         }
 
-        return $env->getFunction($function)->isSafe();
+        return $env->getFunction($function)->getOption('is_safe');
     }
 
     public function isSafe(Environment $env, Node $node)

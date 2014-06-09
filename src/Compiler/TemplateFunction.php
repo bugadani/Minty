@@ -11,26 +11,43 @@ namespace Modules\Templating\Compiler;
 
 use OutOfBoundsException;
 
-abstract class TemplateFunction
+class TemplateFunction
 {
     /**
      * @var array
      */
     private $options;
+
+    /**
+     * @var string
+     */
     private $name;
-    private $extension;
+
+    /**
+     * @var callable
+     */
+    private $callback;
 
     /**
      * @param string $name
+     * @param        $callback
      * @param array  $options
+     *
+     * @throws \InvalidArgumentException
      */
-    public function __construct($name, array $options = array())
+    public function __construct($name, $callback = null, array $options = array())
     {
-        $this->name    = $name;
+        $this->name = $name;
+        if ($callback === null) {
+            $callback = $name;
+        }
+        if (!is_callable($callback)) {
+            throw new \InvalidArgumentException('$callback must be a callable value');
+        }
         $defaults      = array(
-            'is_safe'       => false,
-            'compiler'      => __NAMESPACE__ . '\\FunctionCompiler',
-            'needs_context' => false,
+            'is_safe'           => false,
+            'compiler'          => __NAMESPACE__ . '\\FunctionCompiler',
+            'needs_context'     => false,
             'needs_environment' => false
         );
         $this->options = array_merge($defaults, $options);
@@ -45,26 +62,21 @@ abstract class TemplateFunction
         return $this->options[$key];
     }
 
-    public function setExtensionName($extension)
-    {
-        $this->extension = $extension;
-    }
-
-    public function getExtensionName()
-    {
-        return $this->extension;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isSafe()
-    {
-        return $this->options['is_safe'];
-    }
-
     public function getFunctionName()
     {
         return $this->name;
+    }
+
+    /**
+     * @return callable
+     */
+    public function getCallback()
+    {
+        return $this->callback;
+    }
+
+    public function call()
+    {
+        return call_user_func_array($this->callback, func_get_args());
     }
 }

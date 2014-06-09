@@ -9,7 +9,7 @@
 
 namespace Modules\Templating\Extensions;
 
-use Modules\Templating\Compiler\Functions\SimpleFunction;
+use Modules\Templating\Compiler\TemplateFunction;
 use Modules\Templating\Extension;
 
 class Debug extends Extension
@@ -23,7 +23,7 @@ class Debug extends Extension
     public function getFunctions()
     {
         $functions = array(
-            new SimpleFunction('dump', 'var_dump')
+            new TemplateFunction('dump', 'var_dump')
         );
 
         return $functions;
