@@ -36,10 +36,29 @@ abstract class Template
      */
     private $blocks;
 
-    public function __construct(TemplateLoader $loader, Environment $environment)
+    /**
+     * @var string
+     */
+    private $templateName;
+
+    public function __construct(TemplateLoader $loader, Environment $environment, $template)
     {
-        $this->loader      = $loader;
-        $this->environment = $environment;
+        $this->loader       = $loader;
+        $this->environment  = $environment;
+        $this->templateName = $template;
+    }
+
+    public function __get($key)
+    {
+        switch ($key) {
+            case 'template':
+                return $this->templateName;
+            case 'parent':
+                return $this->parentTemplate;
+
+            default:
+                throw new \OutOfBoundsException("Property {$key} is not set.");
+        }
     }
 
     protected function setBlocks(array $blocks)

@@ -12,6 +12,11 @@ namespace Modules\Templating\Compiler;
 abstract class Node
 {
     /**
+     * @var array
+     */
+    private $data = array();
+
+    /**
      * @var Node
      */
     private $parent;
@@ -80,4 +85,32 @@ abstract class Node
     }
 
     abstract public function compile(Compiler $compiler);
+
+    public function setData(array $data)
+    {
+        $this->data = $data;
+    }
+
+    public function addData($key, $value)
+    {
+        if ($key === null) {
+            $this->data[] = $value;
+        } else {
+            $this->data[$key] = $value;
+        }
+    }
+
+    public function getData($key = null)
+    {
+        if ($key === null) {
+            return $this->data;
+        }
+
+        return $this->data[$key];
+    }
+
+    public function hasData($key)
+    {
+        return isset($this->data[$key]);
+    }
 }

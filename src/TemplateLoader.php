@@ -222,7 +222,7 @@ class TemplateLoader
 
         foreach ($relatedTemplates as $file) {
             if ($file instanceof DataNode) {
-                $this->compileIfNeeded($file->getData());
+                $this->compileIfNeeded($file->getValue());
             }
         }
         $this->loadedTemplates[$template] = $object;

@@ -79,9 +79,9 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame($this->multiplyOperator, $multNode->getOperator());
         $this->assertSame($this->plusOperator, $plusNode->getOperator());
-        $this->assertEquals(5, $multLeftNode->getData());
-        $this->assertEquals(6, $multRightNode->getData());
-        $this->assertEquals(7, $dataNode->getData());
+        $this->assertEquals(5, $multLeftNode->getValue());
+        $this->assertEquals(6, $multRightNode->getValue());
+        $this->assertEquals(7, $dataNode->getValue());
     }
 
     public function testOperatorPrecedenceCanBeOverriddenByParentheses()
@@ -112,9 +112,9 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame($this->multiplyOperator, $multNode->getOperator());
         $this->assertSame($this->plusOperator, $plusNode->getOperator());
-        $this->assertEquals(5, $dataNode->getData());
-        $this->assertEquals(6, $plusLeftNode->getData());
-        $this->assertEquals(7, $plusRightNode->getData());
+        $this->assertEquals(5, $dataNode->getValue());
+        $this->assertEquals(6, $plusLeftNode->getValue());
+        $this->assertEquals(7, $plusRightNode->getValue());
     }
 
     public function simpleArrayProvider()
@@ -194,7 +194,6 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
 
     public function testArgumentsArePresentInFunctionNode()
     {
-
         $stream = new Stream(array(
             new Token(Token::IDENTIFIER, 'function'),
             new Token(Token::PUNCTUATION, '('),
@@ -213,8 +212,8 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
         /** @var $arguments DataNode[] */
         $arguments = $nodes->getArguments();
         $this->assertEquals(2, count($arguments));
-        $this->assertEquals('foo', $arguments[0]->getData());
-        $this->assertEquals('bar', $arguments[1]->getData());
+        $this->assertEquals('foo', $arguments[0]->getValue());
+        $this->assertEquals('bar', $arguments[1]->getValue());
     }
 
     /**
@@ -272,7 +271,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('foo', $nameNode->getName());
 
         $this->assertInstanceOf('\\Modules\\Templating\\Compiler\\Nodes\\DataNode', $keyNode);
-        $this->assertEquals('bar', $keyNode->getData());
+        $this->assertEquals('bar', $keyNode->getValue());
     }
 
     public function testChainedArrayAccessIsSupported()
@@ -306,7 +305,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
             '\\Modules\\Templating\\Compiler\\Nodes\\DataNode',
             $keyNode
         );
-        $this->assertEquals('baz', $keyNode->getData());
+        $this->assertEquals('baz', $keyNode->getValue());
 
         //first access
         /** @var $firstIdentifierNode VariableNode */
@@ -323,7 +322,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
             $firstKeyNode
         );
         $this->assertEquals('foo', $firstIdentifierNode->getName());
-        $this->assertEquals('bar', $firstKeyNode->getData());
+        $this->assertEquals('bar', $firstKeyNode->getValue());
     }
 
     /**

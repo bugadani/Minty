@@ -14,31 +14,31 @@ use Modules\Templating\Compiler\Node;
 
 class DataNode extends Node
 {
-    private $data;
+    private $value;
 
-    public function __construct($data)
+    public function __construct($value)
     {
-        $this->data = $data;
+        $this->value = $value;
     }
 
     public function compile(Compiler $compiler)
     {
-        $compiler->compileData($this->data);
+        $compiler->compileData($this->value);
     }
 
-    public function getData()
+    public function getValue()
     {
-        return $this->data;
+        return $this->value;
     }
 
     public function stringify()
     {
-        if (is_bool($this->data)) {
-            return ($this->data ? 'true' : 'false');
-        } elseif (is_scalar($this->data)) {
-            return $this->data;
-        } elseif (is_array($this->data)) {
-            $count = count($this->data);
+        if (is_bool($this->value)) {
+            return ($this->value ? 'true' : 'false');
+        } elseif (is_scalar($this->value)) {
+            return $this->value;
+        } elseif (is_array($this->value)) {
+            $count = count($this->value);
 
             return "array [{$count}]";
         } else {

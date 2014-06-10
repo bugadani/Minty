@@ -10,6 +10,7 @@
 namespace Modules\Templating\Extensions;
 
 use Modules\Templating\Compiler\NodeVisitors\ForLoopOptimizer;
+use Modules\Templating\Compiler\NodeVisitors\SelfAccessOptimizer;
 use Modules\Templating\Extension;
 
 class Optimizer extends Extension
@@ -23,7 +24,8 @@ class Optimizer extends Extension
     public function getNodeVisitors()
     {
         $optimizers = array(
-            new ForLoopOptimizer()
+            new ForLoopOptimizer(),
+            new SelfAccessOptimizer()
         );
 
         return $optimizers;

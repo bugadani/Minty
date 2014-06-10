@@ -28,6 +28,7 @@ class ClassNode extends Node
             'template_base_class',
             'Modules\\Templating\\Template'
         );
+        $this->addData('self_accessed', true);
     }
 
     public function hasParentTemplate()
@@ -85,8 +86,7 @@ class ClassNode extends Node
         //this is needed to convince PHPStorm that compileBlock receives a RootNode
         /** @var $body RootNode */
 
-        $className = $this->getClassName();
-        $compiler->indented("class {$className} extends \\{$this->baseClass}");
+        $compiler->indented("class {$this->getClassName()} extends \\{$this->baseClass}");
         $compiler->indented('{');
         $compiler->indent();
 
@@ -94,10 +94,13 @@ class ClassNode extends Node
 
         //if this is a template which extends an other, don't generate code for the default block
         if (!$this->hasParentTemplate()) {
+
             //compile the main block method
             $body = $this->getChild('__main_template_block');
             $this->compileBlock($compiler, 'displayTemplate', $body);
+
         } elseif (!$this->parentTemplateName instanceof DataNode) {
+
             //compile a default displayTemplate that sets the parent template
             $compiler->indented('public function displayTemplate(Context $context)');
             $compiler->indented('{');
@@ -127,7 +130,10 @@ class ClassNode extends Node
         );
         $compiler->indented('{');
         $compiler->indent();
-        $compiler->indented('parent::__construct($loader, $environment);');
+        $compiler
+            ->indented('parent::__construct($loader, $environment, ')
+            ->compileString($this->templateName)
+            ->add(');');
         if ($this->hasParentTemplate() && $this->parentTemplateName instanceof DataNode) {
             $compiler->indented('$this->setParentTemplate(')
                 ->compileNode($this->parentTemplateName)
@@ -145,7 +151,17 @@ class ClassNode extends Node
         $compiler->indented('public function %s(Context $context)', $method);
         $compiler->indented('{');
         $compiler->indent();
+
+        if ($this->getData('self_accessed') && $method !== 'displayTemplate') {
+            $compiler->indented('$oldSelf = $context->__get("_self");');
+        }
+        $compiler->indented('$context->__set("_self", $this);');
         $compiler->compileNode($body);
+
+        if ($this->getData('self_accessed') && $method !== 'displayTemplate') {
+            $compiler->indented('$context->__set("_self", $oldSelf);');
+        }
+
         $compiler->outdent();
         $compiler->indented("}\n");
     }
