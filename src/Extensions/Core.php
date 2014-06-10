@@ -66,6 +66,7 @@ use Modules\Templating\Compiler\Operators\UnaryOperators\PostIncrementOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PreDecrementOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PreIncrementOperator;
 use Modules\Templating\Compiler\Tags\CaseTag;
+use Modules\Templating\Compiler\Tags\DoTag;
 use Modules\Templating\Compiler\Tags\ElseIfTag;
 use Modules\Templating\Compiler\Tags\ElseTag;
 use Modules\Templating\Compiler\Tags\ExtractTag;
@@ -193,7 +194,8 @@ class Core extends Extension
             new ExtractTag(),
             new ElseTag(),
             new ElseIfTag(),
-            new CaseTag()
+            new CaseTag(),
+            new DoTag()
         );
 
         return $tags;
