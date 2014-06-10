@@ -12,10 +12,13 @@ namespace Modules\Templating;
 use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\ExpressionParser;
 use Modules\Templating\Compiler\FunctionCompiler;
+use Modules\Templating\Compiler\Node;
+use Modules\Templating\Compiler\Nodes\FileNode;
 use Modules\Templating\Compiler\NodeTreeTraverser;
 use Modules\Templating\Compiler\NodeVisitor;
 use Modules\Templating\Compiler\OperatorCollection;
 use Modules\Templating\Compiler\Parser;
+use Modules\Templating\Compiler\Stream;
 use Modules\Templating\Compiler\Tag;
 use Modules\Templating\Compiler\TemplateFunction;
 use Modules\Templating\Compiler\Tokenizer;
@@ -114,39 +117,63 @@ class Environment
     }
 
     /**
-     * @return Tokenizer
+     * @param $template
+     *
+     * @return Stream
      */
-    public function getTokenizer()
+    public function tokenize($template)
     {
         if (!isset($this->tokenizer)) {
             $this->tokenizer = new Tokenizer($this);
         }
 
-        return $this->tokenizer;
+        return $this->tokenizer->tokenize($template);
     }
 
     /**
-     * @return Parser
+     * @param Stream $stream
+     * @param        $templateName
+     *
+     * @return FileNode
      */
-    public function getParser()
+    public function parse(Stream $stream, $templateName)
     {
         if (!isset($this->parser)) {
             $this->parser = new Parser($this, new ExpressionParser($this));
         }
 
-        return $this->parser;
+        return $this->parser->parseTemplate($stream, $templateName);
     }
 
     /**
-     * @return Compiler
+     * @param Node $node
      */
-    public function getCompiler()
+    public function traverse(Node $node)
+    {
+        if (!isset($this->nodeTreeTraverser)) {
+            foreach ($this->extensions as $ext) {
+                foreach ($ext->getNodeVisitors() as $visitor) {
+                    $this->addNodeVisitor($visitor);
+                }
+            }
+            $this->nodeTreeTraverser = new NodeTreeTraverser($this->nodeVisitors);
+        }
+
+        $this->nodeTreeTraverser->traverse($node);
+    }
+
+    /**
+     * @param Node $node
+     *
+     * @return string
+     */
+    public function compile(Node $node)
     {
         if (!isset($this->compiler)) {
             $this->compiler = new Compiler($this);
         }
 
-        return $this->compiler;
+        return $this->compiler->compile($node);
     }
 
     public function addGlobalVariable($name, $value)
@@ -185,7 +212,9 @@ class Environment
     public function addExtension(Extension $extension)
     {
         $this->extensions[$extension->getExtensionName()] = $extension;
-        $extension->registerFunctions($this);
+        foreach ($extension->getFunctions() as $function) {
+            $this->addFunction($function);
+        }
     }
 
     /**
@@ -259,7 +288,9 @@ class Environment
     {
         if (empty($this->tags)) {
             foreach ($this->extensions as $ext) {
-                $ext->registerTags($this);
+                foreach ($ext->getTags() as $tag) {
+                    $this->addTag($tag);
+                }
             }
         }
 
@@ -274,7 +305,7 @@ class Environment
         if (!isset($this->binaryOperators)) {
             $this->binaryOperators = new OperatorCollection();
             foreach ($this->extensions as $ext) {
-                $ext->registerBinaryOperators($this->binaryOperators);
+                $this->binaryOperators->addOperators($ext->getBinaryOperators());
             }
         }
 
@@ -289,7 +320,7 @@ class Environment
         if (!isset($this->unaryPrefixOperators)) {
             $this->unaryPrefixOperators = new OperatorCollection();
             foreach ($this->extensions as $ext) {
-                $ext->registerUnaryPrefixOperators($this->unaryPrefixOperators);
+                $this->unaryPrefixOperators->addOperators($ext->getPrefixUnaryOperators());
             }
         }
 
@@ -304,7 +335,7 @@ class Environment
         if (!isset($this->unaryPostfixOperators)) {
             $this->unaryPostfixOperators = new OperatorCollection();
             foreach ($this->extensions as $ext) {
-                $ext->registerUnaryPostfixOperators($this->unaryPostfixOperators);
+                $this->unaryPostfixOperators->addOperators($ext->getPostfixUnaryOperators());
             }
         }
 
@@ -335,29 +366,6 @@ class Environment
         }
 
         return $this->functionCompilers[$class];
-    }
-
-    /**
-     * @return NodeTreeTraverser
-     */
-    public function getNodeTreeTraverser()
-    {
-        if (!isset($this->nodeTreeTraverser)) {
-            $this->nodeTreeTraverser = new NodeTreeTraverser($this->getNodeVisitors());
-        }
-
-        return $this->nodeTreeTraverser;
-    }
-
-    public function getNodeVisitors()
-    {
-        if (empty($this->nodeVisitors)) {
-            foreach ($this->extensions as $ext) {
-                $ext->registerNodeVisitors($this);
-            }
-        }
-
-        return $this->nodeVisitors;
     }
 
     public function addNodeVisitor(NodeVisitor $visitor)

@@ -120,14 +120,14 @@ class TemplateLoader
         $this->log('Compiled class name is %s', $class);
 
         //Tokenize and parse the template
-        $stream = $this->environment->getTokenizer()->tokenize($template);
-        $node   = $this->environment->getParser()->parseTemplate($stream, $templateName);
+        $stream = $this->environment->tokenize($template);
+        $node   = $this->environment->parse($stream, $templateName);
 
         //Run the Node Tree Visitors
-        $this->environment->getNodeTreeTraverser()->traverse($node);
+        $this->environment->traverse($node);
 
         //Compile the template
-        $compiled = $this->environment->getCompiler()->compile($node, $class);
+        $compiled = $this->environment->compile($node, $class);
 
         //Compile and store the template
         $this->saveCompiledTemplate($compiled, $this->getCachePath($templateName));

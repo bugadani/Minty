@@ -18,6 +18,19 @@ class OperatorCollection
         return in_array($operator, $this->operators, true);
     }
 
+    /**
+     * @param Operator[] $operators
+     */
+    public function addOperators(array $operators)
+    {
+        foreach ($operators as $operator) {
+            $this->addOperator($operator);
+        }
+    }
+
+    /**
+     * @param Operator $operator
+     */
     public function addOperator(Operator $operator)
     {
         $symbol = $operator->operators();

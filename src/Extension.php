@@ -11,7 +11,6 @@ namespace Modules\Templating;
 
 use Modules\Templating\Compiler\NodeVisitor;
 use Modules\Templating\Compiler\Operator;
-use Modules\Templating\Compiler\OperatorCollection;
 use Modules\Templating\Compiler\Tag;
 use Modules\Templating\Compiler\TemplateFunction;
 
@@ -25,48 +24,6 @@ abstract class Extension
     }
 
     abstract public function getExtensionName();
-
-    public function registerFunctions(Environment $environment)
-    {
-        foreach ($this->getFunctions() as $function) {
-            $environment->addFunction($function);
-        }
-    }
-
-    public function registerTags(Environment $environment)
-    {
-        foreach ($this->getTags() as $tag) {
-            $environment->addTag($tag);
-        }
-    }
-
-    public function registerBinaryOperators(OperatorCollection $binary)
-    {
-        foreach ($this->getBinaryOperators() as $operator) {
-            $binary->addOperator($operator);
-        }
-    }
-
-    public function registerUnaryPrefixOperators(OperatorCollection $unaryPrefix)
-    {
-        foreach ($this->getPrefixUnaryOperators() as $operator) {
-            $unaryPrefix->addOperator($operator);
-        }
-    }
-
-    public function registerUnaryPostfixOperators(OperatorCollection $unaryPostfix)
-    {
-        foreach ($this->getPostfixUnaryOperators() as $operator) {
-            $unaryPostfix->addOperator($operator);
-        }
-    }
-
-    public function registerNodeVisitors(Environment $env)
-    {
-        foreach ($this->getNodeVisitors() as $optimizer) {
-            $env->addNodeVisitor($optimizer);
-        }
-    }
 
     /**
      * @return TemplateFunction[]
