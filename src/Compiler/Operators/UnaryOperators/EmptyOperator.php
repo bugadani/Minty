@@ -21,6 +21,6 @@ class EmptyOperator extends FunctionOperator
 
     protected function getFunctionName()
     {
-        return '$this->isEmpty';
+        return 'empty';
     }
 }

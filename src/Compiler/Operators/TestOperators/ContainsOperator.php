@@ -21,6 +21,6 @@ class ContainsOperator extends FunctionOperator
 
     protected function getFunctionName()
     {
-        return '$this->isIn';
+        return 'in';
     }
 }

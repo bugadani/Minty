@@ -21,6 +21,6 @@ class StartsOperator extends FunctionOperator
 
     protected function getFunctionName()
     {
-        return '$this->startsWith';
+        return 'starts';
     }
 }

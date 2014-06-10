@@ -21,6 +21,6 @@ class DivisibleByOperator extends FunctionOperator
 
     protected function getFunctionName()
     {
-        return '$this->isDivisibleBy';
+        return 'divisible';
     }
 }

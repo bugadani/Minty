@@ -10,6 +10,7 @@
 namespace Modules\Templating\Compiler\Nodes;
 
 use Modules\Templating\Compiler\Compiler;
+use Modules\Templating\Compiler\Exceptions\CompileException;
 use Modules\Templating\Compiler\Node;
 
 class FunctionNode extends IdentifierNode
@@ -54,15 +55,14 @@ class FunctionNode extends IdentifierNode
     {
         $environment = $compiler->getEnvironment();
 
-        $name = $this->getName();
         if ($this->getObject()) {
             $compiler
                 ->compileNode($this->getObject())
                 ->add('->')
-                ->add($name)
+                ->add($this->getName())
                 ->compileArgumentList($this->arguments);
-        } elseif ($environment->hasFunction($name)) {
-            $function = $environment->getFunction($name);
+        } else {
+            $function = $environment->getFunction($this->getName());
 
             if ($function->getOption('needs_environment')) {
                 $getEnvironmentNode = new FunctionNode('getEnvironment');
@@ -76,11 +76,6 @@ class FunctionNode extends IdentifierNode
             $environment
                 ->getFunctionCompiler($function->getOption('compiler'))
                 ->compile($compiler, $function, $this->arguments);
-        } else {
-            $compiler
-                ->add('$this->')
-                ->add($name)
-                ->compileArgumentList($this->arguments);
         }
     }
 }

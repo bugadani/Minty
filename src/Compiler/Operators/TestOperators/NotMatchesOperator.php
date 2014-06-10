@@ -9,6 +9,9 @@
 
 namespace Modules\Templating\Compiler\Operators\TestOperators;
 
+use Modules\Templating\Compiler\Compiler;
+use Modules\Templating\Compiler\Nodes\OperatorNode;
+
 class NotMatchesOperator extends MatchesOperator
 {
 
@@ -17,8 +20,9 @@ class NotMatchesOperator extends MatchesOperator
         return array('does not match', 'is not like', 'not matches');
     }
 
-    protected function getFunctionName()
+    public function compile(Compiler $compiler, OperatorNode $node)
     {
-        return '!' . parent::getFunctionName();
+        $compiler->add('!');
+        parent::compile($compiler, $node);
     }
 }

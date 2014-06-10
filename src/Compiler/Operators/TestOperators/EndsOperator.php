@@ -21,6 +21,6 @@ class EndsOperator extends FunctionOperator
 
     protected function getFunctionName()
     {
-        return '$this->endsWith';
+        return 'ends';
     }
 }

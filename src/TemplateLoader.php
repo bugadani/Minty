@@ -216,15 +216,6 @@ class TemplateLoader
 
         /** @var $object Template */
         $object = new $class($this, $this->environment);
-
-        $relatedTemplates   = $object->getEmbeddedTemplates();
-        $relatedTemplates[] = $object->getParentTemplate();
-
-        foreach ($relatedTemplates as $file) {
-            if ($file instanceof DataNode) {
-                $this->compileIfNeeded($file->getValue());
-            }
-        }
         $this->loadedTemplates[$template] = $object;
 
         return $object;

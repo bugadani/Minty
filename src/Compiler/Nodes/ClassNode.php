@@ -130,18 +130,21 @@ class ClassNode extends Node
         );
         $compiler->indented('{');
         $compiler->indent();
+
+        $compiler->indented('$blocks = ')
+            ->compileArray(array_keys($this->getChildren()), false)
+            ->add(';');
+
         $compiler
             ->indented('parent::__construct($loader, $environment, ')
             ->compileString($this->templateName)
-            ->add(');');
+            ->add(', $blocks);');
+
         if ($this->hasParentTemplate() && $this->parentTemplateName instanceof DataNode) {
             $compiler->indented('$this->setParentTemplate(')
                 ->compileNode($this->parentTemplateName)
                 ->add(');');
         }
-        $compiler->indented('$this->setBlocks(')
-            ->compileArray(array_keys($this->getChildren()), false)
-            ->add(');');
         $compiler->outdent();
         $compiler->indented("}\n");
     }

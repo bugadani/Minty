@@ -9,6 +9,9 @@
 
 namespace Modules\Templating\Compiler\Operators\TestOperators;
 
+use Modules\Templating\Compiler\Compiler;
+use Modules\Templating\Compiler\Nodes\OperatorNode;
+
 class NotStartsOperator extends StartsOperator
 {
 
@@ -17,8 +20,9 @@ class NotStartsOperator extends StartsOperator
         return array('does not start with', 'not starts with');
     }
 
-    protected function getFunctionName()
+    public function compile(Compiler $compiler, OperatorNode $node)
     {
-        return '!' . parent::getFunctionName();
+        $compiler->add('!');
+        parent::compile($compiler, $node);
     }
 }

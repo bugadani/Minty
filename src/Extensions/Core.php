@@ -205,58 +205,66 @@ class Core extends Extension
 
     public function getFunctions()
     {
-        $ns = '\\' . __NAMESPACE__;
+        $namespace = '\\' . __NAMESPACE__;
 
         return array(
             new TemplateFunction('abs'),
-            new TemplateFunction('arguments', $ns . '\template_function_arguments', array('is_safe' => true)),
-            new TemplateFunction('batch', $ns . '\template_function_batch'),
+            new TemplateFunction('arguments', $namespace . '\template_function_arguments', array('is_safe' => true)),
+            new TemplateFunction('batch', $namespace . '\template_function_batch'),
             new TemplateFunction('capitalize', 'ucfirst'),
             new TemplateFunction('count'),
-            new TemplateFunction('cycle', $ns . '\template_function_cycle'),
+            new TemplateFunction('cycle', $namespace . '\template_function_cycle'),
             new TemplateFunction('default', null, array('compiler' => '\Modules\Templating\Extensions\Compilers\DefaultCompiler')),
-            new TemplateFunction('date_format', $ns . '\template_function_dateFormat'),
-            new TemplateFunction('extract', $ns . '\template_function_extract', array('needs_context' => true)),
-            new TemplateFunction('first', $ns . '\template_function_first'),
+            new TemplateFunction('date_format', $namespace . '\template_function_dateFormat'),
+            new TemplateFunction('divisible', $namespace . '\template_function_divisible'),
+            new TemplateFunction('empty', $namespace . '\template_function_empty'),
+            new TemplateFunction('ends', $namespace . '\template_function_ends'),
+            new TemplateFunction('extract', $namespace . '\template_function_extract', array('needs_context' => true)),
+            new TemplateFunction('filter', $namespace . '\template_function_filter'),
+            new TemplateFunction('first', $namespace . '\template_function_first'),
             new TemplateFunction('format', 'sprintf'),
+            new TemplateFunction('in', $namespace . '\template_function_in'),
             new TemplateFunction('is_int'),
             new TemplateFunction('is_numeric'),
             new TemplateFunction('is_string'),
-            new TemplateFunction('join', $ns . '\template_function_join'),
+            new TemplateFunction('join', $namespace . '\template_function_join'),
             new TemplateFunction('json_encode'),
             new TemplateFunction('keys', 'array_keys'),
-            new TemplateFunction('last', $ns . '\template_function_last'),
-            new TemplateFunction('length', $ns . '\template_function_length', array('is_safe' => true)),
-            new TemplateFunction('link_to', $ns . '\template_function_linkTo', array('is_safe' => true)),
+            new TemplateFunction('last', $namespace . '\template_function_last'),
+            new TemplateFunction('length', $namespace . '\template_function_length', array('is_safe' => true)),
+            new TemplateFunction('link_to', $namespace . '\template_function_linkTo', array('is_safe' => true)),
             new TemplateFunction('lower', 'strtolower'),
             new TemplateFunction('ltrim'),
-            new TemplateFunction('max', $ns . '\template_function_max'),
+            new TemplateFunction('match', 'preg_match'),
+            new TemplateFunction('max', $namespace . '\template_function_max'),
             new TemplateFunction('merge', 'array_merge'),
-            new TemplateFunction('min', $ns . '\template_function_min'),
+            new TemplateFunction('min', $namespace . '\template_function_min'),
             new TemplateFunction('nl2br', 'nl2br', array('is_safe' => true)),
             new TemplateFunction('number_format'),
-            new TemplateFunction('pluck', $ns . '\template_function_pluck'),
-            new TemplateFunction('random', $ns . '\template_function_random'),
+            new TemplateFunction('pluck', $namespace . '\template_function_pluck'),
+            new TemplateFunction('pow'),
+            new TemplateFunction('random', $namespace . '\template_function_random'),
             new TemplateFunction('range'),
-            new TemplateFunction('raw', $ns . '\template_function_raw', array('is_safe' => true)),
-            new TemplateFunction('regexp_replace', $ns . '\template_function_regexpReplace'),
-            new TemplateFunction('replace', $ns . '\template_function_replace'),
-            new TemplateFunction('reverse', $ns . '\template_function_reverse'),
+            new TemplateFunction('raw', $namespace . '\template_function_raw', array('is_safe' => true)),
+            new TemplateFunction('regexp_replace', $namespace . '\template_function_regexpReplace'),
+            new TemplateFunction('replace', $namespace . '\template_function_replace'),
+            new TemplateFunction('reverse', $namespace . '\template_function_reverse'),
             new TemplateFunction('rtrim'),
-            new TemplateFunction('shuffle', $ns . '\template_function_shuffle'),
-            new TemplateFunction('slice', $ns . '\template_function_slice'),
-            new TemplateFunction('sort', $ns . '\template_function_sort'),
-            new TemplateFunction('source', $ns . '\template_function_source', array('needs_environment' => true)),
-            new TemplateFunction('spacify', $ns . '\template_function_spacify'),
-            new TemplateFunction('split', $ns . '\template_function_split'),
+            new TemplateFunction('shuffle', $namespace . '\template_function_shuffle'),
+            new TemplateFunction('slice', $namespace . '\template_function_slice'),
+            new TemplateFunction('sort', $namespace . '\template_function_sort'),
+            new TemplateFunction('source', $namespace . '\template_function_source', array('needs_environment' => true)),
+            new TemplateFunction('spacify', $namespace . '\template_function_spacify'),
+            new TemplateFunction('split', $namespace . '\template_function_split'),
+            new TemplateFunction('starts', $namespace . '\template_function_starts'),
             new TemplateFunction('striptags', 'strip_tags', array('is_safe' => true)),
             new TemplateFunction('title_case', 'ucwords'),
             new TemplateFunction('trim'),
-            new TemplateFunction('truncate', $ns . '\template_function_truncate'),
+            new TemplateFunction('truncate', $namespace . '\template_function_truncate'),
             new TemplateFunction('upper', 'strtoupper'),
-            new TemplateFunction('url_encode', $ns . '\template_function_urlEncode'),
-            new TemplateFunction('without', $ns . '\template_function_without'),
-            new TemplateFunction('wordwrap'),
+            new TemplateFunction('url_encode', $namespace . '\template_function_urlEncode'),
+            new TemplateFunction('without', $namespace . '\template_function_without'),
+            new TemplateFunction('wordwrap')
         );
     }
 }
@@ -322,6 +330,23 @@ function template_function_dateFormat($date, $format)
     return date($format, strtotime($date));
 }
 
+function template_function_divisible($data, $num)
+{
+    $div = $data / $num;
+
+    return $div === (int) $div;
+}
+
+function template_function_empty($data)
+{
+    return empty($data);
+}
+
+function template_function_ends($data, $str)
+{
+    return strpos($data, $str) === strlen($data) - strlen($str);
+}
+
 function template_function_extract(Context $context, $source, $keys)
 {
     if (is_string($keys)) {
@@ -332,9 +357,38 @@ function template_function_extract(Context $context, $source, $keys)
     }
 }
 
+function template_function_filter($data, $for = 'html')
+{
+    if (!is_string($data)) {
+        return $data;
+    }
+    switch ($for) {
+        case 'html':
+            return htmlspecialchars($data);
+        case 'json':
+            return json_encode($data);
+        default:
+            throw new \BadMethodCallException("Filter is not found for {$for}");
+    }
+}
+
 function template_function_first($data, $number = 1)
 {
     return template_function_slice($data, 0, $number);
+}
+
+function template_function_in($needle, $haystack)
+{
+    if (is_string($haystack)) {
+        return strpos($haystack, $needle) !== false;
+    }
+    if ($haystack instanceof \Traversable) {
+        $haystack = iterator_to_array($haystack);
+    }
+    if (is_array($haystack)) {
+        return in_array($needle, $haystack);
+    }
+    throw new \InvalidArgumentException('The in keyword expects an array, a string or a Traversable instance');
 }
 
 function template_function_join($data, $glue = '')
@@ -517,6 +571,11 @@ function template_function_split($string, $delimiter = '', $limit = null)
     }
 
     return explode($delimiter, $string, $limit);
+}
+
+function template_function_starts($data, $str)
+{
+    return strpos($data, $str) === 0;
 }
 
 function template_function_truncate($string, $length, $ellipsis = '...')

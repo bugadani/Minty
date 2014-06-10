@@ -9,6 +9,9 @@
 
 namespace Modules\Templating\Compiler\Operators\TestOperators;
 
+use Modules\Templating\Compiler\Compiler;
+use Modules\Templating\Compiler\Nodes\OperatorNode;
+
 class NotContainsOperator extends ContainsOperator
 {
 
@@ -17,8 +20,9 @@ class NotContainsOperator extends ContainsOperator
         return array('not in', 'not contains', 'does not contain');
     }
 
-    protected function getFunctionName()
+    public function compile(Compiler $compiler, OperatorNode $node)
     {
-        return '!' . parent::getFunctionName();
+        $compiler->add('!');
+        parent::compile($compiler, $node);
     }
 }

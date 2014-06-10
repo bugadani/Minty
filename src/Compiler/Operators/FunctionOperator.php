@@ -10,6 +10,7 @@
 namespace Modules\Templating\Compiler\Operators;
 
 use Modules\Templating\Compiler\Compiler;
+use Modules\Templating\Compiler\Nodes\FunctionNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Operator;
 
@@ -18,23 +19,8 @@ abstract class FunctionOperator extends Operator
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
-        $compiler
-            ->add($this->getFunctionName())
-            ->add('(');
-
-        if ($node->hasChild(OperatorNode::OPERAND_LEFT)) {
-            $compiler->compileNode($node->getChild(OperatorNode::OPERAND_LEFT));
-
-            if ($node->hasChild(OperatorNode::OPERAND_RIGHT)) {
-                $compiler
-                    ->add(', ')
-                    ->compileNode($node->getChild(OperatorNode::OPERAND_RIGHT));
-            }
-        } elseif ($node->hasChild(OperatorNode::OPERAND_RIGHT)) {
-            $compiler->compileNode($node->getChild(OperatorNode::OPERAND_RIGHT));
-        }
-
-        $compiler->add(')');
+        $functionNode = new FunctionNode($this->getFunctionName(), $node->getChildren());
+        $compiler->compileNode($functionNode);
     }
 
     abstract protected function getFunctionName();

@@ -9,6 +9,9 @@
 
 namespace Modules\Templating\Compiler\Operators\TestOperators;
 
+use Modules\Templating\Compiler\Compiler;
+use Modules\Templating\Compiler\Nodes\OperatorNode;
+
 class NotDivisibleByOperator extends DivisibleByOperator
 {
 
@@ -17,8 +20,9 @@ class NotDivisibleByOperator extends DivisibleByOperator
         return 'is not divisible by';
     }
 
-    public function getFunctionName()
+    public function compile(Compiler $compiler, OperatorNode $node)
     {
-        return '!' . parent::getFunctionName();
+        $compiler->add('!');
+        parent::compile($compiler, $node);
     }
 }

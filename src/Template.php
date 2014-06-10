@@ -41,11 +41,16 @@ abstract class Template
      */
     private $templateName;
 
-    public function __construct(TemplateLoader $loader, Environment $environment, $template)
-    {
+    public function __construct(
+        TemplateLoader $loader,
+        Environment $environment,
+        $template,
+        array $blocks
+    ) {
         $this->loader       = $loader;
         $this->environment  = $environment;
         $this->templateName = $template;
+        $this->blocks       = $blocks;
     }
 
     public function __get($key)
@@ -61,19 +66,9 @@ abstract class Template
         }
     }
 
-    protected function setBlocks(array $blocks)
-    {
-        $this->blocks = $blocks;
-    }
-
     protected function setParentTemplate($parentTemplate)
     {
         $this->parentTemplate = $parentTemplate;
-    }
-
-    public function getParentTemplate()
-    {
-        return $this->parentTemplate;
     }
 
     public function getLoader()
@@ -91,30 +86,6 @@ abstract class Template
         return $this->environment->getExtension($name);
     }
 
-    public function __call($function, $args)
-    {
-        if ($function === 'empty') {
-            return $this->isEmpty(current($args));
-        }
-
-        throw new \BadFunctionCallException("Function {$function} does not exist.");
-    }
-
-    public function filter($data, $for = 'html')
-    {
-        if (!is_string($data)) {
-            return $data;
-        }
-        switch ($for) {
-            case 'html':
-                return htmlspecialchars($data);
-            case 'json':
-                return json_encode($data);
-            default:
-                throw new \BadMethodCallException("Filter is not found for {$for}");
-        }
-    }
-
     public function hasMethod($object, $method)
     {
         if (!is_object($object)) {
@@ -122,47 +93,6 @@ abstract class Template
         }
 
         return method_exists($object, $method);
-    }
-
-    public function isEmpty($data)
-    {
-        return empty($data);
-    }
-
-    public function isDivisibleBy($data, $num)
-    {
-        $div = $data / $num;
-
-        return $div === (int) $div;
-    }
-
-    public function isIn($needle, $haystack)
-    {
-        if (is_string($haystack)) {
-            return strpos($haystack, $needle) !== false;
-        }
-        if ($haystack instanceof \Traversable) {
-            $haystack = iterator_to_array($haystack);
-        }
-        if (is_array($haystack)) {
-            return in_array($needle, $haystack);
-        }
-        throw new \InvalidArgumentException('The in keyword expects an array, a string or a Traversable instance');
-    }
-
-    public function startsWith($data, $str)
-    {
-        return strpos($data, $str) === 0;
-    }
-
-    public function endsWith($data, $str)
-    {
-        return strpos($data, $str) === strlen($data) - strlen($str);
-    }
-
-    public function getEmbeddedTemplates()
-    {
-        return array();
     }
 
     public function renderBlock($blockName, Context $context, $parentBlock = false)

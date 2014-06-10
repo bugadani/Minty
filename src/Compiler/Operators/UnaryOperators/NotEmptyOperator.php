@@ -9,6 +9,9 @@
 
 namespace Modules\Templating\Compiler\Operators\UnaryOperators;
 
+use Modules\Templating\Compiler\Compiler;
+use Modules\Templating\Compiler\Nodes\OperatorNode;
+
 class NotEmptyOperator extends EmptyOperator
 {
 
@@ -17,8 +20,9 @@ class NotEmptyOperator extends EmptyOperator
         return 'is not empty';
     }
 
-    protected function getFunctionName()
+    public function compile(Compiler $compiler, OperatorNode $node)
     {
-        return '!' . parent::getFunctionName();
+        $compiler->add('!');
+        parent::compile($compiler, $node);
     }
 }
