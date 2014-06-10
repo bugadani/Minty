@@ -117,7 +117,6 @@ class TemplateLoader
     {
         //Get the desired class name for the template
         $class = $this->loader->getTemplateClassName($templateName);
-        $this->log('Compiled class name is %s', $class);
 
         //Tokenize and parse the template
         $stream = $this->environment->tokenize($template);
