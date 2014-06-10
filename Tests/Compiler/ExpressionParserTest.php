@@ -2,8 +2,11 @@
 
 namespace Modules\Templating\Compiler;
 
+use Modules\Templating\Compiler\Nodes\ArrayIndexNode;
 use Modules\Templating\Compiler\Nodes\DataNode;
+use Modules\Templating\Compiler\Nodes\FunctionNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
+use Modules\Templating\Compiler\Nodes\VariableNode;
 use Modules\Templating\Environment;
 
 class ExpressionParserTest extends \PHPUnit_Framework_TestCase
@@ -170,5 +173,186 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
             '\\Modules\\Templating\\Compiler\\Nodes\\ArrayNode',
             $this->expressionParser->parse($stream)
         );
+    }
+
+    public function testParenthesisAfterIdentifierMakesAFunction()
+    {
+        $stream = new Stream(array(
+            new Token(Token::IDENTIFIER, 'function'),
+            new Token(Token::PUNCTUATION, '('),
+            new Token(Token::PUNCTUATION, ')'),
+            new Token(Token::EOF)
+        ));
+        /** @var $nodes FunctionNode */
+        $nodes = $this->expressionParser->parse($stream);
+
+        $this->assertInstanceof('\\Modules\\Templating\\Compiler\\Nodes\\FunctionNode', $nodes);
+
+        $arguments = $nodes->getArguments();
+        $this->assertEquals(0, count($arguments));
+    }
+
+    public function testArgumentsArePresentInFunctionNode()
+    {
+
+        $stream = new Stream(array(
+            new Token(Token::IDENTIFIER, 'function'),
+            new Token(Token::PUNCTUATION, '('),
+            new Token(Token::STRING, 'foo'),
+            new Token(Token::PUNCTUATION, ','),
+            new Token(Token::STRING, 'bar'),
+            new Token(Token::PUNCTUATION, ')'),
+            new Token(Token::EOF)
+        ));
+
+        /** @var $nodes FunctionNode */
+        $nodes = $this->expressionParser->parse($stream);
+
+        $this->assertInstanceof('\\Modules\\Templating\\Compiler\\Nodes\\FunctionNode', $nodes);
+
+        /** @var $arguments DataNode[] */
+        $arguments = $nodes->getArguments();
+        $this->assertEquals(2, count($arguments));
+        $this->assertEquals('foo', $arguments[0]->getData());
+        $this->assertEquals('bar', $arguments[1]->getData());
+    }
+
+    /**
+     * @expectedException \Modules\Templating\Compiler\Exceptions\SyntaxException
+     */
+    public function testTrailingCommaIsNotAllowedInArgumentList()
+    {
+        $stream = new Stream(array(
+            new Token(Token::IDENTIFIER, 'function'),
+            new Token(Token::PUNCTUATION, '('),
+            new Token(Token::STRING, 'foo'),
+            new Token(Token::PUNCTUATION, ','),
+            new Token(Token::PUNCTUATION, ')'),
+            new Token(Token::EOF)
+        ));
+
+        $this->expressionParser->parse($stream);
+    }
+
+    public function testSimpleVariables()
+    {
+        $stream = new Stream(array(
+            new Token(Token::VARIABLE, 'foo'),
+            new Token(Token::EOF)
+        ));
+
+        /** @var $node VariableNode */
+        $node = $this->expressionParser->parse($stream);
+
+        $this->assertInstanceOf('\\Modules\\Templating\\Compiler\\Nodes\\VariableNode', $node);
+        $this->assertEquals('foo', $node->getName());
+    }
+
+    public function testSquareBracketsMakeArrayIndexing()
+    {
+        $stream = new Stream(array(
+            new Token(Token::VARIABLE, 'foo'),
+            new Token(Token::PUNCTUATION, '['),
+            new Token(Token::STRING, 'bar'),
+            new Token(Token::PUNCTUATION, ']'),
+            new Token(Token::EOF)
+        ));
+
+        /** @var $node ArrayIndexNode */
+        $node = $this->expressionParser->parse($stream);
+
+        /** @var $nameNode VariableNode */
+        $nameNode = $this->getPropertyOfArrayIndexNode($node, 'identifier');
+        /** @var $keyNode DataNode */
+        $keyNode = $this->getPropertyOfArrayIndexNode($node, 'key');
+
+        $this->assertInstanceOf('\\Modules\\Templating\\Compiler\\Nodes\\ArrayIndexNode', $node);
+
+        $this->assertInstanceOf('\\Modules\\Templating\\Compiler\\Nodes\\VariableNode', $nameNode);
+        $this->assertEquals('foo', $nameNode->getName());
+
+        $this->assertInstanceOf('\\Modules\\Templating\\Compiler\\Nodes\\DataNode', $keyNode);
+        $this->assertEquals('bar', $keyNode->getData());
+    }
+
+    public function testChainedArrayAccessIsSupported()
+    {
+        $stream = new Stream(array(
+            new Token(Token::VARIABLE, 'foo'),
+            new Token(Token::PUNCTUATION, '['),
+            new Token(Token::STRING, 'bar'),
+            new Token(Token::PUNCTUATION, ']'),
+            new Token(Token::PUNCTUATION, '['),
+            new Token(Token::STRING, 'baz'),
+            new Token(Token::PUNCTUATION, ']'),
+            new Token(Token::EOF)
+        ));
+
+        /** @var $node ArrayIndexNode */
+        $node = $this->expressionParser->parse($stream);
+        $this->assertInstanceOf('\\Modules\\Templating\\Compiler\\Nodes\\ArrayIndexNode', $node);
+
+        //secound access
+        /** @var $identifierNode ArrayIndexNode */
+        $identifierNode = $this->getPropertyOfArrayIndexNode($node, 'identifier');
+        /** @var $keyNode DataNode */
+        $keyNode = $this->getPropertyOfArrayIndexNode($node, 'key');
+
+        $this->assertInstanceOf(
+            '\\Modules\\Templating\\Compiler\\Nodes\\ArrayIndexNode',
+            $identifierNode
+        );
+        $this->assertInstanceOf(
+            '\\Modules\\Templating\\Compiler\\Nodes\\DataNode',
+            $keyNode
+        );
+        $this->assertEquals('baz', $keyNode->getData());
+
+        //first access
+        /** @var $firstIdentifierNode VariableNode */
+        $firstIdentifierNode = $this->getPropertyOfArrayIndexNode($identifierNode, 'identifier');
+        /** @var $firstKeyNode DataNode */
+        $firstKeyNode = $this->getPropertyOfArrayIndexNode($identifierNode, 'key');
+
+        $this->assertInstanceOf(
+            '\\Modules\\Templating\\Compiler\\Nodes\\VariableNode',
+            $firstIdentifierNode
+        );
+        $this->assertInstanceOf(
+            '\\Modules\\Templating\\Compiler\\Nodes\\DataNode',
+            $firstKeyNode
+        );
+        $this->assertEquals('foo', $firstIdentifierNode->getName());
+        $this->assertEquals('bar', $firstKeyNode->getData());
+    }
+
+    /**
+     * @expectedException \Modules\Templating\Compiler\Exceptions\SyntaxException
+     */
+    public function testArrayIndexingRequiresAnIndex()
+    {
+        $stream = new Stream(array(
+            new Token(Token::VARIABLE, 'foo'),
+            new Token(Token::PUNCTUATION, '['),
+            new Token(Token::PUNCTUATION, ']'),
+            new Token(Token::EOF)
+        ));
+
+        $this->expressionParser->parse($stream);
+    }
+
+    /**
+     * @param $node
+     * @param $propertyName
+     *
+     * @return array
+     */
+    private function getPropertyOfArrayIndexNode(ArrayIndexNode $node, $propertyName)
+    {
+        $reflection = new \ReflectionClass($node);
+        $property   = $reflection->getProperty($propertyName);
+        $property->setAccessible(true);
+
+        return $property->getValue($node);
     }
 }
