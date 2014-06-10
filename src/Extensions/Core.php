@@ -65,6 +65,7 @@ use Modules\Templating\Compiler\Operators\UnaryOperators\PostDecrementOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PostIncrementOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PreDecrementOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PreIncrementOperator;
+use Modules\Templating\Compiler\Tags\CaptureTag;
 use Modules\Templating\Compiler\Tags\CaseTag;
 use Modules\Templating\Compiler\Tags\DoTag;
 use Modules\Templating\Compiler\Tags\ElseIfTag;
@@ -181,21 +182,22 @@ class Core extends Extension
     public function getTags()
     {
         $tags = array(
-            new ListTag(),
-            new ForTag(),
-            new SwitchTag(),
             new BlockTag(),
-            new IncludeTag(),
-            new ParentTag(),
-            new ExtendsTag(),
-            new EmbedTag(),
-            new IfTag(),
-            new PrintTag(),
-            new ExtractTag(),
-            new ElseTag(),
-            new ElseIfTag(),
+            new CaptureTag(),
             new CaseTag(),
-            new DoTag()
+            new DoTag(),
+            new ElseIfTag(),
+            new ElseTag(),
+            new EmbedTag(),
+            new ExtendsTag(),
+            new ExtractTag(),
+            new ForTag(),
+            new IfTag(),
+            new IncludeTag(),
+            new ListTag(),
+            new ParentTag(),
+            new PrintTag(),
+            new SwitchTag(),
         );
 
         return $tags;
