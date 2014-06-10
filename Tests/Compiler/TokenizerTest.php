@@ -56,7 +56,10 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
         $mockEnv->getBinaryOperators()->addOperator($otherOperator);
         $mockEnv->addTag($testTag);
         $mockEnv->addTag($testBlockTag);
-        $mockEnv->addFunction(new TemplateFunction('test', function(){}));
+        $mockEnv->addFunction(
+            new TemplateFunction('test', function () {
+            })
+        );
 
         $this->tokenizer   = new Tokenizer($mockEnv);
         $this->environment = $mockEnv;
