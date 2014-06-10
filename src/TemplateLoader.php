@@ -13,7 +13,6 @@ use Miny\Log\AbstractLog;
 use Miny\Log\Log;
 use Modules\Templating\Compiler\Exceptions\TemplateNotFoundException;
 use Modules\Templating\Compiler\Exceptions\TemplatingException;
-use Modules\Templating\Compiler\Nodes\DataNode;
 use RuntimeException;
 
 class TemplateLoader
@@ -215,7 +214,7 @@ class TemplateLoader
         $this->compileIfNeeded($template);
 
         /** @var $object Template */
-        $object = new $class($this, $this->environment);
+        $object                           = new $class($this, $this->environment);
         $this->loadedTemplates[$template] = $object;
 
         return $object;

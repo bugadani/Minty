@@ -10,7 +10,6 @@
 namespace Modules\Templating\Compiler\Nodes;
 
 use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Exceptions\CompileException;
 use Modules\Templating\Compiler\Node;
 
 class FunctionNode extends IdentifierNode
