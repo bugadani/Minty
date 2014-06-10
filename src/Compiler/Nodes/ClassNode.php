@@ -155,12 +155,13 @@ class ClassNode extends Node
         $compiler->indented('{');
         $compiler->indent();
 
-        if ($this->getData('self_accessed') && $method !== 'displayTemplate') {
-            $compiler->indented('$oldSelf = $context->__get("_self");');
+        if ($this->getData('self_accessed')) {
+            if ($method !== 'displayTemplate') {
+                $compiler->indented('$oldSelf = $context->__get("_self");');
+            }
+            $compiler->indented('$context->__set("_self", $this);');
         }
-        $compiler->indented('$context->__set("_self", $this);');
         $compiler->compileNode($body);
-
         if ($this->getData('self_accessed') && $method !== 'displayTemplate') {
             $compiler->indented('$context->__set("_self", $oldSelf);');
         }
