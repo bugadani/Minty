@@ -9,7 +9,6 @@
 
 namespace Modules\Templating\Compiler;
 
-use Modules\Templating\Compiler\Exceptions\ParseException;
 use Modules\Templating\Compiler\Exceptions\SyntaxException;
 use Modules\Templating\Environment;
 
@@ -25,7 +24,6 @@ class Tokenizer
     private $tokenSplitPattern;
     private $fallbackTagName;
     private $blockEndPrefix;
-    private $blockEndingTags = array();
     private $punctuation = array(',', '[', ']', '(', ')', ':', '?', '=>');
     private $literals = array(
         'null'  => null,
@@ -58,7 +56,7 @@ class Tokenizer
         $this->tags = $environment->getTags();
         foreach ($this->tags as $name => $tag) {
             if ($tag->hasEndingTag()) {
-                $this->blockEndingTags[$this->blockEndPrefix . $name] = 'end' . $name;
+                $this->tags[$this->blockEndPrefix . $name] = 'end' . $name;
             }
         }
 
@@ -181,9 +179,6 @@ class Tokenizer
                     $tag = trim($tagExpression);
                     if ($tag === 'raw') {
                         $this->tokenizeRawBlock();
-                    } elseif (isset($this->blockEndingTags[$tag])) {
-                        //Since ending tags can't have arguments, they are handled first
-                        $this->pushToken(Token::TAG, $this->blockEndingTags[$tag]);
                     } else {
                         $this->processTag($tag);
                     }
@@ -231,21 +226,23 @@ class Tokenizer
 
     private function processTag($tag)
     {
-        //Try to find the tag name
-        preg_match('/(.*?)(\s.*|)$/ADs', $tag, $parts);
-        $tagName = $parts[1];
+        if (!isset($this->tags[$tag])) {
+            //Try to find the tag name
+            preg_match('/(.*?)(\s.*|)$/ADs', $tag, $parts);
+            $tagName = $parts[1];
 
-        //If the tag name is unknown, try to use the fallback
-        if (!isset($this->tags[$tagName])) {
-            $tagName    = $this->fallbackTagName;
-            $expression = $tag;
-
+            //If the tag name is unknown, try to use the fallback
             if (!isset($this->tags[$tagName])) {
-                throw new ParseException("Unknown tag \"{$tagName}\"", $this->line);
+                $tagName    = $this->fallbackTagName;
+                $expression = $tag;
+            } else {
+                $expression = $parts[2];
             }
         } else {
-            $expression = $parts[2];
+            $tagName    = $tag;
+            $expression = '';
         }
+
         $this->pushToken(Token::TAG, $tagName);
 
         //tokenize the tag expression if any

@@ -77,8 +77,7 @@ class Parser
 
             case Token::TAG:
                 if (!isset($this->tags[$value])) {
-                    $line = $token->getLine();
-                    throw new ParseException("Unknown {$value} tag", $line);
+                    throw new ParseException("Unknown {$value} tag", $token->getLine());
                 }
                 $stream->nextTokenIf(Token::EXPRESSION_START, $value);
 

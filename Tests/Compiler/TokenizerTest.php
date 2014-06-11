@@ -65,6 +65,17 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
         $this->environment = $mockEnv;
     }
 
+    public function testTokenizerIsAbleToHandleVeryLongTemplates()
+    {
+        $template = str_repeat('foo', 100000);
+        $template .= '{raw}';
+        $template .= str_repeat('foo', 100000);
+        $template .= '{endraw}{#';
+        $template .= str_repeat('foo', 100000);
+        $template .= '#}';
+        $this->tokenizer->tokenize($template);
+    }
+
     public function testTokenizerDoesNotParseTagsInRawBlock()
     {
         $stream = $this->tokenizer->tokenize('{ raw }{test}{ endraw }');
@@ -283,6 +294,7 @@ new line
     {
         return array(
             array('{raw}unclosed raw block{'),
+            array('{raw}unclosed raw block{endraw'),
             array('{"unterminated string'),
             array('{"unterminated \\" \\\\\\"'),
             array('{unclosed tag'),
@@ -297,14 +309,6 @@ new line
     public function testTokenizerThrowsExceptions($template)
     {
         $this->tokenizer->tokenize($template);
-    }
-
-    /**
-     * @expectedException \Modules\Templating\Compiler\Exceptions\ParseException
-     */
-    public function testTokenizerThrowsParseExceptionForUnknownTags()
-    {
-        $this->tokenizer->tokenize('{foo tag}');
     }
 
     public function testTokenizerUsesFallbackTagForUnknownTags()
@@ -335,6 +339,23 @@ new line
         $stream->expect(Token::PUNCTUATION, '(');
         $stream->expect(Token::PUNCTUATION, ')');
         $stream->expect(Token::EXPRESSION_END);
+        $stream->expect(Token::EOF);
+
+        return $tokenizer;
+    }
+
+    /**
+     * @depends testFunctionWithSameNameAsTagIsNotTokenizedAsTag
+     */
+    public function testStringIsCorrectlyParsedInTag(Tokenizer $tokenizer) {
+
+        $stream = $tokenizer->tokenize('"{ "test" }"');
+        $stream->expect(Token::TEXT, '"');
+        $stream->expect(Token::TAG, 'fallback');
+        $stream->expect(Token::EXPRESSION_START, 'fallback');
+        $stream->expect(Token::STRING, 'test');
+        $stream->expect(Token::EXPRESSION_END);
+        $stream->expect(Token::TEXT, '"');
         $stream->expect(Token::EOF);
     }
 }
