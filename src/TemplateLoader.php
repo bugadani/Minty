@@ -61,29 +61,6 @@ class TemplateLoader
         $this->log->write(Log::DEBUG, 'TemplateLoader', $message, $args);
     }
 
-    private function compileIfNeeded($template)
-    {
-        if ($this->loader->isCacheFresh($template)) {
-            //The template is already compiled and up to date
-            return;
-        }
-
-        $this->log('Compiling %s', $template);
-
-        //Read the template
-        $templateSource = $this->getSource($template);
-
-        //Compile and optimize the template
-        try {
-            $this->compileString($templateSource, $template);
-        } catch (TemplatingException $e) {
-            $this->log('Failed to compile %s. Reason: %s.', $template, $e->getMessage());
-            $this->log('Compiling an error template.', $template);
-            $templateSource = $this->getErrorTemplate($e, $template, $templateSource);
-            $this->compileString($templateSource, $template);
-        }
-    }
-
     /**
      * @param string|array $template The template name
      *
@@ -94,42 +71,46 @@ class TemplateLoader
         return $this->loader->load($template);
     }
 
+    private function compileIfNeeded($templateName)
+    {
+        if ($this->loader->isCacheFresh($templateName)) {
+            //The template is already compiled and up to date
+            return;
+        }
+
+        $this->log('Compiling %s', $templateName);
+
+        //Read the template
+        $template = $this->getSource($templateName);
+        $class    = $this->loader->getTemplateClassName($templateName);
+
+        try {
+            $compiled = $this->environment->compileTemplate($template, $templateName, $class);
+        } catch (TemplatingException $e) {
+            $this->log('Failed to compile %s. Reason: %s.', $templateName, $e->getMessage());
+            $this->log('Compiling an error template.', $templateName);
+            $template = $this->getErrorTemplate($e, $templateName, $template);
+            $compiled = $this->environment->compileTemplate($template, $templateName, $class);
+        }
+        $this->saveCompiledTemplate($compiled, $templateName);
+    }
+
     /**
      * @param $compiled
-     * @param $destination
+     * @param $templateName
      */
-    private function saveCompiledTemplate($compiled, $destination)
+    private function saveCompiledTemplate($compiled, $templateName)
     {
+        $destination = sprintf(
+            $this->environment->getOption('cache_path'),
+            $this->loader->getCacheKey($templateName)
+        );
+
         $cacheDir = dirname($destination);
         if (!is_dir($cacheDir)) {
             mkdir($cacheDir, 0777, true);
         }
         file_put_contents($destination, $compiled);
-    }
-
-    /**
-     * @param $template
-     * @param $templateName
-     *
-     * @return mixed
-     */
-    private function compileString($template, $templateName)
-    {
-        //Get the desired class name for the template
-        $class = $this->loader->getTemplateClassName($templateName);
-
-        //Tokenize and parse the template
-        $stream = $this->environment->tokenize($template);
-        $node   = $this->environment->parse($stream, $templateName);
-
-        //Run the Node Tree Visitors
-        $this->environment->traverse($node);
-
-        //Compile the template
-        $compiled = $this->environment->compile($node, $class);
-
-        //Compile and store the template
-        $this->saveCompiledTemplate($compiled, $this->getCachePath($templateName));
     }
 
     private function getErrorTemplate(TemplatingException $exception, $template, $source)
@@ -185,14 +166,13 @@ class TemplateLoader
                     return $template;
                 }
             }
-            $this->log('Template %s were not found', implode(', ', $templates));
-            throw new TemplateNotFoundException(implode(', ', $templates));
-        } elseif (!$this->loader->exists($templates)) {
-            $this->log('Template %s was not found', $templates);
-            throw new TemplateNotFoundException($templates);
+            $templates = implode(', ', $templates);
+        } elseif ($this->loader->exists($templates)) {
+            return $templates;
         }
 
-        return $templates;
+        $this->log('Template not found: %s', $templates);
+        throw new TemplateNotFoundException($templates);
     }
 
     /**
@@ -213,7 +193,8 @@ class TemplateLoader
         $this->compileIfNeeded($template);
 
         /** @var $object Template */
-        $object                           = new $class($this, $this->environment);
+        $object = new $class($this, $this->environment);
+
         $this->loadedTemplates[$template] = $object;
 
         return $object;
@@ -223,26 +204,7 @@ class TemplateLoader
     {
         $object = $this->load($template);
         $object->displayTemplate(
-            $this->createContext($variables)
+            $this->environment->createContext($variables)
         );
-    }
-
-    private function getCachePath($template)
-    {
-        return sprintf(
-            $this->environment->getOption('cache_path'),
-            $this->loader->getCacheKey($template)
-        );
-    }
-
-    public function createContext($variables = array())
-    {
-        if ($variables instanceof Context) {
-            return $variables;
-        }
-        $context = new Context($this->environment, $variables);
-        $context->add($this->environment->getOption('global_variables'));
-
-        return $context;
     }
 }

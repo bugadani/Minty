@@ -81,11 +81,6 @@ abstract class Template
         return $this->environment;
     }
 
-    public function getExtension($name)
-    {
-        return $this->environment->getExtension($name);
-    }
-
     public function hasMethod($object, $method)
     {
         if (!is_object($object)) {

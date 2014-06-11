@@ -41,7 +41,7 @@ class EmbedTag extends Tag
         $compiler
             ->indented('$embedded->displayTemplate(')
             ->indent()
-            ->indented('$this->getLoader()->createContext(')
+            ->indented('$this->getEnvironment()->createContext(')
             ->indent()
             ->indented('')
             ->compileNode($node->getChild('arguments'))

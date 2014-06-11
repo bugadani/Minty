@@ -68,7 +68,6 @@ use Modules\Templating\Compiler\Tags\CaseTag;
 use Modules\Templating\Compiler\Tags\DoTag;
 use Modules\Templating\Compiler\Tags\ElseIfTag;
 use Modules\Templating\Compiler\Tags\ElseTag;
-use Modules\Templating\Compiler\Tags\ExtractTag;
 use Modules\Templating\Compiler\Tags\ForTag;
 use Modules\Templating\Compiler\Tags\IfTag;
 use Modules\Templating\Compiler\Tags\ListTag;
@@ -186,7 +185,6 @@ class Core extends Extension
             new ElseTag(),
             new EmbedTag(),
             new ExtendsTag(),
-            new ExtractTag(),
             new ForTag(),
             new IfTag(),
             new IncludeTag(),

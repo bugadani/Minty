@@ -12,13 +12,10 @@ namespace Modules\Templating;
 use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\ExpressionParser;
 use Modules\Templating\Compiler\FunctionCompiler;
-use Modules\Templating\Compiler\Node;
-use Modules\Templating\Compiler\Nodes\FileNode;
 use Modules\Templating\Compiler\NodeTreeTraverser;
 use Modules\Templating\Compiler\NodeVisitor;
 use Modules\Templating\Compiler\OperatorCollection;
 use Modules\Templating\Compiler\Parser;
-use Modules\Templating\Compiler\Stream;
 use Modules\Templating\Compiler\Tag;
 use Modules\Templating\Compiler\TemplateFunction;
 use Modules\Templating\Compiler\Tokenizer;
@@ -116,64 +113,32 @@ class Environment
         return $this->templateLoader;
     }
 
-    /**
-     * @param $template
-     *
-     * @return Stream
-     */
-    public function tokenize($template)
+    public function compileTemplate($template, $templateName, $class)
     {
-        if (!isset($this->tokenizer)) {
-            $this->tokenizer = new Tokenizer($this);
-        }
-
-        return $this->tokenizer->tokenize($template);
-    }
-
-    /**
-     * @param Stream $stream
-     * @param        $templateName
-     *
-     * @return FileNode
-     */
-    public function parse(Stream $stream, $templateName)
-    {
-        if (!isset($this->parser)) {
-            $this->parser = new Parser($this, new ExpressionParser($this));
-        }
-
-        return $this->parser->parseTemplate($stream, $templateName);
-    }
-
-    /**
-     * @param Node $node
-     */
-    public function traverse(Node $node)
-    {
-        if (!isset($this->nodeTreeTraverser)) {
+        if (!isset($this->compiler)) {
             foreach ($this->extensions as $ext) {
                 foreach ($ext->getNodeVisitors() as $visitor) {
                     $this->addNodeVisitor($visitor);
                 }
+                foreach ($ext->getTags() as $tag) {
+                    $this->addTag($tag);
+                }
             }
+
+            $this->tokenizer         = new Tokenizer($this);
+            $this->parser            = new Parser($this, new ExpressionParser($this));
             $this->nodeTreeTraverser = new NodeTreeTraverser($this->nodeVisitors);
+            $this->compiler          = new Compiler($this);
         }
+        //Tokenize and parse the template
+        $stream = $this->tokenizer->tokenize($template);
+        $node   = $this->parser->parseTemplate($stream, $templateName);
 
+        //Run the Node Tree Visitors
         $this->nodeTreeTraverser->traverse($node);
-    }
 
-    /**
-     * @param Node $node
-     *
-     * @return string
-     */
-    public function compile(Node $node)
-    {
-        if (!isset($this->compiler)) {
-            $this->compiler = new Compiler($this);
-        }
-
-        return $this->compiler->compile($node);
+        //Compile the template
+        return $this->compiler->compile($node, $class);
     }
 
     public function addGlobalVariable($name, $value)
@@ -201,11 +166,6 @@ class Environment
         return $this->options[$key];
     }
 
-    public function getOptions()
-    {
-        return $this->options;
-    }
-
     /**
      * @param Extension $extension
      */
@@ -229,21 +189,6 @@ class Environment
      * @param string $name
      *
      * @throws \RuntimeException
-     * @return Extension
-     */
-    public function getExtension($name)
-    {
-        if (!isset($this->extensions[$name])) {
-            throw new \RuntimeException("Extension not found: {$name}");
-        }
-
-        return $this->extensions[$name];
-    }
-
-    /**
-     * @param string $name
-     *
-     * @throws \RuntimeException
      * @return TemplateFunction
      */
     public function getFunction($name)
@@ -253,14 +198,6 @@ class Environment
         }
 
         return $this->functions[$name];
-    }
-
-    /**
-     * @return TemplateFunction[]
-     */
-    public function getFunctions()
-    {
-        return $this->functions;
     }
 
     /**
@@ -286,14 +223,6 @@ class Environment
      */
     public function getTags()
     {
-        if (empty($this->tags)) {
-            foreach ($this->extensions as $ext) {
-                foreach ($ext->getTags() as $tag) {
-                    $this->addTag($tag);
-                }
-            }
-        }
-
         return $this->tags;
     }
 
@@ -303,10 +232,7 @@ class Environment
     public function getBinaryOperators()
     {
         if (!isset($this->binaryOperators)) {
-            $this->binaryOperators = new OperatorCollection();
-            foreach ($this->extensions as $ext) {
-                $this->binaryOperators->addOperators($ext->getBinaryOperators());
-            }
+            $this->initOperators();
         }
 
         return $this->binaryOperators;
@@ -318,10 +244,7 @@ class Environment
     public function getUnaryPrefixOperators()
     {
         if (!isset($this->unaryPrefixOperators)) {
-            $this->unaryPrefixOperators = new OperatorCollection();
-            foreach ($this->extensions as $ext) {
-                $this->unaryPrefixOperators->addOperators($ext->getPrefixUnaryOperators());
-            }
+            $this->initOperators();
         }
 
         return $this->unaryPrefixOperators;
@@ -333,10 +256,7 @@ class Environment
     public function getUnaryPostfixOperators()
     {
         if (!isset($this->unaryPostfixOperators)) {
-            $this->unaryPostfixOperators = new OperatorCollection();
-            foreach ($this->extensions as $ext) {
-                $this->unaryPostfixOperators->addOperators($ext->getPostfixUnaryOperators());
-            }
+            $this->initOperators();
         }
 
         return $this->unaryPostfixOperators;
@@ -371,5 +291,29 @@ class Environment
     public function addNodeVisitor(NodeVisitor $visitor)
     {
         $this->nodeVisitors[] = $visitor;
+    }
+
+    public function createContext($variables = array())
+    {
+        if ($variables instanceof Context) {
+            return $variables;
+        }
+        $context = new Context($this, $variables);
+        $context->add($this->getOption('global_variables'));
+
+        return $context;
+    }
+
+    private function initOperators()
+    {
+        $this->binaryOperators       = new OperatorCollection();
+        $this->unaryPrefixOperators  = new OperatorCollection();
+        $this->unaryPostfixOperators = new OperatorCollection();
+
+        foreach ($this->extensions as $ext) {
+            $this->binaryOperators->addOperators($ext->getBinaryOperators());
+            $this->unaryPrefixOperators->addOperators($ext->getPrefixUnaryOperators());
+            $this->unaryPostfixOperators->addOperators($ext->getPostfixUnaryOperators());
+        }
     }
 }
