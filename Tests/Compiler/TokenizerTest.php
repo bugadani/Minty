@@ -151,13 +151,13 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
     public function testLiteralsAreParsedInTags()
     {
         $stream = $this->tokenizer->tokenize(
-            '{ test "string" \'string\' :string true false null 5 5.2 }'
+            '{ test "string" \'string\' :string_underscore true false null 5 5.2 }'
         );
         $stream->expect(Token::TAG, 'test');
         $stream->expect(Token::EXPRESSION_START, 'test');
         $stream->expect(Token::STRING, 'string');
         $stream->expect(Token::STRING, 'string');
-        $stream->expect(Token::STRING, 'string');
+        $stream->expect(Token::STRING, 'string_underscore');
         $stream->expect(Token::LITERAL, true);
         $stream->expect(Token::LITERAL, false);
         $stream->expect(Token::LITERAL, null);
