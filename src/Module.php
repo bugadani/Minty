@@ -13,6 +13,7 @@ use Miny\Application\BaseApplication;
 use Miny\AutoLoader;
 use Miny\Factory\Container;
 use Modules\Templating\Extensions\Core;
+use Modules\Templating\Extensions\StandardFunctions;
 
 class Module extends \Miny\Modules\Module
 {
@@ -70,6 +71,7 @@ class Module extends \Miny\Modules\Module
         $env->setTemplateLoader($container->get(__NAMESPACE__ . '\\TemplateLoader'));
 
         $env->addExtension(new Core());
+        $env->addExtension(new StandardFunctions());
         $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Optimizer'));
         $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Miny'));
 
@@ -101,9 +103,7 @@ class Module extends \Miny\Modules\Module
         $container         = $this->application->getContainer();
         $controllerHandler = $container->get(
             __NAMESPACE__ . '\\EventHandlers',
-            array(
-                $this->getConfigurationTree()
-            )
+            array($this->getConfigurationTree())
         );
 
         return $controllerHandler->getHandledEvents();
