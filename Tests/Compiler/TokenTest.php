@@ -51,7 +51,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($token->test(Token::TEXT));
 
         $this->assertTrue($token->test(Token::EXPRESSION_START));
-        $this->assertTrue($token->test(Token::EXPRESSION_START, 4));
+        $this->assertFalse($token->test(Token::EXPRESSION_START, 4));
     }
 
     public function testSimpleTokenWithValue()

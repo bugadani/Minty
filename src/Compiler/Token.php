@@ -53,7 +53,7 @@ class Token
             return false;
         }
 
-        if ($value === null || $this->value === null || $this->value === $value) {
+        if ($value === null || $this->value === $value) {
             return true;
         }
 
