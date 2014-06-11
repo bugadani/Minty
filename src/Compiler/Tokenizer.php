@@ -61,23 +61,24 @@ class Tokenizer
         }
 
         $this->tokenSplitPattern      = $this->getTokenSplitPattern();
-        $this->expressionPartsPattern = $this->getExpressionPartsPattern(
-            array(
-                '$[a-zA-Z]+[a-zA-Z_\-0-9]*',
-                ':[a-zA-Z]+[a-zA-Z_\-0-9]*',
-                '(?<!\w)\d+(?:\.\d+)?',
-                '"(?:\\\\.|[^"\\\\])*"',
-                "'(?:\\\\.|[^'\\\\])*'"
-            )
-        );
+        $this->expressionPartsPattern = $this->getExpressionPartsPattern();
     }
 
-    private function getExpressionPartsPattern(array $dataPatterns)
+    private function getExpressionPartsPattern()
     {
-        $patterns = array();
         $signs    = ' ';
+        $patterns = array(
+            '$[a-zA-Z]+[a-zA-Z_\-0-9]*' => 25,
+            ':[a-zA-Z]+[a-zA-Z_\-0-9]*' => 25,
+            '(?<!\w)\d+(?:\.\d+)?'      => 20,
+            '"(?:\\\\.|[^"\\\\])*"'     => 21,
+            "'(?:\\\\.|[^'\\\\])*'"     => 21,
+            'null'                      => 4,
+            'true'                      => 4,
+            'false'                     => 5,
+        );
 
-        $symbols = array_merge($this->operators, $this->punctuation, array_keys($this->literals));
+        $symbols = array_merge($this->operators, $this->punctuation);
         foreach ($symbols as $symbol) {
             $length = strlen($symbol);
             if ($length === 1) {
@@ -91,13 +92,10 @@ class Tokenizer
                 $patterns[$symbol] = $length;
             }
         }
-        foreach ($dataPatterns as $pattern) {
-            $patterns[$pattern] = strlen($pattern);
-        }
         arsort($patterns);
-
         $patterns = implode('|', array_keys($patterns));
-        $signs    = preg_quote($signs, '/');
+
+        $signs = preg_quote($signs, '/');
 
         return "/({$patterns}|[{$signs}])/i";
     }
@@ -106,10 +104,11 @@ class Tokenizer
     {
         $patternParts = array();
         foreach ($this->delimiters as $delimiters) {
-            foreach ($delimiters as $delimiter) {
-                $pattern                = preg_quote($delimiter, '/');
-                $patternParts[$pattern] = strlen($pattern);
-            }
+            list($opening, $closing) = $delimiters;
+            $openingPattern                = preg_quote($opening, '/');
+            $closingPattern                = preg_quote($closing, '/');
+            $patternParts[$openingPattern] = strlen($openingPattern);
+            $patternParts[$closingPattern] = strlen($closingPattern);
         }
         arsort($patternParts);
         $pattern = implode('|', array_keys($patternParts));
@@ -194,7 +193,6 @@ class Tokenizer
                     $tagExpression .= $part;
                     break;
             }
-
         }
         throw new SyntaxException('Unterminated tag', $this->line);
     }
@@ -226,28 +224,21 @@ class Tokenizer
 
     private function processTag($tag)
     {
-        if (!isset($this->tags[$tag])) {
-            //Try to find the tag name
-            preg_match('/(.*?)(\s.*|)$/ADs', $tag, $parts);
-            $tagName = $parts[1];
+        //Try to find the tag name
+        preg_match('/([^\s]*)(\s.*|)$/ADs', $tag, $parts);
+        list(, $tagName, $expression) = $parts;
 
-            //If the tag name is unknown, try to use the fallback
-            if (!isset($this->tags[$tagName])) {
-                $tagName    = $this->fallbackTagName;
-                $expression = $tag;
-            } else {
-                $expression = $parts[2];
-            }
-        } else {
-            $tagName    = $tag;
-            $expression = '';
+        //If the tag name is unknown, try to use the fallback
+        if (!isset($this->tags[$tagName])) {
+            $tagName    = $this->fallbackTagName;
+            $expression = $tag;
         }
 
         $this->pushToken(Token::TAG, $tagName);
 
         //tokenize the tag expression if any
         if ($expression !== '') {
-            $this->pushToken(Token::EXPRESSION_START, $tagName);
+            $this->pushToken(Token::EXPRESSION_START);
 
             $flags = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
             $parts = preg_split($this->expressionPartsPattern, $expression, 0, $flags);
@@ -327,11 +318,11 @@ class Tokenizer
                     break;
 
                 case ':':
-                    $this->pushToken(Token::STRING, ltrim($part, ':'));
+                    $this->pushToken(Token::STRING, substr($part, 1));
                     break;
 
                 case '$':
-                    $this->pushToken(Token::VARIABLE, ltrim($part, '$'));
+                    $this->pushToken(Token::VARIABLE, substr($part, 1));
                     break;
 
                 default:

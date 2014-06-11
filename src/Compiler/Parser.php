@@ -48,12 +48,14 @@ class Parser
 
     private $block;
     private $blocks = array();
+    private $fallbackTagName;
 
     public function __construct(Environment $environment, ExpressionParser $expressionParser)
     {
         $this->expressionParser = $expressionParser;
-        $this->tags             = $environment->getTags();
         $this->environment      = $environment;
+        $this->tags             = $environment->getTags();
+        $this->fallbackTagName  = $environment->getOption('fallback_tag', false);
     }
 
     /**
@@ -64,9 +66,8 @@ class Parser
         return $this->environment;
     }
 
-    private function parseToken(Stream $stream, RootNode $root)
+    private function parseToken(Token $token, Stream $stream, RootNode $root)
     {
-        $token = $stream->current();
         $value = $token->getValue();
 
         switch ($token->getType()) {
@@ -79,7 +80,7 @@ class Parser
                 if (!isset($this->tags[$value])) {
                     throw new ParseException("Unknown {$value} tag", $token->getLine());
                 }
-                $stream->nextTokenIf(Token::EXPRESSION_START, $value);
+                $stream->nextTokenIf(Token::EXPRESSION_START);
 
                 $node = $this->tags[$value]->parse($this, $stream);
                 break;
@@ -142,7 +143,7 @@ class Parser
         $token = $stream->next();
 
         while (!$token->test($type, $endTags)) {
-            $token = $this->parseToken($stream, $root);
+            $token = $this->parseToken($token, $stream, $root);
         }
 
         --$this->level;

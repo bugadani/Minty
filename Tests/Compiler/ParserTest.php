@@ -12,12 +12,12 @@ class ParserTest extends \PHPUnit_Framework_TestCase
     private $env;
 
     /**
-     * @var Tag
+     * @var Tag|\PHPUnit_Framework_MockObject_MockObject
      */
     private $tag;
 
     /**
-     * @var Tag
+     * @var Tag|\PHPUnit_Framework_MockObject_MockObject
      */
     private $blockTag;
 
@@ -81,7 +81,7 @@ class ParserTest extends \PHPUnit_Framework_TestCase
     {
         $stream = new Stream(array(
             new Token(Token::TAG, 'test'),
-            new Token(Token::EXPRESSION_START, 'test'),
+            new Token(Token::EXPRESSION_START),
             new Token(Token::TAG, 'test'),
             new Token(Token::TAG, 'test'),
             new Token(Token::EOF)

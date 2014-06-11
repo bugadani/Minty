@@ -34,8 +34,6 @@ class PrintTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $stream->expectCurrent(Token::EXPRESSION_START);
-
         $expression = $parser->parseExpression($stream);
         if ($stream->current()->test(Token::PUNCTUATION, ':')) {
             $node = new TagNode($this);

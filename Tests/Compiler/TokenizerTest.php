@@ -87,7 +87,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
     {
         $stream = $this->tokenizer->tokenize("{test 'string {#'}");
         $stream->expect(Token::TAG, 'test');
-        $stream->expect(Token::EXPRESSION_START, 'test');
+        $stream->expect(Token::EXPRESSION_START);
         $stream->expect(Token::STRING, 'string {#');
         $stream->expect(Token::EXPRESSION_END);
         $stream->expect(Token::EOF);
@@ -97,7 +97,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
     {
         $stream = $this->tokenizer->tokenize('{test "string $var"}');
         $stream->expect(Token::TAG, 'test');
-        $stream->expect(Token::EXPRESSION_START, 'test');
+        $stream->expect(Token::EXPRESSION_START);
         $stream->expect(Token::STRING, 'string $var');
         $stream->expect(Token::EXPRESSION_END);
         $stream->expect(Token::EOF);
@@ -107,7 +107,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
     {
         $stream = $this->tokenizer->tokenize("{test 'string \\' \\\\\\' ' \"string \\\"\"}");
         $stream->expect(Token::TAG, 'test');
-        $stream->expect(Token::EXPRESSION_START, 'test');
+        $stream->expect(Token::EXPRESSION_START);
         $stream->expect(Token::STRING, "string ' \\' ");
         $stream->expect(Token::STRING, 'string "');
         $stream->expect(Token::EXPRESSION_END);
@@ -143,7 +143,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
     {
         $stream = $this->tokenizer->tokenize('{ test "{# not a comment #}" }');
         $stream->expect(Token::TAG, 'test');
-        $stream->expect(Token::EXPRESSION_START, 'test');
+        $stream->expect(Token::EXPRESSION_START);
         $stream->expect(Token::STRING, '{# not a comment #}');
         $stream->expect(Token::EXPRESSION_END);
         $stream->expect(Token::EOF);
@@ -153,7 +153,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
     {
         $stream = $this->tokenizer->tokenize('{ test "{not a tag}" }');
         $stream->expect(Token::TAG, 'test');
-        $stream->expect(Token::EXPRESSION_START, 'test');
+        $stream->expect(Token::EXPRESSION_START);
         $stream->expect(Token::STRING, '{not a tag}');
         $stream->expect(Token::EXPRESSION_END);
         $stream->expect(Token::EOF);
@@ -165,7 +165,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
             '{ test "string" \'string\' :string_underscore true false null 5 5.2 }'
         );
         $stream->expect(Token::TAG, 'test');
-        $stream->expect(Token::EXPRESSION_START, 'test');
+        $stream->expect(Token::EXPRESSION_START);
         $stream->expect(Token::STRING, 'string');
         $stream->expect(Token::STRING, 'string');
         $stream->expect(Token::STRING, 'string_underscore');
@@ -184,7 +184,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
             '{ test +- oper ator }'
         );
         $stream->expect(Token::TAG, 'test');
-        $stream->expect(Token::EXPRESSION_START, 'test');
+        $stream->expect(Token::EXPRESSION_START);
         $stream->expect(Token::OPERATOR, '+');
         $stream->expect(Token::OPERATOR, '-');
         $stream->expect(Token::OPERATOR, 'oper ator');
@@ -198,7 +198,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
             '{ test ident + ifier + $variable + $var_underscore }'
         );
         $stream->expect(Token::TAG, 'test');
-        $stream->expect(Token::EXPRESSION_START, 'test');
+        $stream->expect(Token::EXPRESSION_START);
         $stream->expect(Token::IDENTIFIER, 'ident');
         $stream->expect(Token::OPERATOR, '+');
         $stream->expect(Token::IDENTIFIER, 'ifier');
@@ -214,7 +214,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
     {
         $stream = $this->tokenizer->tokenize('{ test ?,[]():=> }');
         $stream->expect(Token::TAG, 'test');
-        $stream->expect(Token::EXPRESSION_START, 'test');
+        $stream->expect(Token::EXPRESSION_START);
         $stream->expect(Token::PUNCTUATION, '?');
         $stream->expect(Token::PUNCTUATION, ',');
         $stream->expect(Token::PUNCTUATION, '[');
@@ -262,12 +262,12 @@ new line
         $stream   = $this->tokenizer->tokenize($template);
         $this->assertEquals(1, $stream->expect(Token::TEXT, "some text\n")->getLine());
         $this->assertEquals(2, $stream->expect(Token::TAG, 'test')->getLine());
-        $this->assertEquals(2, $stream->expect(Token::EXPRESSION_START, 'test')->getLine());
+        $this->assertEquals(2, $stream->expect(Token::EXPRESSION_START)->getLine());
         $this->assertEquals(2, $stream->expect(Token::IDENTIFIER, 'tag')->getLine());
         $this->assertEquals(2, $stream->expect(Token::EXPRESSION_END)->getLine());
         $this->assertEquals(2, $stream->expect(Token::TEXT, "\n")->getLine());
         $this->assertEquals(3, $stream->expect(Token::TAG, 'test')->getLine());
-        $this->assertEquals(3, $stream->expect(Token::EXPRESSION_START, 'test')->getLine());
+        $this->assertEquals(3, $stream->expect(Token::EXPRESSION_START)->getLine());
         $this->assertEquals(3, $stream->expect(Token::STRING, "multiline\nstring")->getLine());
         $this->assertEquals(4, $stream->expect(Token::OPERATOR, '+')->getLine());
         $this->assertEquals(5, $stream->expect(Token::OPERATOR, '+')->getLine());
@@ -334,7 +334,7 @@ new line
     {
         $stream = $tokenizer->tokenize('{test()}');
         $stream->expect(Token::TAG, 'fallback');
-        $stream->expect(Token::EXPRESSION_START, 'fallback');
+        $stream->expect(Token::EXPRESSION_START);
         $stream->expect(Token::IDENTIFIER, 'test');
         $stream->expect(Token::PUNCTUATION, '(');
         $stream->expect(Token::PUNCTUATION, ')');
@@ -347,12 +347,24 @@ new line
     /**
      * @depends testFunctionWithSameNameAsTagIsNotTokenizedAsTag
      */
+    public function testEmptyTagIsAValidFallbackTag(Tokenizer $tokenizer)
+    {
+        $stream = $tokenizer->tokenize('{ }');
+        $stream->expect(Token::TAG, 'fallback');
+        $stream->expect(Token::EOF);
+
+        return $tokenizer;
+    }
+
+    /**
+     * @depends testEmptyTagIsAValidFallbackTag
+     */
     public function testStringIsCorrectlyParsedInTag(Tokenizer $tokenizer) {
 
         $stream = $tokenizer->tokenize('"{ "test" }"');
         $stream->expect(Token::TEXT, '"');
         $stream->expect(Token::TAG, 'fallback');
-        $stream->expect(Token::EXPRESSION_START, 'fallback');
+        $stream->expect(Token::EXPRESSION_START);
         $stream->expect(Token::STRING, 'test');
         $stream->expect(Token::EXPRESSION_END);
         $stream->expect(Token::TEXT, '"');

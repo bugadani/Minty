@@ -52,11 +52,9 @@ class Token
         if ($this->type !== $type) {
             return false;
         }
-
         if ($value === null || $this->value === $value) {
             return true;
         }
-
         if (is_array($value) && in_array($this->value, $value, true)) {
             return true;
         }
