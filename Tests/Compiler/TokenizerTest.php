@@ -172,8 +172,8 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
         $stream->expect(Token::LITERAL, true);
         $stream->expect(Token::LITERAL, false);
         $stream->expect(Token::LITERAL, null);
-        $stream->expect(Token::LITERAL, '5');
-        $stream->expect(Token::LITERAL, '5.2');
+        $stream->expect(Token::LITERAL, 5);
+        $stream->expect(Token::LITERAL, 5.2);
         $stream->expect(Token::EXPRESSION_END);
         $stream->expect(Token::EOF);
     }

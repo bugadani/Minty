@@ -303,7 +303,8 @@ class Tokenizer
         } elseif (in_array($part, $this->operators)) {
             $this->pushToken(Token::OPERATOR, $part);
         } elseif (is_numeric($part)) {
-            $this->pushToken(Token::LITERAL, $part);
+            $value = (strpos($part, '.') !== false) ? floatval($part) : intval($part);
+            $this->pushToken(Token::LITERAL, $value);
         } else {
             switch ($part[0]) {
                 case '"':
