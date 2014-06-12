@@ -58,7 +58,7 @@ class StandardFunctions extends Extension
             new TemplateFunction('nl2br', 'nl2br', array('is_safe' => true)),
             new TemplateFunction('number_format', null, array('is_safe' => true)),
             new TemplateFunction('pluck', $namespace . '\template_function_pluck'),
-            new TemplateFunction('random', $namespace . '\template_function_random', array('is_safe' => true)),
+            new TemplateFunction('random', $namespace . '\template_function_random'),
             new TemplateFunction('regexp_replace', $namespace . '\template_function_regexpReplace'),
             new TemplateFunction('replace', $namespace . '\template_function_replace'),
             new TemplateFunction('reverse', $namespace . '\template_function_reverse'),
