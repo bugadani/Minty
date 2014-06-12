@@ -68,17 +68,13 @@ class Tokenizer
     {
         $signs    = ' ';
         $patterns = array(
-            '$[a-zA-Z]+[a-zA-Z_\-0-9]*' => 25,
-            ':[a-zA-Z]+[a-zA-Z_\-0-9]*' => 25,
-            '(?<!\w)\d+(?:\.\d+)?'      => 20,
-            '"(?:\\\\.|[^"\\\\])*"'     => 21,
-            "'(?:\\\\.|[^'\\\\])*'"     => 21,
-            'null'                      => 4,
-            'true'                      => 4,
-            'false'                     => 5,
+            '(?:[$:])[a-zA-Z]+[a-zA-Z_\-0-9]*' => 33,
+            '(?<!\w)\d+(?:\.\d+)?'             => 20,
+            '"(?:\\\\.|[^"\\\\])*"'            => 21,
+            "'(?:\\\\.|[^'\\\\])*'"            => 21
         );
 
-        $symbols = array_merge($this->operators, $this->punctuation);
+        $symbols = array_merge($this->operators, $this->punctuation, array_keys($this->literals));
         foreach ($symbols as $symbol) {
             $length = strlen($symbol);
             if ($length === 1) {

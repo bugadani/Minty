@@ -370,4 +370,15 @@ new line
         $stream->expect(Token::TEXT, '"');
         $stream->expect(Token::EOF);
     }
+
+    public function testLiteralsAreNotSplitFromIdentifiersAndVariables(){
+
+        $stream = $this->tokenizer->tokenize('{ test nullable $true }');
+        $stream->expect(Token::TAG, 'test');
+        $stream->expect(Token::EXPRESSION_START);
+        $stream->expect(Token::IDENTIFIER, 'nullable');
+        $stream->expect(Token::VARIABLE, 'true');
+        $stream->expect(Token::EXPRESSION_END);
+        $stream->expect(Token::EOF);
+    }
 }
