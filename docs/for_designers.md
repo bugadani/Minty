@@ -85,4 +85,4 @@ There is an alternative way to call functions which may suit some use cases bett
 In this case the first argument is followed by a pipe sign (`|`) which is followed by the name of the function
 and the remaining arguments in parentheses, if any.
 
-Example: `:first_argument|upper`, `'link_title'|link_to($url, $attributes)`
+Examples: `:first_argument|upper`, `'link_title'|link_to($url, $attributes)`
