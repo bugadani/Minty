@@ -32,7 +32,7 @@ class StandardFunctions extends Extension
 
         return array(
             new TemplateFunction('abs'),
-            new TemplateFunction('arguments', $namespace . '\template_function_arguments', array('is_safe' => true)),
+            new TemplateFunction('attributes', $namespace . '\template_function_attributes', array('is_safe' => true)),
             new TemplateFunction('batch', $namespace . '\template_function_batch'),
             new TemplateFunction('capitalize', 'ucfirst'),
             new TemplateFunction('count', null, array('is_safe' => true)),
@@ -103,7 +103,7 @@ function traversableToArray($data)
 
 /* Template functions */
 
-function template_function_arguments(array $args)
+function template_function_attributes(array $args)
 {
     $string = '';
     foreach ($args as $name => $value) {
@@ -180,13 +180,13 @@ function template_function_length($data)
     throw new InvalidArgumentException('Reverse expects an array, a string or a Countable instance');
 }
 
-function template_function_linkTo($label, $url, array $args = array())
+function template_function_linkTo($label, $url, array $attrs = array())
 {
-    $args['href'] = $url;
+    $attrs['href'] = $url;
 
-    $arguments = template_function_arguments($args);
+    $attributes = template_function_attributes($attrs);
 
-    return "<a{$arguments}>{$label}</a>";
+    return "<a{$attributes}>{$label}</a>";
 }
 
 function template_function_max()
