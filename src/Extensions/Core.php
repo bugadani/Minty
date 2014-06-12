@@ -92,7 +92,7 @@ class Core extends Extension
 
     public function getBinaryOperators()
     {
-        $binaryOperators = array(
+        return array(
             //arithmetic operators
             new AdditionOperator(10),
             new SubtractionOperator(10),
@@ -132,6 +132,7 @@ class Core extends Extension
             new NotStartsOperator(8, Operator::NONE),
             new StartsOperator(8, Operator::NONE),
             new DivisibleByOperator(8, Operator::NONE),
+            new NotDivisibleByOperator(8, Operator::NONE),
             //other
             new FalseCoalescingOperator(1),
             new ConcatenationOperator(10),
@@ -140,13 +141,11 @@ class Core extends Extension
             new RangeOperator(9),
             new ExclusiveRangeOperator(9),
         );
-
-        return $binaryOperators;
     }
 
     public function getPrefixUnaryOperators()
     {
-        $operators = array(
+        return array(
             new PreDecrementOperator(13, Operator::RIGHT),
             new PreIncrementOperator(13, Operator::RIGHT),
             new BitwiseNotOperator(13, Operator::RIGHT),
@@ -154,29 +153,23 @@ class Core extends Extension
             new PlusOperator(13, Operator::RIGHT),
             new NotOperator(12, Operator::RIGHT)
         );
-
-        return $operators;
     }
 
     public function getPostfixUnaryOperators()
     {
-        $operators = array(
+        return array(
             new IsSetOperator(15, Operator::RIGHT),
             new IsNotSetOperator(15, Operator::RIGHT),
             new EvenOperator(15, Operator::NONE),
             new OddOperator(15, Operator::NONE),
-            new DivisibleByOperator(15, Operator::NONE),
-            new NotDivisibleByOperator(15, Operator::NONE),
             new PostDecrementOperator(15),
             new PostIncrementOperator(15),
         );
-
-        return $operators;
     }
 
     public function getTags()
     {
-        $tags = array(
+        return array(
             new BlockTag(),
             new CaptureTag(),
             new CaseTag(),
@@ -193,8 +186,6 @@ class Core extends Extension
             new PrintTag(),
             new SwitchTag()
         );
-
-        return $tags;
     }
 
     public function getFunctions()
@@ -208,7 +199,7 @@ class Core extends Extension
             new TemplateFunction('ends', $namespace . '\template_function_ends'),
             new TemplateFunction('filter', $namespace . '\template_function_filter', array('is_safe' => true)),
             new TemplateFunction('in', $namespace . '\template_function_in'),
-            new TemplateFunction('match', 'preg_match'),
+            new TemplateFunction('match', $namespace . '\template_function_match'),
             new TemplateFunction('pow', null, array('is_safe' => true)),
             new TemplateFunction('range', null, array('is_safe' => true)),
             new TemplateFunction('raw', $namespace . '\template_function_raw', array('is_safe' => true)),
@@ -233,7 +224,7 @@ function template_function_empty($data)
 
 function template_function_ends($data, $str)
 {
-    return strpos($data, $str) === strlen($data) - strlen($str);
+    return substr($data, strlen($data) - strlen($str)) === $str;
 }
 
 function template_function_filter($data, $for = 'html')
@@ -251,11 +242,6 @@ function template_function_filter($data, $for = 'html')
     }
 }
 
-function template_function_first($data, $number = 1)
-{
-    return template_function_slice($data, 0, $number);
-}
-
 function template_function_in($needle, $haystack)
 {
     if (is_string($haystack)) {
@@ -263,11 +249,16 @@ function template_function_in($needle, $haystack)
     }
     if ($haystack instanceof \Traversable) {
         $haystack = iterator_to_array($haystack);
+    } elseif (!is_array($haystack)) {
+        throw new \InvalidArgumentException('The in keyword expects an array, a string or a Traversable instance');
     }
-    if (is_array($haystack)) {
-        return in_array($needle, $haystack);
-    }
-    throw new \InvalidArgumentException('The in keyword expects an array, a string or a Traversable instance');
+
+    return in_array($needle, $haystack);
+}
+
+function template_function_match($string, $pattern)
+{
+    return preg_match($pattern, $string);
 }
 
 function template_function_raw($data)
