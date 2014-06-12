@@ -23,11 +23,9 @@ class Optimizer extends Extension
 
     public function getNodeVisitors()
     {
-        $optimizers = array(
+        return array(
             new ForLoopOptimizer(),
             new SelfAccessOptimizer()
         );
-
-        return $optimizers;
     }
 }

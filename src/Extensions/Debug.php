@@ -22,11 +22,9 @@ class Debug extends Extension
 
     public function getFunctions()
     {
-        $functions = array(
+        return array(
             new TemplateFunction('dump', 'var_dump')
         );
-
-        return $functions;
     }
 
 }

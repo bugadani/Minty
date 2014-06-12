@@ -32,11 +32,9 @@ class Visualizer extends Extension
 
     public function getNodeVisitors()
     {
-        $visitors = array(
+        return array(
             new NodeTreeVisualizer($this->log)
         );
-
-        return $visitors;
     }
 
 }

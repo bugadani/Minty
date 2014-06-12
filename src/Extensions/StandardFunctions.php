@@ -52,10 +52,10 @@ class StandardFunctions extends Extension
             new TemplateFunction('link_to', $namespace . '\template_function_linkTo', array('is_safe' => true)),
             new TemplateFunction('lower', 'strtolower'),
             new TemplateFunction('ltrim'),
-            new TemplateFunction('max', $namespace . '\template_function_max'),
+            new TemplateFunction('max'),
             new TemplateFunction('merge', 'array_merge'),
-            new TemplateFunction('min', $namespace . '\template_function_min'),
-            new TemplateFunction('nl2br', 'nl2br', array('is_safe' => true)),
+            new TemplateFunction('min'),
+            new TemplateFunction('nl2br', null, array('is_safe' => true)),
             new TemplateFunction('number_format', null, array('is_safe' => true)),
             new TemplateFunction('pluck', $namespace . '\template_function_pluck'),
             new TemplateFunction('random', $namespace . '\template_function_random'),
@@ -144,10 +144,7 @@ function template_function_dateFormat($date, $format)
 
 function template_function_extract(Context $context, $source, $keys)
 {
-    if (is_string($keys)) {
-        $keys = array($keys);
-    }
-    foreach ($keys as $key) {
+    foreach ((array) $keys as $key) {
         $context->$key = $context->getProperty($source, $key);
     }
 }
@@ -187,31 +184,6 @@ function template_function_linkTo($label, $url, array $attrs = array())
     $attributes = template_function_attributes($attrs);
 
     return "<a{$attributes}>{$label}</a>";
-}
-
-function template_function_max()
-{
-    $values = func_get_args();
-    $max    = null;
-    foreach ($values as $value) {
-        if ($value > $max || $max === null) {
-            $max = $value;
-        }
-    }
-
-    return $max;
-}
-
-function template_function_min()
-{
-    $min = null;
-    foreach (func_get_args() as $value) {
-        if ($value < $min || $min === null) {
-            $min = $value;
-        }
-    }
-
-    return $min;
 }
 
 function template_function_pluck($array, $key)
@@ -327,7 +299,8 @@ function template_function_split($string, $delimiter = '', $limit = null)
     }
     if ($delimiter === '') {
         return str_split($string, $limit ? : 1);
-    } elseif ($limit === null) {
+    }
+    if ($limit === null) {
         return explode($delimiter, $string);
     }
 
@@ -337,7 +310,7 @@ function template_function_split($string, $delimiter = '', $limit = null)
 function template_function_truncate($string, $length, $ellipsis = '...')
 {
     if (strlen($string) > $length) {
-        $string = template_function_first($string, $length);
+        $string = substr($string, 0, $length);
         $string .= $ellipsis;
     }
 
