@@ -178,6 +178,16 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
         $stream->expect(Token::EOF);
     }
 
+    public function testNumbersAreAllowedInShortStrings()
+    {
+        $stream = $this->tokenizer->tokenize('{ test :123 }');
+        $stream->expect(Token::TAG, 'test');
+        $stream->expect(Token::EXPRESSION_START);
+        $stream->expect(Token::STRING, '123');
+        $stream->expect(Token::EXPRESSION_END);
+        $stream->expect(Token::EOF);
+    }
+
     public function testOperatorsAreParsed()
     {
         $stream = $this->tokenizer->tokenize(
