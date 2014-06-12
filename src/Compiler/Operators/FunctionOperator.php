@@ -19,7 +19,9 @@ abstract class FunctionOperator extends Operator
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
-        $functionNode = new FunctionNode($this->getFunctionName(), $node->getChildren());
+        $functionNode = new FunctionNode($this->getFunctionName(), array_reverse(
+            $node->getChildren()
+        ));
         $compiler->compileNode($functionNode);
     }
 
