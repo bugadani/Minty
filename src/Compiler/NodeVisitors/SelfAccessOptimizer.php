@@ -32,8 +32,7 @@ class SelfAccessOptimizer extends NodeVisitor
         if ($node instanceof ClassNode) {
             $this->currentClass = $node;
             $this->selfAccessed = false;
-        }
-        if ($node instanceof VariableNode && $node->getName() === '_self') {
+        } elseif ($node instanceof VariableNode && $node->getName() === '_self') {
             $this->selfAccessed = true;
         }
     }
