@@ -21,6 +21,6 @@ class MatchesOperator extends FunctionOperator
 
     protected function getFunctionName()
     {
-        return 'preg_match';
+        return 'match';
     }
 }
