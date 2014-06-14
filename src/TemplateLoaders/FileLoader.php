@@ -72,21 +72,9 @@ class FileLoader extends AbstractTemplateLoader
         return file_get_contents($this->getPath($template));
     }
 
-    public function getTemplateClassName($template)
-    {
-        $path = $this->environment->getOption('cache_namespace');
-        $path .= '\\' . strtr($template, '/', '\\');
-
-        $pos       = strrpos($path, '\\') + 1;
-        $className = substr($path, $pos);
-        $namespace = substr($path, 0, $pos);
-
-        return '\\' . $namespace . 'Template_' . $className;
-    }
-
     public function getCacheKey($template)
     {
-        $fullyQualifiedName = $this->getTemplateClassName($template);
+        $fullyQualifiedName = $this->environment->getTemplateClassName($template);
         $namespaceLength    = strlen($this->environment->getOption('cache_namespace'));
 
         $className = substr($fullyQualifiedName, $namespaceLength + 2);

@@ -71,7 +71,7 @@ class TemplateLoader
         return $this->loader->load($template);
     }
 
-    private function compileIfNeeded($templateName)
+    private function compileIfNeeded($templateName, $class)
     {
         if ($this->loader->isCacheFresh($templateName)) {
             //The template is already compiled and up to date
@@ -82,7 +82,6 @@ class TemplateLoader
 
         //Read the template
         $template = $this->getSource($templateName);
-        $class    = $this->loader->getTemplateClassName($templateName);
 
         try {
             $compiled = $this->environment->compileTemplate($template, $templateName, $class);
@@ -187,10 +186,10 @@ class TemplateLoader
         if (isset($this->loadedTemplates[$template])) {
             return $this->loadedTemplates[$template];
         }
-        $class = $this->loader->getTemplateClassName($template);
+        $class = $this->environment->getTemplateClassName($template);
 
         $this->log('Loading %s', $template);
-        $this->compileIfNeeded($template);
+        $this->compileIfNeeded($template, $class);
 
         /** @var $object Template */
         $object = new $class($this, $this->environment);

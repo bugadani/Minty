@@ -17,7 +17,5 @@ abstract class AbstractTemplateLoader
 
     abstract public function load($template);
 
-    abstract public function getTemplateClassName($template);
-
     abstract public function getCacheKey($template);
 }
