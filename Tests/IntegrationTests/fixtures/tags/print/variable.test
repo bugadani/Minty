@@ -5,4 +5,4 @@ Test Print tag with variable
 --DATA--
 array('foo' => 'bar')
 --EXPECT--
-ba
+bar

@@ -49,7 +49,7 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
     private function getBlock($string, $block)
     {
         $matches = array();
-        if (!preg_match("/^--{$block}--\n(.*?)\n(?:--(?:[A-Z]+)--|$)/m", $string, $matches)) {
+        if (!preg_match("/^--{$block}--\n(.*?)\n(?:--(?:[A-Z]+)--|$)/ms", $string, $matches)) {
             return false;
         }
 
@@ -59,13 +59,8 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
     private function getTemplateBlocks($string)
     {
         $matches = array();
-        if (!preg_match_all(
-            "/^--TEMPLATE( [a-z0-9]*)?--\n(.*?)\n(?:--(?:[A-Z]+)--|$)/m",
-            $string,
-            $matches,
-            PREG_SET_ORDER
-        )
-        ) {
+        $pattern = "/^--TEMPLATE( [a-z0-9]*)?--\n(.*?)\n(?:--(?:[A-Z]+)--|$)/ms";
+        if (!preg_match_all($pattern, $string, $matches, PREG_SET_ORDER)) {
             return false;
         }
 
@@ -84,6 +79,8 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
     {
         $testDescriptor = file_get_contents($file);
 
+        $file = str_replace($directory . DIRECTORY_SEPARATOR, '', $file);
+
         $test      = $this->getBlock($testDescriptor, 'TEST');
         $templates = $this->getTemplateBlocks($testDescriptor);
         $expect    = $this->getBlock($testDescriptor, 'EXPECT');
@@ -98,7 +95,7 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
         }
 
         return array(
-            str_replace($directory . DIRECTORY_SEPARATOR, '', $file),
+            $file,
             $test,
             $templates,
             $this->getBlock($testDescriptor, 'DATA'),
