@@ -2,7 +2,37 @@ Available operators
 ========
 
 Arithmetic operators
+--------
+You can use the standard arithmetic operators (`+`, `-`, `*`, `/` and `%`) that operate on numbers.
+
+Additionally, the exponential operator (`**` or `^˙) is available that computes the n-th power of a number.
+This operator is right associative meaning that it is evaluated from right to left.
+
+Example: `2 ** 3 ** 2` results in 512, while `(2 ** 3) ** 2` results in 64.
+
+Sign operators (`+` and `-`) are also available.
 
 Test operators
+--------
+Test operators are particularly useful in `if` blocks.
+They can be used to test for properties in a simple and easily readable way.
+
+The available test operators are:
+
+ * `contains` or `in` tests if a value can be found in a string or an array
+ * `divisible by` tests if the number on the left side is divisible by the number on the right side
+ * `ends with` and `starts with` tests if the string on the left side starts or ends with the string on the right side
+ * `matches` or `is like` tests if the string on the left side matches the regular expression on the right side
+
+    Note: the regular expression matching is performed using PHP's [preg_match](http://php.net/preg_match) function.
+
+The negated tests are also available.
+
+ * `not in`, `not contains` or `does not contain`
+ * `not divisible by` or `is not divisible by`
+ * `not ends with` or `does not end with`
+ * `does not match`, `is not like` or `not matches`
+ * `not starts with` or `does not start with`
 
 Comparison operators
+--------
