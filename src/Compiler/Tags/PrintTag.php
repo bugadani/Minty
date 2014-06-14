@@ -62,7 +62,7 @@ class PrintTag extends Tag
 
     public function isSafe(Environment $env, Node $node)
     {
-        if ($env->getOption('autoescape') === false) {
+        if ($env->getOption('autoescape', true) === false) {
             return true;
         }
         if ($node instanceof DataNode) {

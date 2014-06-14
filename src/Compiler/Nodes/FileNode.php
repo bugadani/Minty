@@ -31,7 +31,10 @@ class FileNode extends RootNode
 
         /** @var $childNode ClassNode */
         $childNode = $this->getChild(0);
-        $compiler->indented("namespace %s;\n", $childNode->getNameSpace());
+
+        if($childNode->getNameSpace() !== '') {
+            $compiler->indented("namespace %s;\n", $childNode->getNameSpace());
+        }
 
         $compiler->indented('use Modules\\Templating\\TemplateLoader;');
         $compiler->indented('use Modules\\Templating\\Environment;');

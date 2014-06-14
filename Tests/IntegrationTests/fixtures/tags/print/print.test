@@ -1,0 +1,6 @@
+--TEST--
+Simple Print tag
+--TEMPLATE--
+{ 'foo' }
+--EXPECT--
+foo

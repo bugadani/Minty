@@ -20,10 +20,10 @@ class ClassNode extends Node
     private $namespace;
     private $baseClass;
 
-    public function __construct(Environment $env, $templateName)
+    public function __construct(Environment $env, $className)
     {
-        $this->templateName = $templateName;
-        $this->namespace    = $env->getOption('cache_namespace', 'Application\\Templating\\Cached');
+        $this->templateName = $className;
+        $this->namespace    = $env->getOption('cache_namespace', '');
         $this->baseClass    = $env->getOption(
             'template_base_class',
             'Modules\\Templating\\Template'
@@ -44,11 +44,6 @@ class ClassNode extends Node
     public function getParentTemplate()
     {
         return $this->parentTemplateName;
-    }
-
-    public function getTemplateName()
-    {
-        return $this->templateName;
     }
 
     public function getNameSpace()

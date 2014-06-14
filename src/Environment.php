@@ -113,7 +113,7 @@ class Environment
         return $this->templateLoader;
     }
 
-    public function compileTemplate($template, $templateName, $class)
+    public function compileTemplate($template, $class)
     {
         if (!isset($this->compiler)) {
             foreach ($this->extensions as $ext) {
@@ -132,7 +132,7 @@ class Environment
         }
         //Tokenize and parse the template
         $stream = $this->tokenizer->tokenize($template);
-        $node   = $this->parser->parseTemplate($stream, $templateName);
+        $node   = $this->parser->parseTemplate($stream, $class);
 
         //Run the Node Tree Visitors
         $this->nodeTreeTraverser->traverse($node);
@@ -148,7 +148,7 @@ class Environment
 
     public function getTemplateClassName($cacheKey)
     {
-        $cacheNamespace = $this->getOption('cache_namespace');
+        $cacheNamespace = $this->getOption('cache_namespace', '');
 
         return $cacheNamespace . '\\' . strtr($cacheKey, '/', '\\');
     }
@@ -311,7 +311,7 @@ class Environment
             return $variables;
         }
         $context = new Context($this, $variables);
-        $context->add($this->getOption('global_variables'));
+        $context->add($this->getOption('global_variables', array()));
 
         return $context;
     }

@@ -87,12 +87,12 @@ class TemplateLoader
         $template = $this->getSource($templateName);
 
         try {
-            $compiled = $this->environment->compileTemplate($template, $templateName, $class);
+            $compiled = $this->environment->compileTemplate($template, $class);
         } catch (TemplatingException $e) {
             $this->log('Failed to compile %s. Reason: %s.', $templateName, $e->getMessage());
             $this->log('Compiling an error template.', $templateName);
             $template = $this->getErrorTemplate($e, $templateName, $template);
-            $compiled = $this->environment->compileTemplate($template, $templateName, $class);
+            $compiled = $this->environment->compileTemplate($template, $class);
         }
         if ($cacheEnabled) {
             $this->saveCompiledTemplate($compiled, $templateName);
