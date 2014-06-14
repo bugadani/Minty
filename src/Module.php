@@ -24,7 +24,7 @@ class Module extends \Miny\Modules\Module
             'options' => array(
                 'global_variables'    => array(),
                 'cache_namespace'     => 'Application\\Templating\\Cached',
-                'cache_path'          => 'templates/compiled/%s.php',
+                'cache'               => 'templates/compiled',
                 'template_base_class' => 'Modules\\Templating\\Template',
                 'autoescape'          => true,
                 'fallback_tag'        => 'print',
@@ -88,14 +88,16 @@ class Module extends \Miny\Modules\Module
 
     private function setupAutoLoader(AutoLoader $autoLoader)
     {
-        $cacheDirectoryName = dirname($this->getConfiguration('options:cache_path'));
-        if (!is_dir($cacheDirectoryName)) {
-            mkdir($cacheDirectoryName);
+        if ($this->getConfiguration('options:cache', false)) {
+            $cacheDirectoryName = dirname($this->getConfiguration('options:cache'));
+            if (!is_dir($cacheDirectoryName)) {
+                mkdir($cacheDirectoryName);
+            }
+            $autoLoader->register(
+                '\\' . $this->getConfiguration('options:cache_namespace'),
+                $cacheDirectoryName
+            );
         }
-        $autoLoader->register(
-            '\\' . $this->getConfiguration('options:cache_namespace'),
-            $cacheDirectoryName
-        );
     }
 
     public function eventHandlers()

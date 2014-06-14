@@ -143,12 +143,13 @@ class Environment
 
     public function getCachePath($cacheKey)
     {
-        return sprintf($this->getOption('cache_path'), $cacheKey);
+        return $this->getOption('cache') . '/' . $cacheKey . '.php';
     }
 
     public function getTemplateClassName($cacheKey)
     {
         $cacheNamespace = $this->getOption('cache_namespace');
+
         return $cacheNamespace . '\\' . strtr($cacheKey, '/', '\\');
     }
 

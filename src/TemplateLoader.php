@@ -73,9 +73,12 @@ class TemplateLoader
 
     private function compileIfNeeded($templateName, $class)
     {
-        if ($this->loader->isCacheFresh($templateName)) {
-            //The template is already compiled and up to date
-            return;
+        $cacheEnabled = $this->environment->getOption('cache', false);
+        if ($cacheEnabled) {
+            if ($this->loader->isCacheFresh($templateName)) {
+                //The template is already compiled and up to date
+                return;
+            }
         }
 
         $this->log('Compiling %s', $templateName);
@@ -91,7 +94,11 @@ class TemplateLoader
             $template = $this->getErrorTemplate($e, $templateName, $template);
             $compiled = $this->environment->compileTemplate($template, $templateName, $class);
         }
-        $this->saveCompiledTemplate($compiled, $templateName);
+        if ($cacheEnabled) {
+            $this->saveCompiledTemplate($compiled, $templateName);
+        } else {
+            eval('?>' . $compiled);
+        }
     }
 
     /**
