@@ -1,0 +1,12 @@
+--TEST--
+Literals
+--TEMPLATE--
+{ :foo }
+{ 'bar' }
+{ 1 }
+{ 1.5 }
+--EXPECT--
+foo
+bar
+1
+1.5

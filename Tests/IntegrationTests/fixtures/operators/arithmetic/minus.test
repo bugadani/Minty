@@ -1,0 +1,10 @@
+--TEST--
+Binary minus operator (-)
+--TEMPLATE--
+{ 1-2 }
+{ $foo - 2 }
+--DATA--
+array('foo' => 1)
+--EXPECT--
+-1
+-1

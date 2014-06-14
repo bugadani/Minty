@@ -1,0 +1,14 @@
+--TEST--
+Test Print tag with arrays
+--TEMPLATE--
+{ $foo['baz'] }
+{ $foo[:baz] }
+{ $foo.baz }
+{ $foo.$bar }
+--DATA--
+array('foo' => array('baz' => 'foobar'), 'bar' => 'baz')
+--EXPECT--
+foobar
+foobar
+foobar
+foobar

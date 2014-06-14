@@ -13,6 +13,7 @@ use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\Nodes\FunctionNode;
 use Modules\Templating\Compiler\Nodes\IdentifierNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
+use Modules\Templating\Compiler\Nodes\VariableNode;
 use Modules\Templating\Compiler\Operator;
 
 class PropertyAccessOperator extends Operator
@@ -36,7 +37,7 @@ class PropertyAccessOperator extends Operator
                 ->add('$context->getProperty(')
                 ->compileNode($object)
                 ->add(', ');
-            if ($right instanceof IdentifierNode) {
+            if ($right instanceof IdentifierNode && !$right instanceof VariableNode) {
                 $compiler->compileString($right->getName());
             } else {
                 $compiler->compileNode($right);
