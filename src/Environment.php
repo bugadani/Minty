@@ -141,16 +141,15 @@ class Environment
         return $this->compiler->compile($node, $class);
     }
 
-    public function getTemplateClassName($template)
+    public function getCachePath($cacheKey)
     {
-        $path = $this->getOption('cache_namespace');
-        $path .= '\\' . strtr($template, '/', '\\');
+        return sprintf($this->getOption('cache_path'), $cacheKey);
+    }
 
-        $pos       = strrpos($path, '\\') + 1;
-        $className = substr($path, $pos);
-        $namespace = substr($path, 0, $pos);
-
-        return '\\' . $namespace . 'Template_' . $className;
+    public function getTemplateClassName($cacheKey)
+    {
+        $cacheNamespace = $this->getOption('cache_namespace');
+        return $cacheNamespace . '\\' . strtr($cacheKey, '/', '\\');
     }
 
     public function addGlobalVariable($name, $value)

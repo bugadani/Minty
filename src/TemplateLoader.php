@@ -100,8 +100,7 @@ class TemplateLoader
      */
     private function saveCompiledTemplate($compiled, $templateName)
     {
-        $destination = sprintf(
-            $this->environment->getOption('cache_path'),
+        $destination = $this->environment->getCachePath(
             $this->loader->getCacheKey($templateName)
         );
 
@@ -186,7 +185,10 @@ class TemplateLoader
         if (isset($this->loadedTemplates[$template])) {
             return $this->loadedTemplates[$template];
         }
-        $class = $this->environment->getTemplateClassName($template);
+
+        $class = $this->environment->getTemplateClassName(
+            $this->loader->getCacheKey($template)
+        );
 
         $this->log('Loading %s', $template);
         $this->compileIfNeeded($template, $class);

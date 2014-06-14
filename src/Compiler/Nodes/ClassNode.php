@@ -78,7 +78,7 @@ class ClassNode extends Node
         $path = strtr($this->templateName, '/', '\\');
         $pos  = strrpos('\\' . $path, '\\');
 
-        return 'Template_' . substr($path, $pos);
+        return substr($path, $pos);
     }
 
     public function compile(Compiler $compiler)

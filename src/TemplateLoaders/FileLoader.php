@@ -34,8 +34,7 @@ class FileLoader extends AbstractTemplateLoader
 
     public function isCacheFresh($template)
     {
-        $cachePath = sprintf(
-            $this->environment->getOption('cache_path'),
+        $cachePath = $this->environment->getCachePath(
             $this->getCacheKey($template)
         );
 
@@ -74,12 +73,7 @@ class FileLoader extends AbstractTemplateLoader
 
     public function getCacheKey($template)
     {
-        $fullyQualifiedName = $this->environment->getTemplateClassName($template);
-        $namespaceLength    = strlen($this->environment->getOption('cache_namespace'));
-
-        $className = substr($fullyQualifiedName, $namespaceLength + 2);
-
-        return strtr($className, '\\', '/');
+        return $template;
     }
 
     /**
