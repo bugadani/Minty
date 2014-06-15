@@ -2,6 +2,7 @@
 
 namespace Modules\Templating\Test;
 
+use Modules\Templating\Environment;
 use Modules\Templating\TemplateLoader;
 use Modules\Templating\TemplateLoaders\StringLoader;
 
@@ -17,11 +18,16 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
      */
     private $stringLoader;
 
+    /**
+     * @var Environment
+     */
+    private $environment;
+
     public function setUp()
     {
-        $environment        = $this->getEnvironment();
-        $this->stringLoader = new StringLoader($environment);
-        $this->loader       = new TemplateLoader($environment, $this->stringLoader);
+        $this->environment  = $this->getEnvironment();
+        $this->stringLoader = new StringLoader($this->environment);
+        $this->loader       = new TemplateLoader($this->environment, $this->stringLoader);
     }
 
     abstract public function getTestDirectory();
@@ -109,6 +115,8 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
      */
     public function runIntegrationTests($file, $description, $templates, $data, $expectation)
     {
+        //md5 to avoid reserved keywords (e.g. do) in namespace to cause errors
+        $this->environment->setOption('cache_namespace', 'test_' . md5($file));
         foreach ($templates as $name => $template) {
             $this->stringLoader->addTemplate($name, $template);
         }
@@ -121,6 +129,10 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
 
         ob_start();
         $this->loader->render('index', $data);
-        $this->assertEquals($expectation, rtrim(ob_get_clean(), "\n"), $description . ' (' . $file . ')');
+        $this->assertEquals(
+            $expectation,
+            rtrim(ob_get_clean(), "\n"),
+            $description . ' (' . $file . ')'
+        );
     }
 }
