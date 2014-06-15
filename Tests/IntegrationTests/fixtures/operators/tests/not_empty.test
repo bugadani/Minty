@@ -3,6 +3,10 @@ Test that the 'is not empty' test works as intended
 --TEMPLATE--
 { if 'foobar' is not empty }ok{ else }not ok{ endif }
 { if null is not empty }not ok{ else }ok{ endif }
+{ if !('foobar' is empty) }ok{ else }not ok{ endif }
+{ if !(null is empty) }not ok{ else }ok{ endif }
 --EXPECT--
+ok
+ok
 ok
 ok

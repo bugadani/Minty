@@ -5,7 +5,11 @@ Test that the 'not ends with' test works as intended
 { if 'foobar' not ends with 'ba' }ok{ else }not ok{endif}
 { if 'foobar' does not end with 'ar' }not ok{ else }ok{endif}
 { if 'foobar' not ends with 'ar' }not ok{ else }ok{endif}
+{ if !('foobar' ends with 'ba') }ok{ else }not ok{endif}
+{ if !('foobar' ends with 'ar') }not ok{ else }ok{endif}
 --EXPECT--
+ok
+ok
 ok
 ok
 ok

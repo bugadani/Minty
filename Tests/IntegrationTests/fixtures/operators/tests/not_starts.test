@@ -5,7 +5,11 @@ Test that the 'not starts with' test works as intended
 { if 'foobar' not starts with 'oo' }ok{ else }not ok{endif}
 { if 'foobar' does not start with 'fo' }not ok{ else }ok{endif}
 { if 'foobar' not starts with 'fo' }not ok{ else }ok{endif}
+{ if !('foobar' starts with 'oo') }ok{ else }not ok{endif}
+{ if !('foobar' starts with 'fo') }not ok{ else }ok{endif}
 --EXPECT--
+ok
+ok
 ok
 ok
 ok
