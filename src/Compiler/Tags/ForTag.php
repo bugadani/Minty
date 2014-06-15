@@ -93,10 +93,14 @@ class ForTag extends Tag
                 ->indented('}');
         }
         if ($data['save_temp_var']) {
+            $compiler->indented('if(isset($stack)) {');
+            $compiler->indent();
             $compiler->indented('$temp = array_pop($stack);');
             if ($data['create_stack']) {
                 $compiler->indented('unset($stack);');
             }
+            $compiler->outdent();
+            $compiler->indented('}');
         }
     }
 
