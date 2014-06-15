@@ -42,7 +42,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
             ->getMockForAbstractClass();
         $mockOperator->expects($this->any())
             ->method('operators')
-            ->will($this->returnValue(array('+', '-')));
+            ->will($this->returnValue(array('§', '-')));
 
         $otherOperator = $this->getMockBuilder('\\Modules\\Templating\\Compiler\\Operator')
             ->setMethods(array('operators'))
@@ -191,11 +191,11 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
     public function testOperatorsAreParsed()
     {
         $stream = $this->tokenizer->tokenize(
-            '{ test +- oper ator }'
+            '{ test §- oper ator }'
         );
         $stream->expect(Token::TAG, 'test');
         $stream->expect(Token::EXPRESSION_START);
-        $stream->expect(Token::OPERATOR, '+');
+        $stream->expect(Token::OPERATOR, '§');
         $stream->expect(Token::OPERATOR, '-');
         $stream->expect(Token::OPERATOR, 'oper ator');
         $stream->expect(Token::EXPRESSION_END);
@@ -205,16 +205,16 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
     public function testIdentifiersAreParsed()
     {
         $stream = $this->tokenizer->tokenize(
-            '{ test ident + ifier + $variable + $var_underscore }'
+            '{ test ident § ifier § $variable § $var_underscore }'
         );
         $stream->expect(Token::TAG, 'test');
         $stream->expect(Token::EXPRESSION_START);
         $stream->expect(Token::IDENTIFIER, 'ident');
-        $stream->expect(Token::OPERATOR, '+');
+        $stream->expect(Token::OPERATOR, '§');
         $stream->expect(Token::IDENTIFIER, 'ifier');
-        $stream->expect(Token::OPERATOR, '+');
+        $stream->expect(Token::OPERATOR, '§');
         $stream->expect(Token::VARIABLE, 'variable');
-        $stream->expect(Token::OPERATOR, '+');
+        $stream->expect(Token::OPERATOR, '§');
         $stream->expect(Token::VARIABLE, 'var_underscore');
         $stream->expect(Token::EXPRESSION_END);
         $stream->expect(Token::EOF);
@@ -259,8 +259,8 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
         $template = 'some text
 {test tag}
 {test "multiline
-string" +
-+ tag}
+string" §
+§ tag}
 {raw}text
 new line
 {endraw} {#
@@ -279,8 +279,8 @@ new line
         $this->assertEquals(3, $stream->expect(Token::TAG, 'test')->getLine());
         $this->assertEquals(3, $stream->expect(Token::EXPRESSION_START)->getLine());
         $this->assertEquals(3, $stream->expect(Token::STRING, "multiline\nstring")->getLine());
-        $this->assertEquals(4, $stream->expect(Token::OPERATOR, '+')->getLine());
-        $this->assertEquals(5, $stream->expect(Token::OPERATOR, '+')->getLine());
+        $this->assertEquals(4, $stream->expect(Token::OPERATOR, '§')->getLine());
+        $this->assertEquals(5, $stream->expect(Token::OPERATOR, '§')->getLine());
         $this->assertEquals(5, $stream->expect(Token::IDENTIFIER, "tag")->getLine());
         $this->assertEquals(5, $stream->expect(Token::EXPRESSION_END)->getLine());
         $this->assertEquals(5, $stream->expect(Token::TEXT, "\n")->getLine());
