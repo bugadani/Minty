@@ -113,7 +113,7 @@ class Environment
         return $this->templateLoader;
     }
 
-    public function compileTemplate($template, $class)
+    public function compileTemplate($template, $templateName, $class)
     {
         if (!isset($this->compiler)) {
             foreach ($this->extensions as $ext) {
@@ -132,7 +132,7 @@ class Environment
         }
         //Tokenize and parse the template
         $stream = $this->tokenizer->tokenize($template);
-        $node   = $this->parser->parseTemplate($stream, $class);
+        $node   = $this->parser->parseTemplate($stream, $templateName, $class);
 
         //Run the Node Tree Visitors
         $this->nodeTreeTraverser->traverse($node);

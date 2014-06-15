@@ -1,0 +1,10 @@
+--TEST--
+Test include tag with data
+--TEMPLATE--
+{ include 'foo' using [:foo => 'foobar'] }
+--TEMPLATE foo--
+{ $foo } content
+--DATA--
+array('foo' => 'foo')
+--EXPECT--
+foobar content

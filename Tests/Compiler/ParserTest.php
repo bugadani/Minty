@@ -91,7 +91,7 @@ class ParserTest extends \PHPUnit_Framework_TestCase
             ->expects($this->exactly(3))
             ->method('parse');
 
-        $this->parser->parseTemplate($stream, 'foo');
+        $this->parser->parseTemplate($stream, 'foo', 'foo');
     }
 
     public function testParseBlockStopsAtClosingTag()
@@ -138,7 +138,7 @@ class ParserTest extends \PHPUnit_Framework_TestCase
             new Token(Token::EOF)
         ));
 
-        $this->parser->parseTemplate($stream, 'foo');
+        $this->parser->parseTemplate($stream, 'foo', 'foo');
     }
 
     /**
@@ -150,7 +150,7 @@ class ParserTest extends \PHPUnit_Framework_TestCase
             new Token(Token::TAG, 'footag'),
             new Token(Token::EOF)
         ));
-        $this->parser->parseTemplate($stream, 'foo');
+        $this->parser->parseTemplate($stream, 'foo', 'foo');
     }
 
     /**
@@ -162,7 +162,7 @@ class ParserTest extends \PHPUnit_Framework_TestCase
             new Token(Token::LITERAL, 'foo'),
             new Token(Token::EOF)
         ));
-        $this->parser->parseTemplate($stream, 'foo');
+        $this->parser->parseTemplate($stream, 'foo', 'foo');
     }
 
     /**

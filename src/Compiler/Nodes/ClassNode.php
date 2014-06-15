@@ -16,13 +16,15 @@ use Modules\Templating\Environment;
 class ClassNode extends Node
 {
     private $templateName;
+    private $className;
     private $parentTemplateName;
     private $namespace;
     private $baseClass;
 
-    public function __construct(Environment $env, $className)
+    public function __construct(Environment $env, $templateName, $className)
     {
-        $this->templateName = $className;
+        $this->templateName = $templateName;
+        $this->className    = $className;
         $this->namespace    = $env->getOption('cache_namespace', '');
         $this->baseClass    = $env->getOption(
             'template_base_class',
@@ -48,11 +50,11 @@ class ClassNode extends Node
 
     public function getNameSpace()
     {
-        $lastPos    = strrpos($this->templateName, '/');
+        $lastPos    = strrpos($this->className, '/');
         $baseString = $this->namespace;
 
         if ($lastPos !== false) {
-            $directory = substr($this->templateName, 0, $lastPos);
+            $directory = substr($this->className, 0, $lastPos);
             $baseString .= '\\' . strtr($directory, '/', '\\');
         }
 
@@ -70,7 +72,7 @@ class ClassNode extends Node
 
     public function getClassName()
     {
-        $path = strtr($this->templateName, '/', '\\');
+        $path = strtr($this->className, '/', '\\');
         $pos  = strrpos('\\' . $path, '\\');
 
         return substr($path, $pos);

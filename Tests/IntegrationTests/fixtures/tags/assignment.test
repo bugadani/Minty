@@ -1,0 +1,8 @@
+--TEST--
+Test variable assignment
+--TEMPLATE--
+{ $foo: 'bar' }{ $foo }
+{ $arr: [] }{ $arr[:foo]: 'barbaz' }{ $arr[:foo] }
+--EXPECT--
+bar
+barbaz

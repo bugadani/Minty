@@ -5,10 +5,14 @@ Test Print tag with arrays
 { $foo[:baz] }
 { $foo.baz }
 { $foo.$bar }
+{ $foo.oof.$foo[:baz] }
+{ $foo[:oof].foobar }
 --DATA--
-array('foo' => array('baz' => 'foobar'), 'bar' => 'baz')
+array('foo' => array('baz' => 'foobar', 'oof' => array('foobar' => 'something')), 'bar' => 'baz')
 --EXPECT--
 foobar
 foobar
 foobar
 foobar
+something
+something

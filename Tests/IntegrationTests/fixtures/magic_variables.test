@@ -1,0 +1,14 @@
+--TEST--
+Test that _self returns the name of the template where it was used
+--TEMPLATE--
+{ extends 'foo' }
+{ block content }{ parent }{ $_self.parent }
+{ $_self.template }
+{ endblock }
+--TEMPLATE foo--
+{ block content }{ $_self.template }
+{ endblock }
+--EXPECT--
+foo
+foo
+index
