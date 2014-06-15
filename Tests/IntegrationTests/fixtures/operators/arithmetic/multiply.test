@@ -1,0 +1,10 @@
+--TEST--
+Multiplication operator (/)
+--TEMPLATE--
+{ 3*2 }
+{ $foo * 2 }
+--DATA--
+array('foo' => 3)
+--EXPECT--
+6
+6

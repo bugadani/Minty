@@ -1,0 +1,10 @@
+--TEST--
+Division operator (/)
+--TEMPLATE--
+{ 1/2 }
+{ $foo / 2 }
+--DATA--
+array('foo' => 1)
+--EXPECT--
+0.5
+0.5
