@@ -1,0 +1,10 @@
+--TEST--
+Test basic use case of the embed tag
+--TEMPLATE--
+Foo is { embed 'embedded' }
+{ block foo }bar{ endblock }
+{ endembed }
+--TEMPLATE embedded--
+anything but { block foo }foo{ endblock }
+--EXPECT--
+Foo is anything but bar
