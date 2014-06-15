@@ -1,0 +1,12 @@
+--TEST--
+Test the basic use case of the extends tag.
+--TEMPLATE--
+{ extends 'parent' }
+Child
+{ block foo }foo{ endblock }
+--TEMPLATE parent--
+Parent
+{ block foo }bar{ endblock }
+--EXPECT--
+Parent
+foo

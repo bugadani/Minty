@@ -92,10 +92,9 @@ abstract class Template
 
     public function renderBlock($blockName, Context $context, $parentBlock = false)
     {
-        if ($this->parentOf) {
-            $base = $this->parentOf;
-        } else {
-            $base = $this;
+        $base = $this;
+        while ($base->parentOf) {
+            $base = $base->parentOf;
         }
         $blockPresent = in_array($blockName, $base->blocks);
         if ($parentBlock || !$blockPresent) {

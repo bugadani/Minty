@@ -1,0 +1,19 @@
+--TEST--
+Test embed tag when the embedded template extends an other
+--TEMPLATE--
+Oof
+{ embed 'embedded' }
+{ block foo }bar{ endblock }
+{ endembed }
+--TEMPLATE embedded--
+{ extends 'extended' }
+{ block foo }foo{ endblock }
+--TEMPLATE extended--
+Header
+{ block bar }baz{ endblock }
+{ block foo }foobar{ endblock }
+--EXPECT--
+Oof
+Header
+baz
+bar
