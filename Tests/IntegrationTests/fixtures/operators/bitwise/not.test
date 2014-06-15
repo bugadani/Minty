@@ -1,0 +1,6 @@
+--TEST--
+Test the bitwise not operator
+--TEMPLATE--
+{ ~1 }{# should be -2 on every platform (-1 would be all ones, -2 is all ones except last one) #}
+--EXPECT--
+-2

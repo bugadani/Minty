@@ -1,0 +1,8 @@
+--TEST--
+Test the logic not operator
+--TEMPLATE--
+{ !false ? 'ok' : 'not ok' }
+{ !true ? 'not ok' : 'ok' }
+--EXPECT--
+ok
+ok

@@ -1,0 +1,10 @@
+--TEST--
+Test the logic or operator
+--TEMPLATE--
+{ false || true ? 'ok' : 'not ok' }
+{ true || false ? 'ok' : 'not ok' }
+{ false || false ? 'not ok' : 'ok' }
+--EXPECT--
+ok
+ok
+ok

@@ -1,0 +1,6 @@
+--TEST--
+Test the bitwise exclusive or operator
+--TEMPLATE--
+{ 4 b-xor 5 }
+--EXPECT--
+1

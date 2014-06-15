@@ -1,0 +1,12 @@
+--TEST--
+Test the logic exclusive or operator
+--TEMPLATE--
+{ false xor true ? 'ok' : 'not ok' }
+{ true xor false ? 'ok' : 'not ok' }
+{ false xor false ? 'not ok' : 'ok' }
+{ true xor true ? 'not ok' : 'ok' }
+--EXPECT--
+ok
+ok
+ok
+ok

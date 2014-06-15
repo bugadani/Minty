@@ -1,0 +1,6 @@
+--TEST--
+Test the bitwise and operator
+--TEMPLATE--
+{ 4 b-and 5 }
+--EXPECT--
+4

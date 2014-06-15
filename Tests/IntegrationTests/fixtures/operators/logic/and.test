@@ -1,0 +1,10 @@
+--TEST--
+Test the logic and operator
+--TEMPLATE--
+{ true && 1 ? 'ok' : 'not ok' }
+{ true && 'woo' ? 'ok' : 'not ok' }
+{ true && false ? 'not ok' : 'ok' }
+--EXPECT--
+ok
+ok
+ok

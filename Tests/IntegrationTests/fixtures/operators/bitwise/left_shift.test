@@ -1,0 +1,6 @@
+--TEST--
+Test the bitwise left shift operator
+--TEMPLATE--
+{ 4 << 2 }
+--EXPECT--
+16
