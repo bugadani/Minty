@@ -1,0 +1,6 @@
+--TEST--
+Test include tag when a non-existing template is included
+--TEMPLATE--
+{ include 'foo' }
+--EXCEPTION--
+\Modules\Templating\Compiler\Exceptions\TemplateNotFoundException
