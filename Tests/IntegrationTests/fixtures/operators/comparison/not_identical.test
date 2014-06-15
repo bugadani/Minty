@@ -1,0 +1,12 @@
+--TEST--
+Test the not-identical operator
+--TEMPLATE--
+{ :a !== :b ? 'ok' : 'not ok' }
+{ :a is not identical :b ? 'ok' : 'not ok' }
+{ :a is not same as :b ? 'ok' : 'not ok' }
+{ 1 !== :1 ? 'ok' : 'not ok' }
+--EXPECT--
+ok
+ok
+ok
+ok

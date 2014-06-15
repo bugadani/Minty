@@ -1,0 +1,8 @@
+--TEST--
+Test the less than or equals operator
+--TEMPLATE--
+{ 5 <= 5 ? 'ok' : 'not ok' }
+{ 5 is less than or equals 5 ? 'ok' : 'not ok' }
+--EXPECT--
+ok
+ok

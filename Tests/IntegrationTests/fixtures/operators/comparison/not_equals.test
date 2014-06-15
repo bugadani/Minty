@@ -1,0 +1,14 @@
+--TEST--
+Test the not-equals operator
+--TEMPLATE--
+{ :a != :b ? 'ok' : 'not ok' }
+{ :a != :a ? 'not ok' : 'ok' }
+{ :a is not :b ? 'ok' : 'not ok' }
+{ :a does not equal :b ? 'ok' : 'not ok' }
+{ :a <> :b ? 'ok' : 'not ok' }
+--EXPECT--
+ok
+ok
+ok
+ok
+ok

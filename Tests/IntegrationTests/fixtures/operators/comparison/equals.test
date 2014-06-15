@@ -1,0 +1,14 @@
+--TEST--
+Test the equals operator
+--TEMPLATE--
+{ :a = :a ? 'ok' : 'not ok' }
+{ :a is :a ? 'ok' : 'not ok' }
+{ :a equals :a ? 'ok' : 'not ok' }
+{ :a equals :b ? 'not ok' : 'ok' }
+{ :1 equals 1 ? 'ok' : 'not ok' }
+--EXPECT--
+ok
+ok
+ok
+ok
+ok
