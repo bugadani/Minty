@@ -1,5 +1,5 @@
 --TEST--
-Test that the 'contains' test works as intended
+Test that the 'in' test works as intended
 --TEMPLATE--
 { if 'oob' in 'foobar' }ok{ else }not ok{ endif }
 { if 'oob' in 'bar' }not ok{ else }ok{ endif }

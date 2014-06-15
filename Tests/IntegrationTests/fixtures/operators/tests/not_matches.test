@@ -1,0 +1,12 @@
+--TEST--
+Test that the 'not matches' test works as intended
+--TEMPLATE--
+{ if 'foo' not matches '/f[o]{3}/' }ok{ else }not ok{endif}
+{ if 'foo' does not match '/f[o]{3}/' }ok{ else }not ok{endif}
+{ if 'foo' not matches '/f[o]{2}/' }not ok{ else }ok{endif}
+{ if 'foo' does not match '/f[o]{2}/' }not ok{ else }ok{endif}
+--EXPECT--
+ok
+ok
+ok
+ok

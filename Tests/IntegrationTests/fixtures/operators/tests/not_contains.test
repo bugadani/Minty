@@ -1,0 +1,12 @@
+--TEST--
+Test that the 'not in' test works as intended
+--TEMPLATE--
+{ if 'baz' not in 'foobar' }ok{ else }not ok{ endif }
+{ if 'a' not in 'bar' }not ok{ else }ok{ endif }
+{ if 'bar' not in ['foo', 'baz', 'bar'] }not ok{ else }ok{ endif }
+{ if 'bar' not in ['foo', 'baz'] }ok{ else }not ok{ endif }
+--EXPECT--
+ok
+ok
+ok
+ok

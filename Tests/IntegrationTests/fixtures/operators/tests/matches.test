@@ -2,5 +2,7 @@
 Test that the 'matches' test works as intended
 --TEMPLATE--
 { if 'foo' matches '/f[o]{2}/' }ok{ else }not ok{endif}
+{ if 'foo' matches '/f[o]{3}/' }not ok{ else }ok{endif}
 --EXPECT--
+ok
 ok
