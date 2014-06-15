@@ -16,7 +16,7 @@ class ContainsOperator extends FunctionOperator
 
     public function operators()
     {
-        return array('in', 'contains');
+        return 'in';
     }
 
     protected function getFunctionName()

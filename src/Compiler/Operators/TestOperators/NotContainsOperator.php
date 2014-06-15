@@ -17,7 +17,7 @@ class NotContainsOperator extends ContainsOperator
 
     public function operators()
     {
-        return array('not in', 'not contains', 'does not contain');
+        return 'not in';
     }
 
     public function compile(Compiler $compiler, OperatorNode $node)

@@ -34,7 +34,7 @@ They can be used to test for properties in a simple and easily readable way.
 
 The available test operators are:
 
- * `contains` or `in` tests if a value can be found in a string or an array
+ * `in` tests if a value can be found in a string or an array
  * `divisible by` tests if the number on the left side is divisible by the number on the right side
  * `ends with` and `starts with` tests if the string on the left side starts or ends with the string on the right side
  * `matches` or `is like` tests if the string on the left side matches the regular expression on the right side
@@ -46,7 +46,7 @@ The available test operators are:
 
 The negated tests are also available.
 
- * `not in`, `not contains` or `does not contain`
+ * `not in`
  * `not divisible by` or `is not divisible by`
  * `not ends with` or `does not end with`
  * `does not match`, `is not like` or `not matches`
