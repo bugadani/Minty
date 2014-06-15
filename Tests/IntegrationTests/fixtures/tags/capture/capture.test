@@ -1,0 +1,11 @@
+--TEST--
+Test basic use case of the capture tag
+--TEMPLATE--
+{ capture into $foo }
+foobar
+{ endcapture }
+{ $foo }
+--EXPECT--
+
+
+foobar

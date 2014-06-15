@@ -1,0 +1,6 @@
+--TEST--
+This test covers for block
+--TEMPLATE--
+{ for $i in 1..5 }{ $i }{ endfor }
+--EXPECT--
+12345
