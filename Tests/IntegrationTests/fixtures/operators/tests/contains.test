@@ -1,0 +1,12 @@
+--TEST--
+Test that the 'contains' test works as intended
+--TEMPLATE--
+{ if 'oob' in 'foobar' }ok{ else }not ok{ endif }
+{ if 'oob' in 'bar' }not ok{ else }ok{ endif }
+{ if 'bar' in ['foo', 'baz', 'foobar'] }not ok{ else }ok{ endif }
+{ if 'bar' in ['foo', 'baz', 'bar'] }ok{ else }not ok{ endif }
+--EXPECT--
+ok
+ok
+ok
+ok

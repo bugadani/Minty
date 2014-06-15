@@ -1,0 +1,6 @@
+--TEST--
+Test the default function with a wrong number of arguments
+--TEMPLATE--
+{ $bar|default }
+--EXCEPTION--
+\InvalidArgumentException

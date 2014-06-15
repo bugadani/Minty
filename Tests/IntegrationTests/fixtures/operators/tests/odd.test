@@ -1,0 +1,12 @@
+--TEST--
+Test that the 'is odd' test works as intended
+--TEMPLATE--
+{ if 3 is odd }ok{ else }not ok{endif}
+{ if 3 is not even }ok{ else }not ok{endif}
+{ if 4 is odd }not ok{ else }ok{endif}
+{ if 4 is not even }not ok{ else }ok{endif}
+--EXPECT--
+ok
+ok
+ok
+ok

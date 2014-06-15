@@ -1,0 +1,8 @@
+--TEST--
+Test that the 'starts with' test works as intended
+--TEMPLATE--
+{ if 'foobar' starts with 'foo' }ok{ else }not ok{endif}
+{ if 'foobar' starts with 'bar' }not ok{ else }ok{endif}
+--EXPECT--
+ok
+ok

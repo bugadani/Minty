@@ -1,0 +1,8 @@
+--TEST--
+Test that the 'divisible by' test works as intended
+--TEMPLATE--
+{ if 6 is divisible by 3 }ok{ else }not ok{endif}
+{ if 6 is divisible by 4 }not ok{ else }ok{endif}
+--EXPECT--
+ok
+ok

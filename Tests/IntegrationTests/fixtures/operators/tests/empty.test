@@ -1,0 +1,8 @@
+--TEST--
+Test that the 'is empty' test works as intended
+--TEMPLATE--
+{ if 'foobar' is empty }not ok{ else }ok{ endif }
+{ if null is empty }ok{ else }not ok{ endif }
+--EXPECT--
+ok
+ok
