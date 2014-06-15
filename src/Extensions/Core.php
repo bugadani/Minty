@@ -125,8 +125,6 @@ class Core extends Extension
             new EndsOperator(8, Operator::NONE),
             new MatchesOperator(8, Operator::NONE),
             new NotContainsOperator(8, Operator::NONE),
-            new NotEmptyOperator(8, Operator::NONE),
-            new NotEmptyOperator(8, Operator::NONE),
             new NotEndsOperator(8, Operator::NONE),
             new NotMatchesOperator(8, Operator::NONE),
             new NotStartsOperator(8, Operator::NONE),
@@ -164,6 +162,8 @@ class Core extends Extension
             new OddOperator(15, Operator::NONE),
             new PostDecrementOperator(15),
             new PostIncrementOperator(15),
+            new EmptyOperator(15),
+            new NotEmptyOperator(15),
         );
     }
 
