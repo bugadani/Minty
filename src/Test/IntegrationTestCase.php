@@ -59,7 +59,7 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
     private function getTemplateBlocks($string)
     {
         $matches = array();
-        $pattern = "/^--TEMPLATE( [a-z0-9]*)?--\n(.*?)\n(?:--(?:[A-Z]+)--|\\Z)/ms";
+        $pattern = "/^--TEMPLATE(?:\\s*([a-z0-9]*))?--\n(.*?)\n(?=--.+?--|\\Z)/ms";
         if (!preg_match_all($pattern, $string, $matches, PREG_SET_ORDER)) {
             return false;
         }
