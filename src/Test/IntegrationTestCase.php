@@ -8,6 +8,8 @@ use Modules\Templating\TemplateLoaders\StringLoader;
 
 abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
 {
+    private static $counter = 0;
+
     /**
      * @var TemplateLoader
      */
@@ -116,10 +118,16 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
      * @test
      * @dataProvider getTests
      */
-    public function runIntegrationTests($file, $description, $templates, $data, $expectation, $exception)
-    {
-        //md5 to avoid reserved keywords (e.g. do) in namespace to cause errors
-        $this->environment->setOption('cache_namespace', 'test_' . md5($file));
+    public function runIntegrationTests(
+        $file,
+        $description,
+        $templates,
+        $data,
+        $expectation,
+        $exception
+    ) {
+        //global counter to provide random namespaces to avoid class name collision
+        $this->environment->setOption('cache_namespace', 'test_' . ++self::$counter);
         foreach ($templates as $name => $template) {
             $this->stringLoader->addTemplate($name, $template);
         }
@@ -139,7 +147,7 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
                 $description . ' (' . $file . ')'
             );
         } catch (\Exception $e) {
-            if($exception) {
+            if ($exception) {
                 $this->assertInstanceOf($exception, $e);
             } else {
                 throw $e;
