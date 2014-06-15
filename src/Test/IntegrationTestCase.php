@@ -90,14 +90,16 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
         $test      = $this->getBlock($testDescriptor, 'TEST');
         $templates = $this->getTemplateBlocks($testDescriptor);
         $expect    = $this->getBlock($testDescriptor, 'EXPECT');
+        $exception = $this->getBlock($testDescriptor, 'EXCEPTION');
+
         if (!$test) {
             throw new \RuntimeException("{$file} does not contain a TEST block");
         }
         if (!$templates) {
             throw new \RuntimeException("{$file} does not contain a TEMPLATE block");
         }
-        if (!$expect) {
-            throw new \RuntimeException("{$file} does not contain a EXPECT block");
+        if (!$expect && !$exception) {
+            throw new \RuntimeException("{$file} does not contain a EXPECT or EXCEPTION block");
         }
 
         return array(
@@ -105,7 +107,8 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
             $test,
             $templates,
             $this->getBlock($testDescriptor, 'DATA'),
-            $expect
+            $expect,
+            $exception
         );
     }
 
@@ -113,7 +116,7 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
      * @test
      * @dataProvider getTests
      */
-    public function runIntegrationTests($file, $description, $templates, $data, $expectation)
+    public function runIntegrationTests($file, $description, $templates, $data, $expectation, $exception)
     {
         //md5 to avoid reserved keywords (e.g. do) in namespace to cause errors
         $this->environment->setOption('cache_namespace', 'test_' . md5($file));
@@ -127,12 +130,20 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
             $data = array();
         }
 
-        ob_start();
-        $this->loader->render('index', $data);
-        $this->assertEquals(
-            $expectation,
-            rtrim(ob_get_clean(), "\n"),
-            $description . ' (' . $file . ')'
-        );
+        try {
+            ob_start();
+            $this->loader->render('index', $data);
+            $this->assertEquals(
+                $expectation,
+                rtrim(ob_get_clean(), "\n"),
+                $description . ' (' . $file . ')'
+            );
+        } catch (\Exception $e) {
+            if($exception) {
+                $this->assertInstanceOf($exception, $e);
+            } else {
+                throw $e;
+            }
+        }
     }
 }
