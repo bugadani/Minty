@@ -1,0 +1,10 @@
+--TEST--
+Test that the 'is set' test works as intended
+--TEMPLATE--
+{ $bar is set ? 'not ok' : 'ok' }
+{ $foo is set ? 'ok' : 'not ok' }
+--DATA--
+array('foo' => true)
+--EXPECT--
+ok
+ok
