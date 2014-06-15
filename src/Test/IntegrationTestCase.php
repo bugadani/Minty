@@ -49,7 +49,7 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
     private function getBlock($string, $block)
     {
         $matches = array();
-        if (!preg_match("/^--{$block}--\n(.*?)\n(?:--(?:[A-Z]+)--|$)/ms", $string, $matches)) {
+        if (!preg_match("/^--{$block}--\n(.*?)\n(?:--(?:[A-Z]+)--|\\Z)/ms", $string, $matches)) {
             return false;
         }
 
@@ -59,7 +59,7 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
     private function getTemplateBlocks($string)
     {
         $matches = array();
-        $pattern = "/^--TEMPLATE( [a-z0-9]*)?--\n(.*?)\n(?:--(?:[A-Z]+)--|$)/ms";
+        $pattern = "/^--TEMPLATE( [a-z0-9]*)?--\n(.*?)\n(?:--(?:[A-Z]+)--|\\Z)/ms";
         if (!preg_match_all($pattern, $string, $matches, PREG_SET_ORDER)) {
             return false;
         }
@@ -121,6 +121,6 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
 
         ob_start();
         $this->loader->render('index', $data);
-        $this->assertEquals($expectation, ob_get_clean(), $description . ' (' . $file . ')');
+        $this->assertEquals($expectation, rtrim(ob_get_clean(), "\n"), $description . ' (' . $file . ')');
     }
 }
