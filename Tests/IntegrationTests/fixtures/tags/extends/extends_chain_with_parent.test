@@ -1,0 +1,16 @@
+--TEST--
+Test the extends tag when the parent is also extending an other template and the child block has a parent tag.
+--TEMPLATE--
+{ extends 'parent' }
+Child
+{ block foo }foo{ parent }{ endblock }
+--TEMPLATE parent--
+{ extends 'parent2' }
+Parent
+{ block foo }bar { parent }{ endblock }
+--TEMPLATE parent2--
+Parent2
+{ block foo }foobar{ endblock }
+--EXPECT--
+Parent2
+foobar foobar
