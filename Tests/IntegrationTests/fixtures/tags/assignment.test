@@ -1,5 +1,5 @@
 --TEST--
-Test variable assignment
+Test simple variable assignment and setting an array key
 --TEMPLATE--
 { $foo: 'bar' }{ $foo }
 { $arr: [] }{ $arr[:foo]: 'barbaz' }{ $arr[:foo] }

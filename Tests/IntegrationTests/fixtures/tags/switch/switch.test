@@ -1,17 +1,10 @@
 --TEST--
-This test covers switch blocks with simple expressions
+This test covers switch blocks with simple expression
 --TEMPLATE--
 { switch 2 }
 { case 1 }not ok
 { case 2 }ok
 { else }not ok
 { endswitch }
-{ switch 3 }
-{ case 1 }not ok
-{ case 2 }not ok
-{ else }ok
-{ endswitch }
 --EXPECT--
-ok
-
 ok

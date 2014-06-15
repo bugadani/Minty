@@ -1,0 +1,10 @@
+--TEST--
+This test covers switch blocks with simple expression that matches the default case
+--TEMPLATE--
+{ switch 3 }
+{ case 1 }not ok
+{ case 2 }not ok
+{ else }ok
+{ endswitch }
+--EXPECT--
+ok
