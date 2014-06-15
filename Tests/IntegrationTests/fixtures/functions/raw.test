@@ -1,0 +1,10 @@
+--TEST--
+Test that the raw filter disables escaping
+--TEMPLATE--
+{ $foo }
+{ $foo|raw }
+--DATA--
+array('foo' => '<a>')
+--EXPECT--
+&lt;a&gt;
+<a>

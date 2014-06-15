@@ -1,0 +1,12 @@
+--TEST--
+Test the post increment operator
+--TEMPLATE--
+{ $i++ }
+{ $i++ }
+{ $i++ }
+--DATA--
+array('i' => 1)
+--EXPECT--
+1
+2
+3

@@ -1,0 +1,10 @@
+--TEST--
+Test the default function
+--TEMPLATE--
+{ $bar|default(4) }
+{ $foo|default(4) }
+--DATA--
+array('foo' => 'foo')
+--EXPECT--
+4
+foo

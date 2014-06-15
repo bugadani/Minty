@@ -1,0 +1,12 @@
+--TEST--
+Test the pre decrement operator
+--TEMPLATE--
+{ --$i }
+{ --$i }
+{ --$i }
+--DATA--
+array('i' => 4)
+--EXPECT--
+3
+2
+1

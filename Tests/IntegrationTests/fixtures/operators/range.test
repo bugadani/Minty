@@ -1,0 +1,8 @@
+--TEST--
+Test the range and exclusive range operators
+--TEMPLATE--
+{ for $i in 1..5 }{ $i }{ endfor }
+{ for $i in 1...5 }{ $i }{ endfor }
+--EXPECT--
+12345
+1234
