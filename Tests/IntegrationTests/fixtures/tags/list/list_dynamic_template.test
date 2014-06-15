@@ -1,0 +1,10 @@
+--TEST--
+Test list tag using variable template name
+--TEMPLATE--
+{ list $bar using $foo }
+--TEMPLATE bar--
+{ $baz }
+--DATA--
+array('bar' => array(array('baz' => 1), array('baz' => 2), array('baz' => 3)), 'foo' => 'bar')
+--EXPECT--
+123

@@ -1,0 +1,10 @@
+--TEST--
+Test list tag
+--TEMPLATE--
+{ list $bar using 'foo' }
+--TEMPLATE foo--
+{ $baz }
+--DATA--
+array('bar' => array(array('baz' => 1), array('baz' => 2), array('baz' => 3)))
+--EXPECT--
+123
