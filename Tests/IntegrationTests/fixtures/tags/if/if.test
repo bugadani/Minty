@@ -1,0 +1,10 @@
+--TEST--
+This test covers if, else and endif with simple expressions
+--TEMPLATE--
+{ if true }ok{ endif }
+{ if false }not ok{ else }ok{ endif }
+{ if false }not ok{ elseif true }ok{ else }not ok{ endif }
+--EXPECT--
+ok
+ok
+ok

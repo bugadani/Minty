@@ -1,0 +1,8 @@
+--TEST--
+This test covers the basic use cases of the ?: operator.
+--TEMPLATE--
+{ true ? :ok : :ko }
+{ false ? :ko : :ok }
+--EXPECT--
+ok
+ok

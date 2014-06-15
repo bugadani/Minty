@@ -1,0 +1,8 @@
+--TEST--
+Test Do tag
+--TEMPLATE--
+{ do $foo++ }{ $foo }
+--DATA--
+array('foo' => 1)
+--EXPECT--
+2

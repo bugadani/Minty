@@ -1,0 +1,12 @@
+--TEST--
+Test include tag with only the template name given
+--TEMPLATE--
+{ include 'foo' }
+{ include $bar }
+--TEMPLATE foo--
+{ $bar } content
+--DATA--
+array('bar' => 'foo')
+--EXPECT--
+foo content
+foo content
