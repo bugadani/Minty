@@ -50,7 +50,9 @@ class ForLoopOptimizer extends NodeVisitor
             return true;
         }
         array_pop($this->stack);
-        if (array_pop($this->counterStack) === $this->counter) {
+        //if there are no for tags nested inside this for tag, or the for tag does not have an else branch
+        //there's no need to save $temp
+        if (array_pop($this->counterStack) === $this->counter || !$node->hasChild('else')) {
             $node->addData('save_temp_var', false);
         }
 
