@@ -162,7 +162,7 @@ class Environment
         $this->nodeTreeTraverser->traverse($node);
 
         //Compile the template
-        return $this->compiler->compile($node, $class);
+        return $this->compiler->compile($node);
     }
 
     public function getCachePath($cacheKey)
