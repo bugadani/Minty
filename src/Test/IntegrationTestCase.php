@@ -11,11 +11,6 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
     private static $counter = 0;
 
     /**
-     * @var TemplateLoader
-     */
-    private $loader;
-
-    /**
      * @var StringLoader
      */
     private $stringLoader;
@@ -29,7 +24,7 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
     {
         $this->environment  = $this->getEnvironment();
         $this->stringLoader = new StringLoader($this->environment);
-        $this->loader       = new TemplateLoader($this->environment, $this->stringLoader);
+        $this->environment->addTemplateLoader($this->stringLoader);
     }
 
     abstract public function getTestDirectory();
@@ -140,7 +135,7 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
 
         try {
             ob_start();
-            $this->loader->render('index', $data);
+            $this->environment->render('index', $data);
             $this->assertEquals(
                 $expectation,
                 rtrim(ob_get_clean(), "\n"),

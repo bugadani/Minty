@@ -18,14 +18,12 @@ class ClassNode extends Node
     private $templateName;
     private $className;
     private $parentTemplateName;
-    private $namespace;
     private $baseClass;
 
     public function __construct(Environment $env, $templateName, $className)
     {
         $this->templateName = $templateName;
         $this->className    = $className;
-        $this->namespace    = $env->getOption('cache_namespace', '');
         $this->baseClass    = $env->getOption(
             'template_base_class',
             'Modules\\Templating\\Template'
@@ -50,15 +48,7 @@ class ClassNode extends Node
 
     public function getNameSpace()
     {
-        $lastPos    = strrpos($this->className, '/');
-        $baseString = $this->namespace;
-
-        if ($lastPos !== false) {
-            $directory = substr($this->className, 0, $lastPos);
-            $baseString .= '\\' . strtr($directory, '/', '\\');
-        }
-
-        return $baseString;
+        return substr($this->className, 0, strrpos($this->className, '\\'));
     }
 
     public function addChild(Node $node, $key = null)
@@ -72,10 +62,9 @@ class ClassNode extends Node
 
     public function getClassName()
     {
-        $path = strtr($this->className, '/', '\\');
-        $pos  = strrpos('\\' . $path, '\\');
+        $path = str_replace(array('/', DIRECTORY_SEPARATOR), '\\', $this->className);
 
-        return substr($path, $pos);
+        return substr($path, strrpos('\\' . $path, '\\'));
     }
 
     public function compile(Compiler $compiler)
@@ -122,9 +111,7 @@ class ClassNode extends Node
 
     private function compileConstructor(Compiler $compiler)
     {
-        $compiler->indented(
-            'public function __construct(TemplateLoader $loader, Environment $environment)'
-        );
+        $compiler->indented('public function __construct(Environment $environment)');
         $compiler->indented('{');
         $compiler->indent();
 
@@ -133,7 +120,7 @@ class ClassNode extends Node
             ->add(';');
 
         $compiler
-            ->indented('parent::__construct($loader, $environment, ')
+            ->indented('parent::__construct($environment, ')
             ->compileString($this->templateName)
             ->add(', $blocks);');
 

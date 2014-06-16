@@ -3,6 +3,7 @@
 namespace Modules\Templating\Compiler;
 
 use Modules\Templating\Environment;
+use Modules\Templating\TemplateLoaders\ChainLoader;
 
 class ParserTest extends \PHPUnit_Framework_TestCase
 {

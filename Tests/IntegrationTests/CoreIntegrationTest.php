@@ -10,6 +10,8 @@ namespace Modules\Templating\IntegrationTests;
 
 use Modules\Templating\Environment;
 use Modules\Templating\Extensions\Core;
+use Modules\Templating\TemplateLoaders\ChainLoader;
+use Modules\Templating\TemplateLoaders\StringLoader;
 use Modules\Templating\Test\IntegrationTestCase;
 
 class CoreIntegrationTest extends IntegrationTestCase

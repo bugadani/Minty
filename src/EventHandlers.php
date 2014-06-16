@@ -20,7 +20,7 @@ use Modules\Annotation\Comment;
 
 class EventHandlers
 {
-    private $templateLoader;
+    private $environment;
     private $layoutMap = array();
     private $assignedVariables = array();
     private $currentLayout;
@@ -29,12 +29,12 @@ class EventHandlers
 
     public function __construct(
         AbstractConfigurationTree $configuration,
-        TemplateLoader $templateLoader,
+        Environment $environment,
         Annotation $annotation = null
     ) {
         $this->configuration  = $configuration;
         $this->annotation     = $annotation;
-        $this->templateLoader = $templateLoader;
+        $this->environment = $environment;
     }
 
     public function getHandledEvents()
@@ -83,7 +83,7 @@ class EventHandlers
                 $templateName = $handler['template'];
             }
 
-            $this->templateLoader->render(
+            $this->environment->render(
                 $templateName,
                 array(
                     'request'  => $request,
@@ -97,11 +97,11 @@ class EventHandlers
     {
         $handlers = $this->configuration['exceptions'];
         if (!is_array($handlers)) {
-            $this->templateLoader->render($handlers, array('exception' => $exception));
+            $this->environment->render($handlers, array('exception' => $exception));
         } else {
             foreach ($handlers as $class => $handler) {
                 if ($exception instanceof $class) {
-                    $this->templateLoader->render($handler, array('exception' => $exception));
+                    $this->environment->render($handler, array('exception' => $exception));
 
                     return;
                 }
@@ -130,7 +130,7 @@ class EventHandlers
                 return;
             }
         }
-        $this->templateLoader->render($this->currentLayout, $this->assignedVariables);
+        $this->environment->render($this->currentLayout, $this->assignedVariables);
     }
 
     public function layout($template)

@@ -34,7 +34,7 @@ class EmbedTag extends Tag
     public function compile(Compiler $compiler, TagNode $node)
     {
         $compiler->indented(
-            '$embedded = new %s($this->getLoader(), $this->getEnvironment());',
+            '$embedded = new %s($this->getEnvironment());',
             $node->getData('template')
         );
 

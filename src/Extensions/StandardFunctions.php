@@ -280,7 +280,7 @@ function template_function_sort($data, $reverse = false)
 
 function template_function_source(Environment $environment, $template)
 {
-    return $environment->getTemplateLoader()->getSource($template);
+    return $environment->getSource($template);
 }
 
 function template_function_spacify($string, $delimiter = ' ')

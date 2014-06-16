@@ -10,6 +10,8 @@
 namespace Modules\Templating;
 
 use Modules\Templating\Compiler\Compiler;
+use Modules\Templating\Compiler\Exceptions\TemplateNotFoundException;
+use Modules\Templating\Compiler\Exceptions\TemplatingException;
 use Modules\Templating\Compiler\ExpressionParser;
 use Modules\Templating\Compiler\FunctionCompiler;
 use Modules\Templating\Compiler\NodeTreeTraverser;
@@ -19,6 +21,7 @@ use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Tag;
 use Modules\Templating\Compiler\TemplateFunction;
 use Modules\Templating\Compiler\Tokenizer;
+use Modules\Templating\TemplateLoaders\ChainLoader;
 
 class Environment
 {
@@ -88,9 +91,19 @@ class Environment
     private $nodeTreeTraverser;
 
     /**
-     * @var TemplateLoader
+     * @var AbstractTemplateLoader|ChainLoader
      */
-    private $templateLoader;
+    private $loader;
+
+    /**
+     * @var Template[]
+     */
+    private $loadedTemplates = array();
+
+    /**
+     * @var bool
+     */
+    private $chainLoaderUsed = false;
 
     /**
      * @param array $options
@@ -100,17 +113,22 @@ class Environment
         $this->options = $options;
     }
 
-    public function setTemplateLoader(TemplateLoader $templateLoader)
+    public function addTemplateLoader(AbstractTemplateLoader $loader)
     {
-        $this->templateLoader = $templateLoader;
-    }
+        if (!$this->chainLoaderUsed) {
+            if (!isset($this->loader)) {
+                $this->loader          = $loader;
+                $this->chainLoaderUsed = $loader instanceof ChainLoader;
 
-    /**
-     * @return TemplateLoader
-     */
-    public function getTemplateLoader()
-    {
-        return $this->templateLoader;
+                return;
+            } else {
+                $oldLoader    = $this->loader;
+                $this->loader = new ChainLoader();
+                $this->loader->addLoader($oldLoader);
+                $this->chainLoaderUsed = true;
+            }
+        }
+        $this->loader->addLoader($loader);
     }
 
     public function compileTemplate($template, $templateName, $class)
@@ -332,5 +350,154 @@ class Environment
             $this->unaryPrefixOperators->addOperators($ext->getPrefixUnaryOperators());
             $this->unaryPostfixOperators->addOperators($ext->getPostfixUnaryOperators());
         }
+    }
+
+    /**
+     * @param string|array $template The template name
+     *
+     * @return string
+     */
+    public function getSource($template)
+    {
+        return $this->loader->load($template);
+    }
+
+    private function compileIfNeeded($templateName, $class)
+    {
+        $cacheEnabled = $this->getOption('cache', false);
+        if ($cacheEnabled) {
+            if ($this->loader->isCacheFresh($templateName)) {
+                //The template is already compiled and up to date
+                return;
+            }
+        }
+
+        //Read the template
+        $template = $this->getSource($templateName);
+
+        try {
+            $compiled = $this->compileTemplate($template, $templateName, $class);
+        } catch (TemplatingException $e) {
+            $template = $this->getErrorTemplate($e, $templateName, $template);
+            $compiled = $this->compileTemplate($template, $templateName, $class);
+        }
+        if ($cacheEnabled) {
+            $this->saveCompiledTemplate($compiled, $templateName);
+        } else {
+            eval('?>' . $compiled);
+        }
+    }
+
+    /**
+     * @param $compiled
+     * @param $templateName
+     */
+    private function saveCompiledTemplate($compiled, $templateName)
+    {
+        $destination = $this->getCachePath(
+            $this->loader->getCacheKey($templateName)
+        );
+
+        $cacheDir = dirname($destination);
+        if (!is_dir($cacheDir)) {
+            mkdir($cacheDir, 0777, true);
+        }
+        file_put_contents($destination, $compiled);
+    }
+
+    private function getErrorTemplate(TemplatingException $exception, $template, $source)
+    {
+        $errLine     = $exception->getSourceLine() - 1;
+        $firstLine   = max($errLine - 3, 0);
+        $sourceLines = array_slice(explode("\n", $source), $firstLine, 7, true);
+
+        $first     = true;
+        $lineArray = '';
+        //create a template-array for the lines
+        foreach ($sourceLines as $lineNo => $line) {
+            if ($first) {
+                $first = false;
+            } else {
+                $lineArray .= ', ';
+            }
+            //escape string delimiters
+            $line = strtr($line, array("'" => "\\'"));
+            $lineArray .= "{$lineNo}: '{$line}'";
+        }
+
+        //escape string delimiters in exception message
+        $message = strtr($exception->getMessage(), array("'" => "\\'"));
+
+        $closingTagPrefix = $this->getOption(
+            'block_end_prefix',
+            'end'
+        );
+        $baseTemplate     = $this->getOption(
+            'error_template',
+            '__compile_error_template'
+        );
+
+        //insert data into template and decorate with inheritance code
+        //(error message, error line number, first displayed line number, template source)
+
+        return "{extends '{$baseTemplate}'}" .
+        "{block error}" .
+        "{\$templateName: '{$template}'}" .
+        "{\$message: '{$message}'}" .
+        "{\$lines: [{$lineArray}]}" .
+        "{\$errorLine: {$errLine}}" .
+        "{\$firstLine: {$firstLine}}" .
+        "{parent}{{$closingTagPrefix}block}";
+    }
+
+    private function findFirstExistingTemplate($templates)
+    {
+        if (is_array($templates)) {
+            foreach ($templates as $template) {
+                if ($this->loader->exists($template)) {
+                    return $template;
+                }
+            }
+            $templates = implode(', ', $templates);
+        } elseif ($this->loader->exists($templates)) {
+            return $templates;
+        }
+
+        throw new TemplateNotFoundException($templates);
+    }
+
+    /**
+     * @param $template
+     *
+     * @return Template
+     * @throws \RuntimeException
+     */
+    public function load($template)
+    {
+        $template = $this->findFirstExistingTemplate($template);
+        if (isset($this->loadedTemplates[$template])) {
+            return $this->loadedTemplates[$template];
+        }
+
+        $class = $this->getTemplateClassName(
+            $this->loader->getCacheKey($template)
+        );
+
+        $this->compileIfNeeded($template, $class);
+
+        /** @var $object Template */
+        $object = new $class($this);
+
+        $this->loadedTemplates[$template] = $object;
+
+        return $object;
+    }
+
+    public function render($template, $variables = array())
+    {
+        $object = $this->load($template);
+        $object->displayTemplate(
+            $this->createContext($variables)
+        );
     }
 }

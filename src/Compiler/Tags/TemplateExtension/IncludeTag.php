@@ -28,7 +28,7 @@ class IncludeTag extends Tag
     public function compile(Compiler $compiler, TagNode $node)
     {
         $compiler
-            ->indented('$this->getLoader()->render(')
+            ->indented('$this->getEnvironment()->render(')
             ->compileNode($node->getChild('template'))
             ->add(', ')
             ->compileNode($node->getChild('arguments'))

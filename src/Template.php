@@ -12,11 +12,6 @@ namespace Modules\Templating;
 abstract class Template
 {
     /**
-     * @var TemplateLoader
-     */
-    private $loader;
-
-    /**
      * @var Environment
      */
     private $environment;
@@ -41,13 +36,8 @@ abstract class Template
      */
     private $templateName;
 
-    public function __construct(
-        TemplateLoader $loader,
-        Environment $environment,
-        $template,
-        array $blocks
-    ) {
-        $this->loader       = $loader;
+    public function __construct(Environment $environment, $template, array $blocks)
+    {
         $this->environment  = $environment;
         $this->templateName = $template;
         $this->blocks       = $blocks;
@@ -69,11 +59,6 @@ abstract class Template
     protected function setParentTemplate($parentTemplate)
     {
         $this->parentTemplate = $parentTemplate;
-    }
-
-    public function getLoader()
-    {
-        return $this->loader;
     }
 
     public function getEnvironment()
@@ -111,7 +96,7 @@ abstract class Template
     public function displayTemplate(Context $context)
     {
         //if this method is called the template must extend an other
-        $parent = $this->loader->load($this->parentTemplate);
+        $parent = $this->environment->load($this->parentTemplate);
 
         $oldParentOf      = $parent->parentOf;
         $parent->parentOf = $this;
@@ -131,7 +116,7 @@ abstract class Template
     private function renderParentBlock(Template $parent, $blockName, Context $context)
     {
         while ($parent->parentTemplate) {
-            $parent = $this->loader->load($parent->parentTemplate);
+            $parent = $this->environment->load($parent->parentTemplate);
             if (in_array($blockName, $parent->blocks)) {
                 $parent->{'block_' . $blockName}($context);
 

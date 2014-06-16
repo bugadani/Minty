@@ -44,7 +44,7 @@ class ListTag extends Tag
             ->add(';');
 
         $compiler
-            ->indented('$loader = $this->getLoader();')
+            ->indented('$loader = $this->getEnvironment();')
             ->indented('foreach ($list_source as $element) {')
             ->indent()
             ->indented('$loader->render(')

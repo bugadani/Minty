@@ -369,7 +369,8 @@ new line
     /**
      * @depends testEmptyTagIsAValidFallbackTag
      */
-    public function testStringIsCorrectlyParsedInTag(Tokenizer $tokenizer) {
+    public function testStringIsCorrectlyParsedInTag(Tokenizer $tokenizer)
+    {
 
         $stream = $tokenizer->tokenize('"{ "test" }"');
         $stream->expect(Token::TEXT, '"');
@@ -381,7 +382,8 @@ new line
         $stream->expect(Token::EOF);
     }
 
-    public function testLiteralsAreNotSplitFromIdentifiersAndVariables(){
+    public function testLiteralsAreNotSplitFromIdentifiersAndVariables()
+    {
 
         $stream = $this->tokenizer->tokenize('{ test nullable $true }');
         $stream->expect(Token::TAG, 'test');

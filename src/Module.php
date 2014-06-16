@@ -65,10 +65,12 @@ class Module extends \Miny\Modules\Module
     public function setupEnvironment(Container $container)
     {
         $env = new Environment($this->getConfiguration('options'));
+
         //Environment is a dependency of TemplateLoader so this line is needed
         //to avoid infinite recursion
         $container->setInstance($env);
-        $env->setTemplateLoader($container->get(__NAMESPACE__ . '\\TemplateLoader'));
+
+        $env->addTemplateLoader($container->get(__NAMESPACE__ . '\\AbstractTemplateLoader'));
 
         $env->addExtension(new Core());
         $env->addExtension(new StandardFunctions());
@@ -89,7 +91,7 @@ class Module extends \Miny\Modules\Module
     private function setupAutoLoader(AutoLoader $autoLoader)
     {
         if ($this->getConfiguration('options:cache', false)) {
-            $cacheDirectoryName = dirname($this->getConfiguration('options:cache'));
+            $cacheDirectoryName = $this->getConfiguration('options:cache');
             if (!is_dir($cacheDirectoryName)) {
                 mkdir($cacheDirectoryName);
             }
