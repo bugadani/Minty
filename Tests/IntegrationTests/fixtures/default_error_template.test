@@ -1,0 +1,6 @@
+--TEST--
+Test that the default error template is loaded and rendered
+--TEMPLATE--
+{
+--EXPECT--
+<h1>Failed to compile index</h1><h2>Error message:</h2><p>Unterminated tag found in line 1</p><h2>Template source:</h2><pre><code><ol start="1">    <li>            <b>{</b>        </li></ol></code></pre>
