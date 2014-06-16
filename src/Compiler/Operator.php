@@ -19,21 +19,12 @@ abstract class Operator
 
     private $precedence;
     private $associativity;
-    protected $operators;
 
     public function __construct($precedence, $associativity = self::LEFT)
     {
         $this->precedence    = $precedence;
         $this->associativity = $associativity;
-
-        $operators = $this->operators();
-        if (!is_array($operators)) {
-            $operators = array($operators);
-        }
-        $this->operators = $operators;
     }
-
-    abstract public function operators();
 
     public function getPrecedence()
     {
@@ -44,6 +35,8 @@ abstract class Operator
     {
         return $this->associativity === $associativity;
     }
+
+    abstract public function operators();
 
     abstract public function compile(Compiler $compiler, OperatorNode $node);
 }
