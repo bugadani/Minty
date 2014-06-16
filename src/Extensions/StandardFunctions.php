@@ -252,7 +252,7 @@ function template_function_shuffle($data)
     return $data;
 }
 
-function template_function_slice($data, $start, $length, $preserveKeys = false)
+function template_function_slice($data, $start, $length = null, $preserveKeys = false)
 {
     if (is_string($data)) {
         if ($length === null) {
@@ -270,9 +270,9 @@ function template_function_sort($data, $reverse = false)
 {
     $data = traversableToArray($data);
     if ($reverse) {
-        arsort($data);
+        rsort($data);
     } else {
-        asort($data);
+        sort($data);
     }
 
     return $data;
@@ -304,7 +304,7 @@ function template_function_split($string, $delimiter = '', $limit = null)
         return explode($delimiter, $string);
     }
 
-    return explode($delimiter, $string, $limit);
+    return array_slice(explode($delimiter, $string, $limit + 1), 0, $limit);
 }
 
 function template_function_truncate($string, $length, $ellipsis = '...')
@@ -317,7 +317,7 @@ function template_function_truncate($string, $length, $ellipsis = '...')
     return $string;
 }
 
-function template_function_urlEncode($data, $raw)
+function template_function_urlEncode($data, $raw = false)
 {
     if ($data instanceof Traversable) {
         $data = iterator_to_array($data);
