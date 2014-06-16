@@ -32,7 +32,7 @@ class FileNode extends RootNode
         /** @var $childNode ClassNode */
         $childNode = $this->getChild(0);
 
-        if($childNode->getNameSpace() !== '') {
+        if ($childNode->getNameSpace() !== '') {
             $compiler->indented("namespace %s;\n", $childNode->getNameSpace());
         }
 

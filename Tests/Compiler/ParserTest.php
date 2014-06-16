@@ -33,7 +33,9 @@ class ParserTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $mockLoader = $this->getMockForAbstractClass('\\Modules\\Templating\\AbstractTemplateLoader');
+        $mockLoader = $this->getMockForAbstractClass(
+            '\\Modules\\Templating\\AbstractTemplateLoader'
+        );
 
         $this->env = new Environment();
         $this->env->addTemplateLoader($mockLoader);

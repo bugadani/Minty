@@ -100,7 +100,7 @@ class Compiler
 
     public function compileData($data)
     {
-        if(is_int($data)) {
+        if (is_int($data)) {
             $this->add($data);
         } elseif (is_float($data)) {
             $old = setlocale(LC_NUMERIC, 0);

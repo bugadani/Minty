@@ -8,7 +8,6 @@ use Modules\Templating\Compiler\Nodes\FunctionNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Nodes\VariableNode;
 use Modules\Templating\Environment;
-use Modules\Templating\TemplateLoaders\ChainLoader;
 
 class ExpressionParserTest extends \PHPUnit_Framework_TestCase
 {

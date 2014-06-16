@@ -491,7 +491,7 @@ class Environment
         $this->compileIfNeeded($template);
 
         /** @var $object Template */
-        $class = $this->getTemplateClassName($template);
+        $class  = $this->getTemplateClassName($template);
         $object = new $class($this);
 
         $this->loadedTemplates[$template] = $object;

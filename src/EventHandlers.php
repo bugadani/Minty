@@ -32,9 +32,9 @@ class EventHandlers
         Environment $environment,
         Annotation $annotation = null
     ) {
-        $this->configuration  = $configuration;
-        $this->annotation     = $annotation;
-        $this->environment = $environment;
+        $this->configuration = $configuration;
+        $this->annotation    = $annotation;
+        $this->environment   = $environment;
     }
 
     public function getHandledEvents()
