@@ -21,16 +21,15 @@ class Module extends \Miny\Modules\Module
     public function defaultConfiguration()
     {
         return array(
-            'options' => array(
-                'global_variables'    => array(),
-                'cache_namespace'     => 'Application\\Templating\\Cached',
-                'cache'               => 'templates/compiled',
-                'template_base_class' => 'Modules\\Templating\\Template',
-                'autoescape'          => true,
-                'fallback_tag'        => 'print',
-                'template_loader'     => __NAMESPACE__ . '\\TemplateLoaders\\FileLoader',
-                'debug'               => $this->application->isDeveloperEnvironment()
-            )
+            'options'         => array(
+                'global_variables' => array(),
+                'cache_namespace'  => 'Application\\Templating\\Cached',
+                'cache'            => 'templates/compiled',
+                'autoescape'       => true,
+                'fallback_tag'     => 'print',
+                'debug'            => $this->application->isDeveloperEnvironment()
+            ),
+            'template_loader' => __NAMESPACE__ . '\\TemplateLoaders\\FileLoader'
         );
     }
 
@@ -51,7 +50,7 @@ class Module extends \Miny\Modules\Module
         );
         $container->addAlias(
             __NAMESPACE__ . '\\AbstractTemplateLoader',
-            $this->getConfiguration('options:template_loader')
+            $this->getConfiguration('template_loader')
         );
     }
 
