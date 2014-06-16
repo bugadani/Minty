@@ -20,20 +20,20 @@ class ClassNode extends Node
     private $parentTemplateName;
     private $baseClass;
 
-    public function __construct(Environment $env, $templateName, $className)
+    public function __construct(Environment $env, $templateName)
     {
         $this->templateName = $templateName;
-        $this->className    = $className;
         $this->baseClass    = $env->getOption(
             'template_base_class',
             'Modules\\Templating\\Template'
         );
         $this->addData('self_accessed', true);
-    }
 
-    public function hasParentTemplate()
-    {
-        return isset($this->parentTemplateName);
+        $className = $env->getTemplateClassName($templateName);
+
+        $classNameOffset = strrpos($className, '\\');
+        $this->namespace = substr($className, 0, $classNameOffset);
+        $this->className = substr($className, $classNameOffset + 1);
     }
 
     public function setParentTemplate(Node $parentClass)
@@ -41,14 +41,14 @@ class ClassNode extends Node
         $this->parentTemplateName = $parentClass;
     }
 
-    public function getParentTemplate()
-    {
-        return $this->parentTemplateName;
-    }
-
     public function getNameSpace()
     {
-        return substr($this->className, 0, strrpos($this->className, '\\'));
+        return $this->namespace;
+    }
+
+    public function getClassName()
+    {
+        return $this->className;
     }
 
     public function addChild(Node $node, $key = null)
@@ -60,26 +60,19 @@ class ClassNode extends Node
         return parent::addChild($node, $key);
     }
 
-    public function getClassName()
-    {
-        $path = str_replace(array('/', DIRECTORY_SEPARATOR), '\\', $this->className);
-
-        return substr($path, strrpos('\\' . $path, '\\'));
-    }
-
     public function compile(Compiler $compiler)
     {
         //this is needed to convince PHPStorm that compileBlock receives a RootNode
         /** @var $body RootNode */
 
-        $compiler->indented("class {$this->getClassName()} extends \\{$this->baseClass}");
+        $compiler->indented("class {$this->className} extends \\{$this->baseClass}");
         $compiler->indented('{');
         $compiler->indent();
 
         $this->compileConstructor($compiler);
 
         //if this is a template which extends an other, don't generate code for the default block
-        if (!$this->hasParentTemplate()) {
+        if (!isset($this->parentTemplateName)) {
 
             //compile the main block method
             $body = $this->getChild('__main_template_block');
@@ -124,7 +117,7 @@ class ClassNode extends Node
             ->compileString($this->templateName)
             ->add(', $blocks);');
 
-        if ($this->hasParentTemplate() && $this->parentTemplateName instanceof DataNode) {
+        if (isset($this->parentTemplateName) && $this->parentTemplateName instanceof DataNode) {
             $compiler->indented('$this->setParentTemplate(')
                 ->compileNode($this->parentTemplateName)
                 ->add(');');

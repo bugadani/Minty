@@ -51,6 +51,12 @@ class StringLoader extends AbstractTemplateLoader
 
     public function getCacheKey($template)
     {
-        return $template .'_'. md5($this->templates[$template]);
+        //embedded templates are not present in the loader so they can't have a hashed suffix
+        //they also don't need one because they get recompiled with the template that uses them
+        if (isset($this->templates[$template])) {
+            $template = $template . '_' . md5($this->templates[$template]);
+        }
+
+        return $template;
     }
 }

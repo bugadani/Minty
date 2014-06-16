@@ -137,7 +137,7 @@ class Environment
         $this->loader->addLoader($loader);
     }
 
-    public function compileTemplate($template, $templateName, $class)
+    public function compileTemplate($template, $templateName)
     {
         if (!isset($this->compiler)) {
             foreach ($this->extensions as $ext) {
@@ -156,7 +156,7 @@ class Environment
         }
         //Tokenize and parse the template
         $stream = $this->tokenizer->tokenize($template);
-        $node   = $this->parser->parseTemplate($stream, $templateName, $class);
+        $node   = $this->parser->parseTemplate($stream, $templateName);
 
         //Run the Node Tree Visitors
         $this->nodeTreeTraverser->traverse($node);
@@ -170,8 +170,9 @@ class Environment
         return $this->getOption('cache') . '/' . $cacheKey . '.php';
     }
 
-    public function getTemplateClassName($cacheKey)
+    public function getTemplateClassName($template)
     {
+        $cacheKey       = $this->loader->getCacheKey($template);
         $cacheNamespace = $this->getOption('cache_namespace', '');
 
         return $cacheNamespace . '\\' . strtr($cacheKey, '/', '\\');
@@ -368,7 +369,7 @@ class Environment
         return $this->loader->load($template);
     }
 
-    private function compileIfNeeded($templateName, $class)
+    private function compileIfNeeded($templateName)
     {
         $cacheEnabled = $this->getOption('cache', false);
         if ($cacheEnabled) {
@@ -382,10 +383,10 @@ class Environment
         $template = $this->getSource($templateName);
 
         try {
-            $compiled = $this->compileTemplate($template, $templateName, $class);
+            $compiled = $this->compileTemplate($template, $templateName);
         } catch (TemplatingException $e) {
             $template = $this->getErrorTemplate($e, $templateName, $template);
-            $compiled = $this->compileTemplate($template, $templateName, $class);
+            $compiled = $this->compileTemplate($template, $templateName);
         }
         if ($cacheEnabled) {
             $this->saveCompiledTemplate($compiled, $templateName);
@@ -487,13 +488,10 @@ class Environment
             return $this->loadedTemplates[$template];
         }
 
-        $class = $this->getTemplateClassName(
-            $this->loader->getCacheKey($template)
-        );
-
-        $this->compileIfNeeded($template, $class);
+        $this->compileIfNeeded($template);
 
         /** @var $object Template */
+        $class = $this->getTemplateClassName($template);
         $object = new $class($this);
 
         $this->loadedTemplates[$template] = $object;

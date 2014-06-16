@@ -102,7 +102,7 @@ class Parser
         return $this->level === 1;
     }
 
-    public function parseTemplate(Stream $stream, $templateName, $className)
+    public function parseTemplate(Stream $stream, $templateName)
     {
         $fileNode = new FileNode();
 
@@ -110,8 +110,7 @@ class Parser
         $this->classNode = $fileNode->addChild(
             new ClassNode(
                 $this->environment,
-                $templateName,
-                $className
+                $templateName
             )
         );
         $this->classNode->addChild(
