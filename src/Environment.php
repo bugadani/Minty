@@ -22,6 +22,7 @@ use Modules\Templating\Compiler\Tag;
 use Modules\Templating\Compiler\TemplateFunction;
 use Modules\Templating\Compiler\Tokenizer;
 use Modules\Templating\TemplateLoaders\ChainLoader;
+use Modules\Templating\TemplateLoaders\ErrorTemplateLoader;
 
 class Environment
 {
@@ -104,6 +105,11 @@ class Environment
      * @var bool
      */
     private $chainLoaderUsed = false;
+
+    /**
+     * @var bool
+     */
+    private $errorTemplateLoaderLoaded = false;
 
     /**
      * @param array $options
@@ -428,14 +434,16 @@ class Environment
         //escape string delimiters in exception message
         $message = strtr($exception->getMessage(), array("'" => "\\'"));
 
-        $closingTagPrefix = $this->getOption(
-            'block_end_prefix',
-            'end'
-        );
-        $baseTemplate     = $this->getOption(
-            'error_template',
-            '__compile_error_template'
-        );
+        $closingTagPrefix = $this->getOption('block_end_prefix', 'end');
+        $baseTemplate     = $this->getOption('error_template', '__compile_error_template');
+
+        //only load the error template loader when the default error template is requested
+        if ($baseTemplate === '__compile_error_template' && !$this->errorTemplateLoaderLoaded) {
+            $this->addTemplateLoader(
+                new ErrorTemplateLoader($this)
+            );
+            $this->errorTemplateLoaderLoaded = true;
+        }
 
         //insert data into template and decorate with inheritance code
         //(error message, error line number, first displayed line number, template source)

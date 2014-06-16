@@ -46,58 +46,21 @@ class FileLoader extends AbstractTemplateLoader
             return true;
         }
 
-        if ($template === '__compile_error_template') {
-            return true;
-        }
-
         return filemtime($this->getPath($template)) < filemtime($cachePath);
     }
 
     public function exists($template)
     {
-        if ($template === '__compile_error_template') {
-            return true;
-        }
-
         return is_file($this->getPath($template));
     }
 
     public function load($template)
     {
-        if ($template === '__compile_error_template') {
-            return $this->getCompileErrorTemplate();
-        }
-
         return file_get_contents($this->getPath($template));
     }
 
     public function getCacheKey($template)
     {
         return $template;
-    }
-
-    /**
-     * @return string
-     */
-    private function getCompileErrorTemplate()
-    {
-        $closingTagPrefix = $this->environment->getOption('block_end_prefix', 'end');
-        $source           = "{block error}<h1>Failed to compile { \$templateName }</h1>
-<h2>Error message:</h2>
-<p>{\$message}</p>
-<h2>Template source:</h2>
-<pre><code><ol start=\"{\$firstLine + 1}\">
-{for \$lineNo: \$line in \$lines}
-    <li>
-    {if \$lineNo = \$errorLine}
-        <b>{\$line}</b>
-    {else}
-        {\$line}
-    {endif}
-    </li>
-{{$closingTagPrefix}for}
-</ol></code></pre>{{$closingTagPrefix}block}";
-
-        return strtr($source, array("\n" => ''));
     }
 }
