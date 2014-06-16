@@ -3,7 +3,6 @@
 namespace Modules\Templating\Test;
 
 use Modules\Templating\Environment;
-use Modules\Templating\TemplateLoader;
 use Modules\Templating\TemplateLoaders\StringLoader;
 
 abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
@@ -27,8 +26,17 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
         $this->environment->addTemplateLoader($this->stringLoader);
     }
 
+    public function tearDown()
+    {
+        unset($this->environment);
+        unset($this->stringLoader);
+    }
+
     abstract public function getTestDirectory();
 
+    /**
+     * @return Environment
+     */
     abstract public function getEnvironment();
 
     public function getTests()
