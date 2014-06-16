@@ -13,6 +13,8 @@ use Miny\Application\BaseApplication;
 use Miny\AutoLoader;
 use Miny\Factory\Container;
 use Modules\Templating\Extensions\Core;
+use Modules\Templating\Extensions\Debug;
+use Modules\Templating\Extensions\Optimizer;
 use Modules\Templating\Extensions\StandardFunctions;
 
 class Module extends \Miny\Modules\Module
@@ -73,11 +75,11 @@ class Module extends \Miny\Modules\Module
 
         $env->addExtension(new Core());
         $env->addExtension(new StandardFunctions());
-        $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Optimizer'));
+        $env->addExtension(new Optimizer());
         $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Miny'));
 
         if ($env->getOption('debug', false)) {
-            $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Debug'));
+            $env->addExtension(new Debug());
 
             if ($env->getOption('enable_node_tree_visualizer', false)) {
                 $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Visualizer'));
