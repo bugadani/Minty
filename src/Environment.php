@@ -179,7 +179,7 @@ class Environment
     {
         $cacheKey       = $this->loader->getCacheKey($template);
         $cacheNamespace = $this->getOption('cache_namespace', '');
-        $cacheKey = preg_replace('/\W+/', '_', $cacheKey);
+        $cacheKey       = preg_replace('/[^\w\\/]+/', '_', $cacheKey);
 
         return $cacheNamespace . '\\' . strtr($cacheKey, '/', '\\');
     }
@@ -338,7 +338,7 @@ class Environment
 
     public function addNodeVisitor(NodeVisitor $visitor)
     {
-        if($visitor instanceof iEnvironmentAware) {
+        if ($visitor instanceof iEnvironmentAware) {
             $visitor->setEnvironment($this);
         }
         $this->nodeVisitors[] = $visitor;
