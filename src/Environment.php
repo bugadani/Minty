@@ -427,7 +427,7 @@ class Environment
         file_put_contents($destination, $compiled);
     }
 
-    private function findFirstExistingTemplate($templates)
+    public function findFirstExistingTemplate($templates)
     {
         if (is_array($templates)) {
             foreach ($templates as $template) {

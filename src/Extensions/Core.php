@@ -533,7 +533,9 @@ function template_function_sort($data, $reverse = false)
 
 function template_function_source(Environment $environment, $template)
 {
-    return $environment->getSource($template);
+    return $environment->getSource(
+        $environment->findFirstExistingTemplate($template)
+    );
 }
 
 function template_function_spacify($string, $delimiter = ' ')
