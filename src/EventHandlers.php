@@ -9,7 +9,6 @@
 
 namespace Modules\Templating;
 
-use Closure;
 use Miny\Controller\Controller;
 use Miny\CoreEvents;
 use Miny\Factory\AbstractConfigurationTree;
@@ -197,7 +196,7 @@ class EventHandlers
      */
     private function getControllerActionAnnotations($controller, $action)
     {
-        if ($controller instanceof Closure) {
+        if ($controller instanceof \Closure) {
             return $this->annotation->readFunction($controller);
         }
 

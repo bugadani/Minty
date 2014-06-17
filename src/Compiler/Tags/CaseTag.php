@@ -9,10 +9,6 @@
 
 namespace Modules\Templating\Compiler\Tags;
 
-use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Nodes\TagNode;
-use Modules\Templating\Compiler\Parser;
-use Modules\Templating\Compiler\Stream;
 use Modules\Templating\Compiler\Tag;
 
 class CaseTag extends Tag
@@ -20,15 +16,5 @@ class CaseTag extends Tag
     public function getTag()
     {
         return 'case';
-    }
-
-    public function parse(Parser $parser, Stream $stream)
-    {
-
-    }
-
-    public function compile(Compiler $compiler, TagNode $data)
-    {
-
     }
 }

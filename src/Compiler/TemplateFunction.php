@@ -9,8 +9,6 @@
 
 namespace Modules\Templating\Compiler;
 
-use OutOfBoundsException;
-
 class TemplateFunction
 {
     /**
@@ -57,7 +55,7 @@ class TemplateFunction
     public function getOption($key)
     {
         if (!isset($this->options[$key])) {
-            throw new OutOfBoundsException("Option {$key} is not set.");
+            throw new \OutOfBoundsException("Option {$key} is not set.");
         }
 
         return $this->options[$key];

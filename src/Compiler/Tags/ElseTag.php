@@ -9,10 +9,6 @@
 
 namespace Modules\Templating\Compiler\Tags;
 
-use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Nodes\TagNode;
-use Modules\Templating\Compiler\Parser;
-use Modules\Templating\Compiler\Stream;
 use Modules\Templating\Compiler\Tag;
 
 class ElseTag extends Tag
@@ -20,14 +16,5 @@ class ElseTag extends Tag
     public function getTag()
     {
         return 'else';
-    }
-
-    public function parse(Parser $parser, Stream $stream)
-    {
-
-    }
-
-    public function compile(Compiler $compiler, TagNode $node)
-    {
     }
 }

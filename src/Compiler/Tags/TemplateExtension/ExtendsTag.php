@@ -9,8 +9,6 @@
 
 namespace Modules\Templating\Compiler\Tags\TemplateExtension;
 
-use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Nodes\TagNode;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Stream;
 use Modules\Templating\Compiler\Tag;
@@ -28,10 +26,5 @@ class ExtendsTag extends Tag
         $parser->getCurrentClassNode()->setParentTemplate(
             $parser->parseExpression($stream)
         );
-    }
-
-    public function compile(Compiler $compiler, TagNode $node)
-    {
-
     }
 }

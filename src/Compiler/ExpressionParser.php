@@ -21,7 +21,6 @@ use Modules\Templating\Compiler\Nodes\VariableNode;
 use Modules\Templating\Compiler\Operators\ConditionalOperator;
 use Modules\Templating\Compiler\Operators\PropertyAccessOperator;
 use Modules\Templating\Environment;
-use SplStack;
 
 /**
  * Expression parser is based on the Shunting Yard algorithm by Edsger W. Dijkstra
@@ -31,12 +30,12 @@ use SplStack;
 class ExpressionParser
 {
     /**
-     * @var SplStack
+     * @var \SplStack
      */
     private $operatorStack;
 
     /**
-     * @var SplStack
+     * @var \SplStack
      */
     private $operandStack;
 
@@ -98,8 +97,8 @@ class ExpressionParser
      */
     public function parse(Stream $stream)
     {
-        $this->operatorStack = new SplStack();
-        $this->operandStack  = new SplStack();
+        $this->operatorStack = new \SplStack();
+        $this->operandStack  = new \SplStack();
         $this->stream        = $stream;
 
         return $this->parseExpression(true);

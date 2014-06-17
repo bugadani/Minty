@@ -9,7 +9,6 @@
 
 namespace Modules\Templating\Extensions\Compilers;
 
-use InvalidArgumentException;
 use Modules\Templating\Compiler\Compiler;
 use Modules\Templating\Compiler\FunctionCompiler;
 use Modules\Templating\Compiler\TemplateFunction;
@@ -23,7 +22,7 @@ class DefaultCompiler extends FunctionCompiler
     public function compile(Compiler $compiler, TemplateFunction $function, array $arguments)
     {
         if (count($arguments) !== 2) {
-            throw new InvalidArgumentException('Default function needs two arguments.');
+            throw new \InvalidArgumentException('Default function needs two arguments.');
         }
         $compiler->add('(isset(')
             ->compileNode($arguments[0])

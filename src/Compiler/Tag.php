@@ -21,7 +21,11 @@ abstract class Tag
         return false;
     }
 
-    abstract public function parse(Parser $parser, Stream $stream);
+    public function parse(Parser $parser, Stream $stream)
+    {
+    }
 
-    abstract public function compile(Compiler $compiler, TagNode $data);
+    public function compile(Compiler $compiler, TagNode $data)
+    {
+    }
 }

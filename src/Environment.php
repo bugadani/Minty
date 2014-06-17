@@ -152,46 +152,9 @@ class Environment
         $this->loader->addLoader($loader);
     }
 
-    public function compileTemplate($template, $templateName)
-    {
-        if (!isset($this->compiler)) {
-            foreach ($this->extensions as $ext) {
-                foreach ($ext->getNodeVisitors() as $visitor) {
-                    $this->addNodeVisitor($visitor);
-                }
-                foreach ($ext->getTags() as $tag) {
-                    $this->addTag($tag);
-                }
-            }
-
-            $this->tokenizer         = new Tokenizer($this);
-            $this->parser            = new Parser($this, new ExpressionParser($this));
-            $this->nodeTreeTraverser = new NodeTreeTraverser($this->nodeVisitors);
-            $this->compiler          = new Compiler($this);
-        }
-        //Tokenize and parse the template
-        $stream = $this->tokenizer->tokenize($template);
-        $node   = $this->parser->parseTemplate($stream, $templateName);
-
-        //Run the Node Tree Visitors
-        $this->nodeTreeTraverser->traverse($node);
-
-        //Compile the template
-        return $this->compiler->compile($node);
-    }
-
     public function getCachePath($cacheKey)
     {
         return $this->getOption('cache') . '/' . $cacheKey . '.php';
-    }
-
-    public function getTemplateClassName($template)
-    {
-        $cacheKey       = $this->loader->getCacheKey($template);
-        $cacheNamespace = $this->getOption('cache_namespace', '');
-        $cacheKey       = preg_replace('/[^\w\\/]+/', '_', $cacheKey);
-
-        return $cacheNamespace . '\\' . strtr($cacheKey, '/', '\\');
     }
 
     public function addGlobalVariable($name, $value)
@@ -285,6 +248,28 @@ class Environment
     }
 
     /**
+     * @param string $class
+     *
+     * @return FunctionCompiler
+     */
+    public function getFunctionCompiler($class)
+    {
+        if (!isset($this->functionCompilers[$class])) {
+            $this->functionCompilers[$class] = new $class;
+        }
+
+        return $this->functionCompilers[$class];
+    }
+
+    public function addNodeVisitor(NodeVisitor $visitor)
+    {
+        if ($visitor instanceof iEnvironmentAware) {
+            $visitor->setEnvironment($this);
+        }
+        $this->nodeVisitors[] = $visitor;
+    }
+
+    /**
      * @return OperatorCollection
      */
     public function getBinaryOperators()
@@ -320,51 +305,6 @@ class Environment
         return $this->unaryPostfixOperators;
     }
 
-    /**
-     * @return string[]
-     */
-    public function getOperatorSymbols()
-    {
-        return array_merge(
-            $this->getBinaryOperators()->getSymbols(),
-            $this->getUnaryPrefixOperators()->getSymbols(),
-            $this->getUnaryPostfixOperators()->getSymbols()
-        );
-    }
-
-    /**
-     * @param string $class
-     *
-     * @return FunctionCompiler
-     */
-    public function getFunctionCompiler($class)
-    {
-        if (!isset($this->functionCompilers[$class])) {
-            $this->functionCompilers[$class] = new $class;
-        }
-
-        return $this->functionCompilers[$class];
-    }
-
-    public function addNodeVisitor(NodeVisitor $visitor)
-    {
-        if ($visitor instanceof iEnvironmentAware) {
-            $visitor->setEnvironment($this);
-        }
-        $this->nodeVisitors[] = $visitor;
-    }
-
-    public function createContext($variables = array())
-    {
-        if ($variables instanceof Context) {
-            return $variables;
-        }
-        $context = new Context($this, $variables);
-        $context->add($this->getOption('global_variables', array()));
-
-        return $context;
-    }
-
     private function initOperators()
     {
         $this->binaryOperators       = new OperatorCollection();
@@ -379,6 +319,18 @@ class Environment
     }
 
     /**
+     * @return string[]
+     */
+    public function getOperatorSymbols()
+    {
+        return array_merge(
+            $this->getBinaryOperators()->getSymbols(),
+            $this->getUnaryPrefixOperators()->getSymbols(),
+            $this->getUnaryPostfixOperators()->getSymbols()
+        );
+    }
+
+    /**
      * @param string|array $template The template name
      *
      * @return string
@@ -386,6 +338,34 @@ class Environment
     public function getSource($template)
     {
         return $this->loader->load($template);
+    }
+
+    public function compileTemplate($template, $templateName)
+    {
+        if (!isset($this->compiler)) {
+            foreach ($this->extensions as $ext) {
+                foreach ($ext->getNodeVisitors() as $visitor) {
+                    $this->addNodeVisitor($visitor);
+                }
+                foreach ($ext->getTags() as $tag) {
+                    $this->addTag($tag);
+                }
+            }
+
+            $this->tokenizer         = new Tokenizer($this);
+            $this->parser            = new Parser($this, new ExpressionParser($this));
+            $this->nodeTreeTraverser = new NodeTreeTraverser($this->nodeVisitors);
+            $this->compiler          = new Compiler($this);
+        }
+        //Tokenize and parse the template
+        $stream = $this->tokenizer->tokenize($template);
+        $node   = $this->parser->parseTemplate($stream, $templateName);
+
+        //Run the Node Tree Visitors
+        $this->nodeTreeTraverser->traverse($node);
+
+        //Compile the template
+        return $this->compiler->compile($node);
     }
 
     private function compileIfNeeded($templateName)
@@ -443,11 +423,19 @@ class Environment
         throw new TemplateNotFoundException($templates);
     }
 
+    public function getTemplateClassName($template)
+    {
+        $cacheKey       = $this->loader->getCacheKey($template);
+        $cacheNamespace = $this->getOption('cache_namespace', '');
+        $cacheKey       = preg_replace('/[^\w\\/]+/', '_', $cacheKey);
+
+        return $cacheNamespace . '\\' . strtr($cacheKey, '/', '\\');
+    }
+
     /**
      * @param $template
      *
      * @return Template
-     * @throws \RuntimeException
      */
     public function load($template)
     {
@@ -458,13 +446,23 @@ class Environment
 
         $this->compileIfNeeded($template);
 
-        /** @var $object Template */
         $class  = $this->getTemplateClassName($template);
         $object = new $class($this);
 
         $this->loadedTemplates[$template] = $object;
 
         return $object;
+    }
+
+    public function createContext($variables = array())
+    {
+        if ($variables instanceof Context) {
+            return $variables;
+        }
+        $context = new Context($this, $variables);
+        $context->add($this->getOption('global_variables', array()));
+
+        return $context;
     }
 
     public function render($template, $variables = array())

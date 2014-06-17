@@ -9,7 +9,6 @@
 
 namespace Modules\Templating\Extensions;
 
-use InvalidArgumentException;
 use Modules\Templating\Compiler\NodeVisitors\SafeOutputVisitor;
 use Modules\Templating\Compiler\Operator;
 use Modules\Templating\Compiler\Operators\ArithmeticOperators\AdditionOperator;
@@ -84,7 +83,6 @@ use Modules\Templating\Compiler\TemplateFunction;
 use Modules\Templating\Context;
 use Modules\Templating\Environment;
 use Modules\Templating\Extension;
-use Traversable;
 
 class Core extends Extension
 {
@@ -286,14 +284,14 @@ class Core extends Extension
  */
 function traversableToArray($data)
 {
-    if ($data instanceof Traversable) {
+    if ($data instanceof \Traversable) {
         return iterator_to_array($data);
     }
     if (is_array($data)) {
         return $data;
     }
 
-    throw new InvalidArgumentException('Expected an array or traversable object.');
+    throw new \InvalidArgumentException('Expected an array or traversable object.');
 }
 
 /* Template functions */
@@ -417,7 +415,7 @@ function template_function_length($data)
     if (is_array($data) || $data instanceof \Countable) {
         return count($data);
     }
-    throw new InvalidArgumentException('Reverse expects an array, a string or a Countable instance');
+    throw new \InvalidArgumentException('Reverse expects an array, a string or a Countable instance');
 }
 
 function template_function_linkTo($label, $url, array $attrs = array())
@@ -436,8 +434,8 @@ function template_function_match($string, $pattern)
 
 function template_function_pluck($array, $key)
 {
-    if (!is_array($array) && !$array instanceof Traversable) {
-        throw new InvalidArgumentException('Pluck expects a two-dimensional array as the first argument.');
+    if (!is_array($array) && !$array instanceof \Traversable) {
+        throw new \InvalidArgumentException('Pluck expects a two-dimensional array as the first argument.');
     }
     $return = array();
 
@@ -541,7 +539,7 @@ function template_function_source(Environment $environment, $template)
 function template_function_spacify($string, $delimiter = ' ')
 {
     if (!is_string($string)) {
-        throw new InvalidArgumentException('Spacify expects a string.');
+        throw new \InvalidArgumentException('Spacify expects a string.');
     }
 
     return implode($delimiter, str_split($string));
@@ -550,7 +548,7 @@ function template_function_spacify($string, $delimiter = ' ')
 function template_function_split($string, $delimiter = '', $limit = null)
 {
     if (!is_string($string)) {
-        throw new InvalidArgumentException('Split expects a string');
+        throw new \InvalidArgumentException('Split expects a string');
     }
     if ($delimiter === '') {
         return str_split($string, $limit ? : 1);
@@ -579,7 +577,7 @@ function template_function_truncate($string, $length, $ellipsis = '...')
 
 function template_function_urlEncode($data, $raw = false)
 {
-    if ($data instanceof Traversable) {
+    if ($data instanceof \Traversable) {
         $data = iterator_to_array($data);
     }
     if (is_array($data)) {
@@ -596,21 +594,21 @@ function template_function_without($data, $without)
 {
     if (is_string($data)) {
         if (!is_string($without) && !is_array($without)) {
-            if (!$without instanceof Traversable) {
-                throw new InvalidArgumentException('Without expects string or array arguments.');
+            if (!$without instanceof \Traversable) {
+                throw new \InvalidArgumentException('Without expects string or array arguments.');
             }
             $without = iterator_to_array($without);
         }
 
         return str_replace($without, '', $data);
     }
-    if ($data instanceof Traversable) {
+    if ($data instanceof \Traversable) {
         $data = iterator_to_array($data);
     } elseif (!is_array($data)) {
-        throw new InvalidArgumentException('Without expects string or array arguments.');
+        throw new \InvalidArgumentException('Without expects string or array arguments.');
     }
     if (!is_array($without)) {
-        if ($without instanceof Traversable) {
+        if ($without instanceof \Traversable) {
             $without = iterator_to_array($without);
         } else {
             $without = array($without);

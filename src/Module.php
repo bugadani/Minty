@@ -15,7 +15,6 @@ use Miny\Factory\Container;
 use Modules\Templating\Extensions\Core;
 use Modules\Templating\Extensions\Debug;
 use Modules\Templating\Extensions\Optimizer;
-use Modules\Templating\Extensions\StandardFunctions;
 
 class Module extends \Miny\Modules\Module
 {
