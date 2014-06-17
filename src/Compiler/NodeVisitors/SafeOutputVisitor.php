@@ -10,7 +10,9 @@
 namespace Modules\Templating\Compiler\NodeVisitors;
 
 use Modules\Templating\Compiler\Node;
+use Modules\Templating\Compiler\Nodes\DataNode;
 use Modules\Templating\Compiler\Nodes\FunctionNode;
+use Modules\Templating\Compiler\Nodes\IdentifierNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Nodes\PrintNode;
 use Modules\Templating\Compiler\Nodes\VariableNode;
@@ -38,7 +40,7 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
 
     public function setEnvironment(Environment $environment)
     {
-        $this->autoescape  = $environment->getOption('autoescape', true);
+        $this->autoescape  = $environment->getOption('autoescape', 1);
         $this->environment = $environment;
     }
 
@@ -76,10 +78,22 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
     {
         if ($this->inTag) {
             if ($this->isPrintNode($node)) {
-                $node->addData(
-                    'is_safe',
-                    !($this->variableAccessed || $this->unsafeFunctionCalled)
-                );
+                if ($this->autoescape) {
+                    $node->addData(
+                        'is_safe',
+                        !($this->variableAccessed || $this->unsafeFunctionCalled)
+                    );
+                    if ($this->autoescape === 1) {
+                        $filterFor = new OperatorNode(
+                            $this->environment->getBinaryOperators()->getOperator('.')
+                        );
+                        $filterFor->addChild(new VariableNode('_self'), OperatorNode::OPERAND_LEFT);
+                        $filterFor->addChild(new IdentifierNode('extension'), OperatorNode::OPERAND_RIGHT);
+                    } else {
+                        $filterFor = new DataNode($this->autoescape);
+                    }
+                    $node->addChild($filterFor, 'filter_for');
+                }
                 $this->variableAccessed     = false;
                 $this->unsafeFunctionCalled = false;
                 $this->inTag                = false;

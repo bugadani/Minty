@@ -27,7 +27,7 @@ class Module extends \Miny\Modules\Module
                 'global_variables' => array(),
                 'cache_namespace'  => 'Application\\Templating\\Cached',
                 'cache'            => 'templates/compiled',
-                'autoescape'       => true,
+                'autoescape'       => 1,
                 'fallback_tag'     => 'print',
                 'debug'            => $this->application->isDeveloperEnvironment()
             ),

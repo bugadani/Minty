@@ -24,7 +24,7 @@ class SelfAccessOptimizer extends NodeVisitor
 
     public function getPriority()
     {
-        return 1;
+        return 2;
     }
 
     public function enterNode(Node $node)

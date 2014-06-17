@@ -1,0 +1,16 @@
+--TEST--
+Test that the automatic filtering based on template extension works. The default strategy is html
+--TEMPLATE--
+{ $foo }
+{ include 'template.json' }
+{ include 'template.html' }
+--TEMPLATE template.html--
+{ $foo }
+--TEMPLATE template.json--
+{ $foo }
+--DATA--
+array('foo' => '<>{}')
+--EXPECT--
+&lt;&gt;{}
+"<>{}"
+&lt;&gt;{}

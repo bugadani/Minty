@@ -81,6 +81,8 @@ use Modules\Templating\Compiler\Tags\TemplateExtension\ExtendsTag;
 use Modules\Templating\Compiler\Tags\TemplateExtension\IncludeTag;
 use Modules\Templating\Compiler\Tags\TemplateExtension\ParentTag;
 use Modules\Templating\Compiler\TemplateFunction;
+use Modules\Templating\Context;
+use Modules\Templating\Environment;
 use Modules\Templating\Extension;
 use Traversable;
 
@@ -242,12 +244,11 @@ function template_function_filter($data, $for = 'html')
         return $data;
     }
     switch ($for) {
+        default:
         case 'html':
             return htmlspecialchars($data);
         case 'json':
             return json_encode($data);
-        default:
-            throw new \BadMethodCallException("Filter is not found for {$for}");
     }
 }
 

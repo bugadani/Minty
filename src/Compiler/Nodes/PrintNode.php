@@ -21,7 +21,9 @@ class PrintNode extends Node
         if (!$this->getData('is_safe')) {
             $arguments = array($expression);
 
-            if($this->hasData('filter_for')) {
+            if ($this->hasChild('filter_for')) {
+                $arguments[] = $this->getChild('filter_for');
+            } elseif($this->hasData('filter_for')) {
                 $arguments[] = $this->getData('filter_for');
             }
 
