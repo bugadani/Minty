@@ -1,10 +1,11 @@
 --TEST--
-Test that the automatic filtering based on template extension works. The default strategy is html
+Test that the automatic filtering can be nested
 --TEMPLATE--
 { $foo }
-{ include 'template.json' }
-{ include 'template.html' }
-{ embed 'template.json' }{ endembed }
+{ autofilter 'json' }{ $foo }
+{ autofilter off }{ $foo }{ endautofilter }
+{ $foo }{ endautofilter }
+{ $foo }
 --TEMPLATE template.html--
 { $foo }
 --TEMPLATE template.json--
@@ -14,5 +15,6 @@ array('foo' => '<>{}')
 --EXPECT--
 &lt;&gt;{}
 "<>{}"
-&lt;&gt;{}
+<>{}
 "<>{}"
+&lt;&gt;{}
