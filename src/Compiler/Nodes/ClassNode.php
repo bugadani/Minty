@@ -41,6 +41,11 @@ class ClassNode extends Node
         $this->parentTemplateName = $parentClass;
     }
 
+    public function getTemplateName()
+    {
+        return $this->templateName;
+    }
+
     public function getNameSpace()
     {
         return $this->namespace;

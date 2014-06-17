@@ -10,6 +10,7 @@
 namespace Modules\Templating\Compiler\NodeVisitors;
 
 use Modules\Templating\Compiler\Node;
+use Modules\Templating\Compiler\Nodes\ClassNode;
 use Modules\Templating\Compiler\Nodes\DataNode;
 use Modules\Templating\Compiler\Nodes\FunctionNode;
 use Modules\Templating\Compiler\Nodes\IdentifierNode;
@@ -34,6 +35,7 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
     private $isSafe;
     private $autofilter;
     private $autofilterStack = array();
+    private $extension;
 
     public function getPriority()
     {
@@ -48,7 +50,18 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
 
     public function enterNode(Node $node)
     {
-        if ($this->inTag) {
+        if ($node instanceof ClassNode) {
+            $template = $node->getTemplateName();
+            $dot      = strrpos($template, '.');
+            if ($dot !== false) {
+                $this->extension = substr($template, $dot + 1);
+            } else {
+                $this->extension = $this->environment->getOption(
+                    'default_autofilter_strategy',
+                    'html'
+                );
+            }
+        } elseif ($this->inTag) {
             if (!$this->autofilter) {
                 return;
             }
@@ -66,7 +79,8 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
             $this->isSafe = true;
         } elseif ($this->isAutofilterTag($node)) {
             $this->autofilterStack[] = $this->autofilter;
-            $this->autofilter        = $node->getData('strategy');
+            $strategy                = $node->getData('strategy');
+            $this->autofilter        = $strategy === 1 ? $this->extension : $strategy;
         }
     }
 
@@ -172,8 +186,12 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
             $function = $this->environment->getFunction(
                 $node->getChild(OperatorNode::OPERAND_RIGHT)->getName()
             );
+            $safeFor = $function->getOption('is_safe');
 
-            return $function->getOption('is_safe');
+            if(is_array($safeFor)) {
+                $safeFor = in_array($this->autofilter, $safeFor);
+            }
+            return $safeFor === true || $safeFor === $this->autofilter;
         }
 
         return true;
