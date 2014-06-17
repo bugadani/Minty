@@ -74,10 +74,7 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
     {
         if ($this->inTag) {
             if ($this->isPrintNode($node)) {
-                $node->addData(
-                    'is_safe',
-                    !$this->autofilter || $this->isSafe
-                );
+                $node->addData('is_safe', !$this->autofilter || $this->isSafe);
                 if ($this->autofilter) {
                     if ($this->autofilter === 1) {
                         $filterFor = $this->createTemplateExtensionNode();
