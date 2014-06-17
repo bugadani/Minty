@@ -394,7 +394,7 @@ class Environment
         try {
             $compiled = $this->compileTemplate($template, $templateName);
         } catch (TemplatingException $e) {
-            $template = $this->getErrorTemplate($e, $templateName, $template);
+            $template = $this->getErrorTemplate($e, $template);
             $compiled = $this->compileTemplate($template, $templateName);
         }
         if ($cacheEnabled) {
@@ -421,7 +421,7 @@ class Environment
         file_put_contents($destination, $compiled);
     }
 
-    private function getErrorTemplate(TemplatingException $exception, $template, $source)
+    private function getErrorTemplate(TemplatingException $exception, $source)
     {
         $errLine     = $exception->getSourceLine() - 1;
         $firstLine   = max($errLine - 3, 0);
@@ -460,7 +460,7 @@ class Environment
 
         return "{extends '{$baseTemplate}'}" .
         "{block error}" .
-        "{\$templateName: '{$template}'}" .
+        "{\$templateName: \$_self.template}" .
         "{\$message: '{$message}'}" .
         "{\$lines: [{$lineArray}]}" .
         "{\$errorLine: {$errLine}}" .
