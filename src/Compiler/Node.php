@@ -100,12 +100,8 @@ abstract class Node
         }
     }
 
-    public function getData($key = null)
+    public function getData($key)
     {
-        if ($key === null) {
-            return $this->data;
-        }
-
         return $this->data[$key];
     }
 

@@ -32,14 +32,13 @@ class ForTag extends Tag
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        $data = $node->getData();
-        if ($data['save_temp_var']) {
+        if ($node->getData('save_temp_var')) {
             $compiler
                 ->indented('if (isset($temp))')
                 ->add(' {')
                 ->indent();
 
-            if ($data['create_stack']) {
+            if ($node->getData('create_stack')) {
                 $compiler->indented('$stack = array();');
             }
 
@@ -92,11 +91,11 @@ class ForTag extends Tag
                 ->outdent()
                 ->indented('}');
         }
-        if ($data['save_temp_var']) {
+        if ($node->getData('save_temp_var')) {
             $compiler->indented('if(isset($stack)) {');
             $compiler->indent();
             $compiler->indented('$temp = array_pop($stack);');
-            if ($data['create_stack']) {
+            if ($node->getData('create_stack')) {
                 $compiler->indented('unset($stack);');
             }
             $compiler->outdent();
