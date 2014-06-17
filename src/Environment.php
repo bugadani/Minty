@@ -112,13 +112,23 @@ class Environment
     private $errorTemplateLoaderLoaded = false;
 
     /**
+     * @var string
+     */
+    private $errorTemplate;
+
+    /**
      * @param AbstractTemplateLoader $loader
      * @param array                  $options
      */
     public function __construct(AbstractTemplateLoader $loader, array $options = array())
     {
         $this->addTemplateLoader($loader);
-        $this->options = $options;
+        $this->options       = $options;
+        $this->errorTemplate = $this->getOption('error_template', '__compile_error_template');
+        if ($this->errorTemplate !== '__compile_error_template') {
+            //don't load the built-in error template loader
+            $this->errorTemplateLoaderLoaded = true;
+        }
     }
 
     public function addTemplateLoader(AbstractTemplateLoader $loader)
@@ -388,10 +398,11 @@ class Environment
             }
         }
 
-        //Read the template
-        $template = $this->getSource($templateName);
+        $compiled = $this->compileTemplate(
+            $this->getSource($templateName),
+            $templateName
+        );
 
-        $compiled = $this->compileTemplate($template, $templateName);
         if ($cacheEnabled) {
             $this->saveCompiledTemplate($compiled, $templateName);
         } else {
@@ -464,14 +475,13 @@ class Environment
                 $this->createContext($variables)
             );
         } catch (TemplatingException $e) {
-            $errorTemplate = $this->getOption('error_template', '__compile_error_template');
-            if ($errorTemplate === '__compile_error_template' && !$this->errorTemplateLoaderLoaded) {
+            if (!$this->errorTemplateLoaderLoaded) {
                 $this->addTemplateLoader(
                     new ErrorTemplateLoader($this)
                 );
                 $this->errorTemplateLoaderLoaded = true;
             }
-            $object = $this->load($errorTemplate);
+            $object = $this->load($this->errorTemplate);
             $object->displayTemplate(
                 $this->createContext(
                     array(
