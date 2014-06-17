@@ -4,6 +4,7 @@ Test that the automatic filtering based on template extension works. The default
 { $foo }
 { include 'template.json' }
 { include 'template.html' }
+{ embed 'template.json' }{ endembed }
 --TEMPLATE template.html--
 { $foo }
 --TEMPLATE template.json--
@@ -14,3 +15,4 @@ array('foo' => '<>{}')
 &lt;&gt;{}
 "<>{}"
 &lt;&gt;{}
+"<>{}"
