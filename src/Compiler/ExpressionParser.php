@@ -19,6 +19,7 @@ use Modules\Templating\Compiler\Nodes\IdentifierNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Nodes\VariableNode;
 use Modules\Templating\Compiler\Operators\ConditionalOperator;
+use Modules\Templating\Compiler\Operators\PropertyAccessOperator;
 use Modules\Templating\Environment;
 use SplStack;
 
@@ -127,6 +128,12 @@ class ExpressionParser
                 $identifier,
                 $this->parseArgumentList()
             );
+
+            $lastOperator = $this->operatorStack->top();
+            if ($lastOperator instanceof PropertyAccessOperator) {
+                $this->operatorStack->pop();
+                $node->setObject($this->operandStack->pop());
+            }
         } else {
             $node = new IdentifierNode($identifier);
         }

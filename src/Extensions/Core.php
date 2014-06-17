@@ -10,6 +10,8 @@
 namespace Modules\Templating\Extensions;
 
 use InvalidArgumentException;
+use Modules\Templating\Compiler\NodeVisitor;
+use Modules\Templating\Compiler\NodeVisitors\SafeOutputVisitor;
 use Modules\Templating\Compiler\Operator;
 use Modules\Templating\Compiler\Operators\ArithmeticOperators\AdditionOperator;
 use Modules\Templating\Compiler\Operators\ArithmeticOperators\DivisionOperator;
@@ -185,6 +187,13 @@ class Core extends Extension
             new ParentTag(),
             new PrintTag(),
             new SwitchTag()
+        );
+    }
+
+    public function getNodeVisitors()
+    {
+        return array(
+            new SafeOutputVisitor()
         );
     }
 

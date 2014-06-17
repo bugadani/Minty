@@ -16,6 +16,7 @@ use Modules\Templating\Compiler\ExpressionParser;
 use Modules\Templating\Compiler\FunctionCompiler;
 use Modules\Templating\Compiler\NodeTreeTraverser;
 use Modules\Templating\Compiler\NodeVisitor;
+use Modules\Templating\Compiler\NodeVisitors\EnvironmentAwareNodeVisitor;
 use Modules\Templating\Compiler\OperatorCollection;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Tag;
@@ -332,6 +333,9 @@ class Environment
 
     public function addNodeVisitor(NodeVisitor $visitor)
     {
+        if($visitor instanceof EnvironmentAwareNodeVisitor) {
+            $visitor->setEnvironment($this);
+        }
         $this->nodeVisitors[] = $visitor;
     }
 
