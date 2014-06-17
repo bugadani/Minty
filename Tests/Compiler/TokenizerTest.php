@@ -15,10 +15,19 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
      * @var Environment
      */
     private $environment;
+    private $mockLoader;
 
     public function setUp()
     {
-        $mockEnv = new Environment(array('fallback_tag' => 'fallback'));
+        $this->mockLoader = $this->getMockForAbstractClass(
+            '\\Modules\\Templating\\AbstractTemplateLoader'
+        );
+
+        $this->mockLoader->expects($this->any())
+            ->method('getCacheKey')
+            ->will($this->returnArgument(0));
+
+        $mockEnv = new Environment($this->mockLoader, array('fallback_tag' => 'fallback'));
 
         $testTag = $this->getMockBuilder('\\Modules\\Templating\\Compiler\\Tag')
             ->getMockForAbstractClass();
@@ -116,7 +125,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     public function testTokenizerAcceptsCustomBlockClosingTagPrefix()
     {
-        $env       = new Environment(array(
+        $env       = new Environment($this->mockLoader, array(
             'block_end_prefix' => '/'
         ));
         $tokenizer = new Tokenizer($env);

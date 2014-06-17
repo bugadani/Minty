@@ -8,6 +8,7 @@ use Modules\Templating\Compiler\Nodes\FunctionNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Nodes\VariableNode;
 use Modules\Templating\Environment;
+use Modules\Templating\TemplateLoaders\StringLoader;
 
 class ExpressionParserTest extends \PHPUnit_Framework_TestCase
 {
@@ -24,7 +25,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->env = new Environment();
+        $this->env = new Environment(new StringLoader());
 
         $this->plusOperator = $this->getMockBuilder(
             '\\Modules\\Templating\\Compiler\\Operator'

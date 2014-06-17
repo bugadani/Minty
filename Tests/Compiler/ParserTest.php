@@ -3,6 +3,7 @@
 namespace Modules\Templating\Compiler;
 
 use Modules\Templating\Environment;
+use Modules\Templating\TemplateLoaders\StringLoader;
 
 class ParserTest extends \PHPUnit_Framework_TestCase
 {
@@ -37,8 +38,11 @@ class ParserTest extends \PHPUnit_Framework_TestCase
             '\\Modules\\Templating\\AbstractTemplateLoader'
         );
 
-        $this->env = new Environment();
-        $this->env->addTemplateLoader($mockLoader);
+        $mockLoader->expects($this->any())
+            ->method('getCacheKey')
+            ->will($this->returnArgument(0));
+
+        $this->env = new Environment($mockLoader);
 
         $this->expressionParserMock = $this->getMockBuilder(
             '\\Modules\\Templating\\Compiler\\ExpressionParser'

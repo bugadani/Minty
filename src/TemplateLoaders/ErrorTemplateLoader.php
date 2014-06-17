@@ -13,13 +13,14 @@ use Modules\Templating\Environment;
 
 class ErrorTemplateLoader extends StringLoader
 {
-    public function __construct(Environment $env)
+
+    public function setEnvironment(Environment $environment)
     {
-        parent::__construct($env);
+        parent::setEnvironment($environment);
         $this->addTemplate(
             '__compile_error_template',
             $this->getCompileErrorTemplate(
-                $env->getOption('block_end_prefix', 'end')
+                $environment->getOption('block_end_prefix', 'end')
             )
         );
     }

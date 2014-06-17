@@ -14,11 +14,17 @@ use Modules\Templating\Compiler\Nodes\FunctionNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Nodes\PrintNode;
 use Modules\Templating\Compiler\Nodes\VariableNode;
+use Modules\Templating\Compiler\NodeVisitor;
 use Modules\Templating\Compiler\Operators\FilterOperator;
 use Modules\Templating\Environment;
+use Modules\Templating\iEnvironmentAware;
 
-class SafeOutputVisitor extends EnvironmentAwareNodeVisitor
+class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
 {
+    /**
+     * @var Environment
+     */
+    private $environment;
     private $inTag = false;
     private $variableAccessed = false;
     private $unsafeFunctionCalled = false;
@@ -32,8 +38,8 @@ class SafeOutputVisitor extends EnvironmentAwareNodeVisitor
 
     public function setEnvironment(Environment $environment)
     {
-        $this->autoescape = $environment->getOption('autoescape', true);
-        parent::setEnvironment($environment);
+        $this->autoescape  = $environment->getOption('autoescape', true);
+        $this->environment = $environment;
     }
 
     public function enterNode(Node $node)
@@ -42,10 +48,9 @@ class SafeOutputVisitor extends EnvironmentAwareNodeVisitor
             if (!$this->autoescape) {
                 return;
             }
-            $environment = $this->getEnvironment();
             if ($this->isFilterOperator($node)) {
                 if ($this->functionLevel++ === 0) {
-                    $function = $environment->getFunction(
+                    $function = $this->environment->getFunction(
                         $node->getChild(OperatorNode::OPERAND_RIGHT)->getName()
                     );
                     $this->unsafeFunctionCalled |= !$function->getOption('is_safe');
@@ -55,7 +60,7 @@ class SafeOutputVisitor extends EnvironmentAwareNodeVisitor
                     if ($node->getObject()) {
                         $this->unsafeFunctionCalled = true;
                     } else {
-                        $function = $environment->getFunction($node->getName());
+                        $function = $this->environment->getFunction($node->getName());
                         $this->unsafeFunctionCalled |= !$function->getOption('is_safe');
                     }
                 }

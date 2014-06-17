@@ -11,6 +11,7 @@ namespace Modules\Templating\IntegrationTests;
 use Modules\Templating\Environment;
 use Modules\Templating\Extensions\Core;
 use Modules\Templating\Extensions\Optimizer;
+use Modules\Templating\TemplateLoaders\StringLoader;
 use Modules\Templating\Test\IntegrationTestCase;
 
 class OptimizerIntegrationTest extends IntegrationTestCase
@@ -20,9 +21,9 @@ class OptimizerIntegrationTest extends IntegrationTestCase
         return __DIR__ . '/fixtures';
     }
 
-    public function getEnvironment()
+    public function getEnvironment(StringLoader $loader)
     {
-        $env = new Environment(array(
+        $env = new Environment($loader, array(
             'fallback_tag' => 'print'
         ));
         $env->addExtension(new Core());

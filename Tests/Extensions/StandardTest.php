@@ -13,9 +13,15 @@ class StandardTest extends \PHPUnit_Framework_TestCase
      */
     private $env;
 
+    /**
+     * @var StringLoader
+     */
+    private $stringLoader;
+
     public function setUp()
     {
-        $this->env = new Environment();
+        $this->stringLoader = new StringLoader();
+        $this->env = new Environment($this->stringLoader);
         $this->env->addExtension(
             new StandardFunctions()
         );
@@ -353,10 +359,8 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
     public function testSource()
     {
-        $loader = new StringLoader($this->env);
+        $loader = $this->stringLoader;
         $loader->addTemplate('foo', 'bar');
-
-        $this->env->addTemplateLoader($loader);
 
         $this->assertEquals('bar', template_function_source($this->env, 'foo'));
     }

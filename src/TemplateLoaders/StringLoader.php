@@ -11,8 +11,9 @@ namespace Modules\Templating\TemplateLoaders;
 
 use Modules\Templating\AbstractTemplateLoader;
 use Modules\Templating\Environment;
+use Modules\Templating\iEnvironmentAware;
 
-class StringLoader extends AbstractTemplateLoader
+class StringLoader extends AbstractTemplateLoader implements iEnvironmentAware
 {
     /**
      * @var Environment
@@ -20,7 +21,7 @@ class StringLoader extends AbstractTemplateLoader
     private $environment;
     private $templates = array();
 
-    public function __construct(Environment $environment)
+    public function setEnvironment(Environment $environment)
     {
         $this->environment = $environment;
     }

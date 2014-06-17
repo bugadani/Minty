@@ -113,15 +113,20 @@ class Environment
     private $errorTemplateLoaderLoaded = false;
 
     /**
-     * @param array $options
+     * @param AbstractTemplateLoader $loader
+     * @param array                  $options
      */
-    public function __construct(array $options = array())
+    public function __construct(AbstractTemplateLoader $loader, array $options = array())
     {
+        $this->addTemplateLoader($loader);
         $this->options = $options;
     }
 
     public function addTemplateLoader(AbstractTemplateLoader $loader)
     {
+        if ($loader instanceof iEnvironmentAware) {
+            $loader->setEnvironment($this);
+        }
         if (!$this->chainLoaderUsed) {
             if (!isset($this->loader)) {
                 $this->loader          = $loader;
@@ -333,7 +338,7 @@ class Environment
 
     public function addNodeVisitor(NodeVisitor $visitor)
     {
-        if($visitor instanceof EnvironmentAwareNodeVisitor) {
+        if($visitor instanceof iEnvironmentAware) {
             $visitor->setEnvironment($this);
         }
         $this->nodeVisitors[] = $visitor;

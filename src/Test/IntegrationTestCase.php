@@ -21,9 +21,8 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->environment  = $this->getEnvironment();
-        $this->stringLoader = new StringLoader($this->environment);
-        $this->environment->addTemplateLoader($this->stringLoader);
+        $this->stringLoader = new StringLoader();
+        $this->environment  = $this->getEnvironment($this->stringLoader);
     }
 
     public function tearDown()
@@ -35,9 +34,11 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
     abstract public function getTestDirectory();
 
     /**
+     * @param StringLoader $loader
+     *
      * @return Environment
      */
-    abstract public function getEnvironment();
+    abstract public function getEnvironment(StringLoader $loader);
 
     public function getTests()
     {

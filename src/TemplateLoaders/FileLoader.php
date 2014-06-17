@@ -11,25 +11,31 @@ namespace Modules\Templating\TemplateLoaders;
 
 use Modules\Templating\AbstractTemplateLoader;
 use Modules\Templating\Environment;
+use Modules\Templating\iEnvironmentAware;
 
-class FileLoader extends AbstractTemplateLoader
+class FileLoader extends AbstractTemplateLoader implements iEnvironmentAware
 {
     /**
      * @var Environment
      */
     private $environment;
+    private $root;
+    private $extension;
 
-    public function __construct(Environment $environment)
+    public function __construct($root, $extension)
+    {
+        $this->root      = realpath($root);
+        $this->extension = $extension;
+    }
+
+    public function setEnvironment(Environment $environment)
     {
         $this->environment = $environment;
     }
 
     private function getPath($template)
     {
-        $directory = $this->environment->getOption('template_directory', 'templates');
-        $extension = $this->environment->getOption('template_extension', 'tpl');
-
-        return "{$directory}/{$template}.{$extension}";
+        return "{$this->root}/{$template}.{$this->extension}";
     }
 
     public function isCacheFresh($template)
@@ -40,10 +46,6 @@ class FileLoader extends AbstractTemplateLoader
 
         if (!is_file($cachePath)) {
             return false;
-        }
-
-        if (!$this->environment->getOption('debug', false)) {
-            return true;
         }
 
         return filemtime($this->getPath($template)) < filemtime($cachePath);

@@ -23,7 +23,7 @@ class Module extends \Miny\Modules\Module
     public function defaultConfiguration()
     {
         return array(
-            'options'         => array(
+            'options'                    => array(
                 'global_variables' => array(),
                 'cache_namespace'  => 'Application\\Templating\\Cached',
                 'cache'            => 'templates/compiled',
@@ -31,7 +31,11 @@ class Module extends \Miny\Modules\Module
                 'fallback_tag'     => 'print',
                 'debug'            => $this->application->isDeveloperEnvironment()
             ),
-            'template_loader' => __NAMESPACE__ . '\\TemplateLoaders\\FileLoader'
+            'template_loader'            => __NAMESPACE__ . '\\TemplateLoaders\\FileLoader',
+            'template_loader_parameters' => array(
+                '{@root}/templates',
+                'tpl'
+            )
         );
     }
 
@@ -54,6 +58,10 @@ class Module extends \Miny\Modules\Module
             __NAMESPACE__ . '\\AbstractTemplateLoader',
             $this->getConfiguration('template_loader')
         );
+        $container->setConstructorArguments(
+            $this->getConfiguration('template_loader'),
+            $this->getConfiguration('template_loader_parameters')
+        );
     }
 
     /**
@@ -65,13 +73,14 @@ class Module extends \Miny\Modules\Module
      */
     public function setupEnvironment(Container $container)
     {
-        $env = new Environment($this->getConfiguration('options'));
+        $env = new Environment(
+            $container->get(__NAMESPACE__ . '\\AbstractTemplateLoader'),
+            $this->getConfiguration('options')
+        );
 
         //Environment is a dependency of TemplateLoader so this line is needed
         //to avoid infinite recursion
         $container->setInstance($env);
-
-        $env->addTemplateLoader($container->get(__NAMESPACE__ . '\\AbstractTemplateLoader'));
 
         $env->addExtension(new Core());
         $env->addExtension(new StandardFunctions());
