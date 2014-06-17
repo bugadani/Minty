@@ -56,9 +56,9 @@ class Compiler
 
     public function compileString($string)
     {
-        $string = strtr($string, array("'" => "\\'"));
+        $string = strtr($string, array('"' => '\"'));
 
-        return $this->add("'{$string}'");
+        return $this->add('"' . $string . '"');
     }
 
     public function compileArray(array $array, $writeKeys = true)

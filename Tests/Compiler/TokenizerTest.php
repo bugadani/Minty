@@ -123,6 +123,16 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
         $stream->expect(Token::EOF);
     }
 
+    public function testEscapeCharactersAreInString()
+    {
+        $stream = $this->tokenizer->tokenize("{test ' \n '}");
+        $stream->expect(Token::TAG, 'test');
+        $stream->expect(Token::EXPRESSION_START);
+        $stream->expect(Token::STRING, " \n ");
+        $stream->expect(Token::EXPRESSION_END);
+        $stream->expect(Token::EOF);
+    }
+
     public function testTokenizerAcceptsCustomBlockClosingTagPrefix()
     {
         $env       = new Environment($this->mockLoader, array(

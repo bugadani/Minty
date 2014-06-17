@@ -27,21 +27,25 @@ class ErrorTemplateLoader extends StringLoader
 
     private function getCompileErrorTemplate($closingTagPrefix)
     {
-        $source = "{block error}<h1>Failed to compile { \$templateName }</h1>
+        $source = "{block error}
+{ \$firstLine: max(\$exception.getSourceLine() - 2, 1) }
+{ \$highlightedLine: \$exception.getSourceLine() - \$firstLine }
+<h1>Failed to compile { \$templateName }</h1>
 <h2>Error message:</h2>
-<p>{\$message}</p>
+<p>{ \$exception.getMessage() }</p>
 <h2>Template source:</h2>
-<pre><code><ol start=\"{\$firstLine + 1}\">
-{for \$lineNo: \$line in \$lines}
+<pre><code><ol start=\"{ \$firstLine }\">
+{ for \$lineNo: \$line in \$templateName|source|split('\\n')|slice(\$firstLine - 1, 7) }
     <li>
-    {if \$lineNo = \$errorLine}
+    { if \$lineNo = \$highlightedLine }
         <b>{\$line}</b>
-    {else}
-        {\$line}
-    {endif}
+    { else }
+        { \$line }
+    { endif }
     </li>
-{{$closingTagPrefix}for}
-</ol></code></pre>{{$closingTagPrefix}block}";
+{ {$closingTagPrefix}for }
+</ol></code></pre>
+{ {$closingTagPrefix}block }";
 
         return strtr($source, array("\n" => ''));
     }

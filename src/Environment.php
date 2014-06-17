@@ -391,12 +391,7 @@ class Environment
         //Read the template
         $template = $this->getSource($templateName);
 
-        try {
-            $compiled = $this->compileTemplate($template, $templateName);
-        } catch (TemplatingException $e) {
-            $template = $this->getErrorTemplate($e, $template);
-            $compiled = $this->compileTemplate($template, $templateName);
-        }
+        $compiled = $this->compileTemplate($template, $templateName);
         if ($cacheEnabled) {
             $this->saveCompiledTemplate($compiled, $templateName);
         } else {
@@ -419,53 +414,6 @@ class Environment
             mkdir($cacheDir, 0777, true);
         }
         file_put_contents($destination, $compiled);
-    }
-
-    private function getErrorTemplate(TemplatingException $exception, $source)
-    {
-        $errLine     = $exception->getSourceLine() - 1;
-        $firstLine   = max($errLine - 3, 0);
-        $sourceLines = array_slice(explode("\n", $source), $firstLine, 7, true);
-
-        $first     = true;
-        $lineArray = '';
-        //create a template-array for the lines
-        foreach ($sourceLines as $lineNo => $line) {
-            if ($first) {
-                $first = false;
-            } else {
-                $lineArray .= ', ';
-            }
-            //escape string delimiters
-            $line = strtr($line, array("'" => "\\'"));
-            $lineArray .= "{$lineNo}: '{$line}'";
-        }
-
-        //escape string delimiters in exception message
-        $message = strtr($exception->getMessage(), array("'" => "\\'"));
-
-        $closingTagPrefix = $this->getOption('block_end_prefix', 'end');
-        $baseTemplate     = $this->getOption('error_template', '__compile_error_template');
-
-        //only load the error template loader when the default error template is requested
-        if ($baseTemplate === '__compile_error_template' && !$this->errorTemplateLoaderLoaded) {
-            $this->addTemplateLoader(
-                new ErrorTemplateLoader($this)
-            );
-            $this->errorTemplateLoaderLoaded = true;
-        }
-
-        //insert data into template and decorate with inheritance code
-        //(error message, error line number, first displayed line number, template source)
-
-        return "{extends '{$baseTemplate}'}" .
-        "{block error}" .
-        "{\$templateName: \$_self.template}" .
-        "{\$message: '{$message}'}" .
-        "{\$lines: [{$lineArray}]}" .
-        "{\$errorLine: {$errLine}}" .
-        "{\$firstLine: {$firstLine}}" .
-        "{parent}{{$closingTagPrefix}block}";
     }
 
     private function findFirstExistingTemplate($templates)
@@ -510,9 +458,26 @@ class Environment
 
     public function render($template, $variables = array())
     {
-        $object = $this->load($template);
-        $object->displayTemplate(
-            $this->createContext($variables)
-        );
+        try {
+            $object = $this->load($template);
+            $object->displayTemplate(
+                $this->createContext($variables)
+            );
+        } catch (TemplatingException $e) {
+            $errorTemplate = $this->getOption('error_template', '__compile_error_template');
+            if ($errorTemplate === '__compile_error_template' && !$this->errorTemplateLoaderLoaded) {
+                $this->addTemplateLoader(
+                    new ErrorTemplateLoader($this)
+                );
+                $this->errorTemplateLoaderLoaded = true;
+            }
+            $object = $this->load($errorTemplate);
+            $object->displayTemplate(
+                $this->createContext(array(
+                        'templateName' => $template,
+                        'exception' => $e
+                    ))
+            );
+        }
     }
 }

@@ -83,7 +83,6 @@ class Module extends \Miny\Modules\Module
         $container->setInstance($env);
 
         $env->addExtension(new Core());
-        $env->addExtension(new StandardFunctions());
         $env->addExtension(new Optimizer());
         $env->addExtension($container->get(__NAMESPACE__ . '\\Extensions\\Miny'));
 

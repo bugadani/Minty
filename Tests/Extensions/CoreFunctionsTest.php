@@ -6,7 +6,7 @@ use Modules\Templating\Context;
 use Modules\Templating\Environment;
 use Modules\Templating\TemplateLoaders\StringLoader;
 
-class StandardTest extends \PHPUnit_Framework_TestCase
+class CoreFunctionsTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var Environment
@@ -23,7 +23,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
         $this->stringLoader = new StringLoader();
         $this->env = new Environment($this->stringLoader);
         $this->env->addExtension(
-            new StandardFunctions()
+            new Core()
         );
     }
 
