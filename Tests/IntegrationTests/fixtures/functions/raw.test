@@ -3,8 +3,12 @@ Test that the raw filter disables escaping
 --TEMPLATE--
 { $foo }
 { $foo|raw }
+{ $foo ~ $foo|raw }
+{ ($foo ~ $foo)|raw }
 --DATA--
 array('foo' => '<a>')
 --EXPECT--
 &lt;a&gt;
 <a>
+&lt;a&gt;&lt;a&gt;
+<a><a>

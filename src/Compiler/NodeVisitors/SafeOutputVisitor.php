@@ -30,9 +30,8 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
      */
     private $environment;
     private $inTag = false;
-    private $variableAccessed = false;
-    private $unsafeFunctionCalled = false;
     private $functionLevel = 0;
+    private $isSafe;
     private $autofilter;
     private $autofilterStack = array();
 
@@ -54,26 +53,17 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
                 return;
             }
             if ($this->isFilterOperator($node)) {
-                if ($this->functionLevel++ === 0) {
-                    $function = $this->environment->getFunction(
-                        $node->getChild(OperatorNode::OPERAND_RIGHT)->getName()
-                    );
-                    $this->unsafeFunctionCalled |= !$function->getOption('is_safe');
-                }
+                $this->isSafe &= $this->isFilterSafe($node);
             } elseif ($node instanceof FunctionNode) {
-                if ($this->functionLevel++ === 0) {
-                    if ($node->getObject()) {
-                        $this->unsafeFunctionCalled = true;
-                    } else {
-                        $function = $this->environment->getFunction($node->getName());
-                        $this->unsafeFunctionCalled |= !$function->getOption('is_safe');
-                    }
-                }
+                $this->isSafe &= $this->isFunctionSafe($node);
             } elseif ($this->functionLevel === 0) {
-                $this->variableAccessed |= $this->isUnsafeVariable($node);
+                if ($this->isUnsafeVariable($node)) {
+                    $this->isSafe = false;
+                }
             }
         } elseif ($this->isPrintNode($node)) {
-            $this->inTag = true;
+            $this->inTag  = true;
+            $this->isSafe = true;
         } elseif ($this->isAutofilterTag($node)) {
             $this->autofilterStack[] = $this->autofilter;
             $this->autofilter        = $node->getData('strategy');
@@ -86,26 +76,17 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
             if ($this->isPrintNode($node)) {
                 $node->addData(
                     'is_safe',
-                    !$this->autofilter || !($this->variableAccessed || $this->unsafeFunctionCalled)
+                    !$this->autofilter || $this->isSafe
                 );
                 if ($this->autofilter) {
                     if ($this->autofilter === 1) {
-                        $filterFor = new OperatorNode(
-                            $this->environment->getBinaryOperators()->getOperator('.')
-                        );
-                        $filterFor->addChild(new VariableNode('_self'), OperatorNode::OPERAND_LEFT);
-                        $filterFor->addChild(
-                            new IdentifierNode('extension'),
-                            OperatorNode::OPERAND_RIGHT
-                        );
+                        $filterFor = $this->createTemplateExtensionNode();
                     } else {
                         $filterFor = new DataNode($this->autofilter);
                     }
                     $node->addChild($filterFor, 'filter_for');
                 }
-                $this->variableAccessed     = false;
-                $this->unsafeFunctionCalled = false;
-                $this->inTag                = false;
+                $this->inTag = false;
             } elseif ($node instanceof FunctionNode || $this->isFilterOperator($node)) {
                 --$this->functionLevel;
             }
@@ -144,5 +125,60 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
     private function isAutofilterTag(Node $node)
     {
         return $node instanceof TagNode && $node->getTag() instanceof AutofilterTag;
+    }
+
+    /**
+     * @return OperatorNode
+     */
+    private function createTemplateExtensionNode()
+    {
+        $filterFor = new OperatorNode(
+            $this->environment->getBinaryOperators()->getOperator('.')
+        );
+        $filterFor->addChild(new VariableNode('_self'), OperatorNode::OPERAND_LEFT);
+        $filterFor->addChild(
+            new IdentifierNode('extension'),
+            OperatorNode::OPERAND_RIGHT
+        );
+
+        return $filterFor;
+    }
+
+    /**
+     * @param FunctionNode $node
+     *
+     * @return bool
+     */
+    private function isFunctionSafe(FunctionNode $node)
+    {
+        if ($this->functionLevel++ === 0) {
+            if ($node->getObject()) {
+                return false;
+            } else {
+                $function = $this->environment->getFunction($node->getName());
+
+                return $function->getOption('is_safe');
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param OperatorNode $node
+     *
+     * @return bool
+     */
+    private function isFilterSafe(OperatorNode $node)
+    {
+        if ($this->functionLevel++ === 0) {
+            $function = $this->environment->getFunction(
+                $node->getChild(OperatorNode::OPERAND_RIGHT)->getName()
+            );
+
+            return $function->getOption('is_safe');
+        }
+
+        return true;
     }
 }
