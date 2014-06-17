@@ -51,13 +51,14 @@ class ParserTest extends \PHPUnit_Framework_TestCase
             ->getMock();
 
         $this->tag = $this->getMockBuilder('\\Modules\\Templating\\Compiler\\Tag')
+            ->setMethods(array('parse'))
             ->getMockForAbstractClass();
         $this->tag->expects($this->any())
             ->method('getTag')
             ->will($this->returnValue('test'));
 
         $this->blockTag = $this->getMockBuilder('\\Modules\\Templating\\Compiler\\Tag')
-            ->setMethods(array('hasEndingTag'))
+            ->setMethods(array('hasEndingTag', 'parse'))
             ->getMockForAbstractClass();
         $this->blockTag->expects($this->any())
             ->method('getTag')
