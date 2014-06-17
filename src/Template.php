@@ -36,11 +36,24 @@ abstract class Template
      */
     private $templateName;
 
+    /**
+     * @var string
+     */
+    private $extension;
+
     public function __construct(Environment $environment, $template, array $blocks)
     {
         $this->environment  = $environment;
         $this->templateName = $template;
-        $this->blocks       = $blocks;
+
+        $dot = strrpos($template, '.');
+        if ($dot !== false) {
+            $this->extension = substr($template, $dot + 1);
+        } else {
+            $this->extension = '';
+        }
+
+        $this->blocks = $blocks;
     }
 
     public function __get($key)
@@ -48,8 +61,14 @@ abstract class Template
         switch ($key) {
             case 'template':
                 return $this->templateName;
+            case 'extension':
+                return $this->extension;
             case 'parent':
-                return $this->parentTemplate;
+                if (!isset($this->parentTemplate)) {
+                    throw new \OutOfBoundsException("Property {$key} is not set.");
+                }
+
+                return $this->environment->load($this->parentTemplate);
 
             default:
                 throw new \OutOfBoundsException("Property {$key} is not set.");

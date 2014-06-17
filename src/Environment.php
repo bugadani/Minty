@@ -16,7 +16,6 @@ use Modules\Templating\Compiler\ExpressionParser;
 use Modules\Templating\Compiler\FunctionCompiler;
 use Modules\Templating\Compiler\NodeTreeTraverser;
 use Modules\Templating\Compiler\NodeVisitor;
-use Modules\Templating\Compiler\NodeVisitors\EnvironmentAwareNodeVisitor;
 use Modules\Templating\Compiler\OperatorCollection;
 use Modules\Templating\Compiler\Parser;
 use Modules\Templating\Compiler\Tag;
@@ -180,6 +179,7 @@ class Environment
     {
         $cacheKey       = $this->loader->getCacheKey($template);
         $cacheNamespace = $this->getOption('cache_namespace', '');
+        $cacheKey = preg_replace('/\W+/', '_', $cacheKey);
 
         return $cacheNamespace . '\\' . strtr($cacheKey, '/', '\\');
     }
