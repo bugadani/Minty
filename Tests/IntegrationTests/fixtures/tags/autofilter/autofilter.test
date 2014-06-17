@@ -1,0 +1,20 @@
+--TEST--
+Test that the automatic filtering can be nested
+--TEMPLATE--
+{ $foo }
+{ autofilter 'json' }{ $foo }
+{ autofilter off }{ $foo }{ endautofilter }
+{ $foo }{ endautofilter }
+{ $foo }
+--TEMPLATE template.html--
+{ $foo }
+--TEMPLATE template.json--
+{ $foo }
+--DATA--
+array('foo' => '<>{}')
+--EXPECT--
+&lt;&gt;{}
+"<>{}"
+<>{}
+"<>{}"
+&lt;&gt;{}

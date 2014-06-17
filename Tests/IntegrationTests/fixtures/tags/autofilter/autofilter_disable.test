@@ -1,0 +1,10 @@
+--TEST--
+Test that the autofilter tag can disable automatic filtering
+--TEMPLATE--
+{ autofilter off }{ $foo }{ endautofilter }
+{ autofilter auto }{ $foo }{ endautofilter }
+--DATA--
+array('foo' => '<>{}')
+--EXPECT--
+<>{}
+&lt;&gt;{}

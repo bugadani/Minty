@@ -10,7 +10,6 @@
 namespace Modules\Templating\Extensions;
 
 use InvalidArgumentException;
-use Modules\Templating\Compiler\NodeVisitor;
 use Modules\Templating\Compiler\NodeVisitors\SafeOutputVisitor;
 use Modules\Templating\Compiler\Operator;
 use Modules\Templating\Compiler\Operators\ArithmeticOperators\AdditionOperator;
@@ -65,6 +64,7 @@ use Modules\Templating\Compiler\Operators\UnaryOperators\PostDecrementOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PostIncrementOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PreDecrementOperator;
 use Modules\Templating\Compiler\Operators\UnaryOperators\PreIncrementOperator;
+use Modules\Templating\Compiler\Tags\AutofilterTag;
 use Modules\Templating\Compiler\Tags\CaptureTag;
 use Modules\Templating\Compiler\Tags\CaseTag;
 use Modules\Templating\Compiler\Tags\DoTag;
@@ -81,8 +81,6 @@ use Modules\Templating\Compiler\Tags\TemplateExtension\ExtendsTag;
 use Modules\Templating\Compiler\Tags\TemplateExtension\IncludeTag;
 use Modules\Templating\Compiler\Tags\TemplateExtension\ParentTag;
 use Modules\Templating\Compiler\TemplateFunction;
-use Modules\Templating\Context;
-use Modules\Templating\Environment;
 use Modules\Templating\Extension;
 use Traversable;
 
@@ -174,6 +172,7 @@ class Core extends Extension
     public function getTags()
     {
         return array(
+            new AutofilterTag(),
             new BlockTag(),
             new CaptureTag(),
             new CaseTag(),
@@ -247,6 +246,7 @@ function template_function_filter($data, $for = 'html')
         default:
         case 'html':
             return htmlspecialchars($data);
+
         case 'json':
             return json_encode($data);
     }

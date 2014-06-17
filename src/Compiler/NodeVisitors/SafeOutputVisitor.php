@@ -15,9 +15,11 @@ use Modules\Templating\Compiler\Nodes\FunctionNode;
 use Modules\Templating\Compiler\Nodes\IdentifierNode;
 use Modules\Templating\Compiler\Nodes\OperatorNode;
 use Modules\Templating\Compiler\Nodes\PrintNode;
+use Modules\Templating\Compiler\Nodes\TagNode;
 use Modules\Templating\Compiler\Nodes\VariableNode;
 use Modules\Templating\Compiler\NodeVisitor;
 use Modules\Templating\Compiler\Operators\FilterOperator;
+use Modules\Templating\Compiler\Tags\AutofilterTag;
 use Modules\Templating\Environment;
 use Modules\Templating\iEnvironmentAware;
 
@@ -31,7 +33,8 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
     private $variableAccessed = false;
     private $unsafeFunctionCalled = false;
     private $functionLevel = 0;
-    private $autoescape;
+    private $autofilter;
+    private $autofilterStack = array();
 
     public function getPriority()
     {
@@ -40,14 +43,14 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
 
     public function setEnvironment(Environment $environment)
     {
-        $this->autoescape  = $environment->getOption('autoescape', 1);
+        $this->autofilter  = $environment->getOption('autoescape', 1);
         $this->environment = $environment;
     }
 
     public function enterNode(Node $node)
     {
         if ($this->inTag) {
-            if (!$this->autoescape) {
+            if (!$this->autofilter) {
                 return;
             }
             if ($this->isFilterOperator($node)) {
@@ -71,6 +74,9 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
             }
         } elseif ($this->isPrintNode($node)) {
             $this->inTag = true;
+        } elseif ($this->isAutofilterTag($node)) {
+            $this->autofilterStack[] = $this->autofilter;
+            $this->autofilter        = $node->getData('strategy');
         }
     }
 
@@ -78,19 +84,22 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
     {
         if ($this->inTag) {
             if ($this->isPrintNode($node)) {
-                if ($this->autoescape) {
-                    $node->addData(
-                        'is_safe',
-                        !($this->variableAccessed || $this->unsafeFunctionCalled)
-                    );
-                    if ($this->autoescape === 1) {
+                $node->addData(
+                    'is_safe',
+                    !$this->autofilter || !($this->variableAccessed || $this->unsafeFunctionCalled)
+                );
+                if ($this->autofilter) {
+                    if ($this->autofilter === 1) {
                         $filterFor = new OperatorNode(
                             $this->environment->getBinaryOperators()->getOperator('.')
                         );
                         $filterFor->addChild(new VariableNode('_self'), OperatorNode::OPERAND_LEFT);
-                        $filterFor->addChild(new IdentifierNode('extension'), OperatorNode::OPERAND_RIGHT);
+                        $filterFor->addChild(
+                            new IdentifierNode('extension'),
+                            OperatorNode::OPERAND_RIGHT
+                        );
                     } else {
-                        $filterFor = new DataNode($this->autoescape);
+                        $filterFor = new DataNode($this->autofilter);
                     }
                     $node->addChild($filterFor, 'filter_for');
                 }
@@ -100,6 +109,8 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
             } elseif ($node instanceof FunctionNode || $this->isFilterOperator($node)) {
                 --$this->functionLevel;
             }
+        } elseif ($this->isAutofilterTag($node)) {
+            $this->autofilter = array_pop($this->autofilterStack);
         }
 
         return true;
@@ -128,5 +139,10 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
     private function isUnsafeVariable(Node $node)
     {
         return $node instanceof VariableNode && $node->getName() !== '_self';
+    }
+
+    private function isAutofilterTag(Node $node)
+    {
+        return $node instanceof TagNode && $node->getTag() instanceof AutofilterTag;
     }
 }

@@ -1,0 +1,10 @@
+--TEST--
+Test that the autofilter tag can use strings as strategy
+--TEMPLATE--
+{ autofilter 'json' }{ $foo }{ endautofilter }
+{ $foo }
+--DATA--
+array('foo' => '<>{}')
+--EXPECT--
+"<>{}"
+&lt;&gt;{}
