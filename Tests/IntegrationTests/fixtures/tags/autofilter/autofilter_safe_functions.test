@@ -1,0 +1,14 @@
+--TEST--
+Test that the automatic filtering marks strategy-safe functions correctly safe
+--TEMPLATE--
+{autofilter 'html'}{ $foo|html_safe }
+{ $foo|json_safe }{ endautofilter }
+{autofilter 'json'}{ $foo|html_safe }
+{ $foo|json_safe }{ endautofilter }
+--DATA--
+array('foo' => '<>{}')
+--EXPECT--
+<>{}
+&lt;&gt;{}
+"<>{}"
+<>{}

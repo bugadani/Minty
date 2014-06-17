@@ -8,6 +8,7 @@
 
 namespace Modules\Templating\IntegrationTests;
 
+use Modules\Templating\Compiler\TemplateFunction;
 use Modules\Templating\Environment;
 use Modules\Templating\Extensions\Core;
 use Modules\Templating\Extensions\Optimizer;
@@ -26,6 +27,18 @@ class OptimizerIntegrationTest extends IntegrationTestCase
         $env = new Environment($loader, array(
             'fallback_tag' => 'print'
         ));
+        $env->addFunction(
+            new TemplateFunction('html_safe', function ($data) {
+                    return $data;
+                }, array('is_safe' => array('html', 'xml'))
+            )
+        );
+        $env->addFunction(
+            new TemplateFunction('json_safe', function ($data) {
+                    return $data;
+                }, array('is_safe' => 'json')
+            )
+        );
         $env->addExtension(new Core());
         $env->addExtension(new Optimizer());
 
