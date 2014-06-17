@@ -21,7 +21,7 @@ class CoreFunctionsTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->stringLoader = new StringLoader();
-        $this->env = new Environment($this->stringLoader);
+        $this->env          = new Environment($this->stringLoader);
         $this->env->addExtension(
             new Core()
         );

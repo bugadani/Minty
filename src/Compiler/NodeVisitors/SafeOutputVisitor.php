@@ -186,11 +186,12 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
             $function = $this->environment->getFunction(
                 $node->getChild(OperatorNode::OPERAND_RIGHT)->getName()
             );
-            $safeFor = $function->getOption('is_safe');
+            $safeFor  = $function->getOption('is_safe');
 
-            if(is_array($safeFor)) {
+            if (is_array($safeFor)) {
                 $safeFor = in_array($this->autofilter, $safeFor);
             }
+
             return $safeFor === true || $safeFor === $this->autofilter;
         }
 

@@ -473,10 +473,12 @@ class Environment
             }
             $object = $this->load($errorTemplate);
             $object->displayTemplate(
-                $this->createContext(array(
+                $this->createContext(
+                    array(
                         'templateName' => $template,
-                        'exception' => $e
-                    ))
+                        'exception'    => $e
+                    )
+                )
             );
         }
     }

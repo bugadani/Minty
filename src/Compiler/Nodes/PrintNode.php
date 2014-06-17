@@ -23,7 +23,7 @@ class PrintNode extends Node
 
             if ($this->hasChild('filter_for')) {
                 $arguments[] = $this->getChild('filter_for');
-            } elseif($this->hasData('filter_for')) {
+            } elseif ($this->hasData('filter_for')) {
                 $arguments[] = $this->getData('filter_for');
             }
 

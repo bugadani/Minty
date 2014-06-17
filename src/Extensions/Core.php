@@ -234,7 +234,12 @@ class Core extends Extension
             new TemplateFunction('keys', 'array_keys'),
             new TemplateFunction('last', $namespace . '\template_function_last'),
             new TemplateFunction('length', $namespace . '\template_function_length', array('is_safe' => true)),
-            new TemplateFunction('link_to', $namespace . '\template_function_linkTo', array('is_safe' => array('html','xml'))),
+            new TemplateFunction('link_to', $namespace . '\template_function_linkTo', array(
+                'is_safe' => array(
+                    'html',
+                    'xml'
+                )
+            )),
             new TemplateFunction('lower', 'strtolower'),
             new TemplateFunction('ltrim'),
             new TemplateFunction('match', $namespace . '\template_function_match'),
