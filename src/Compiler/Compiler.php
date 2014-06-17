@@ -153,6 +153,7 @@ class Compiler
     public function compile(Node $node)
     {
         $this->source = '';
+        $this->indentation = 0;
 
         $this->compileNode($node);
 
