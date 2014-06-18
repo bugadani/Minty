@@ -37,7 +37,10 @@ class AutofilterTag extends Tag
     public function parse(Parser $parser, Stream $stream)
     {
         if ($stream->nextTokenIf(Token::IDENTIFIER)) {
-            $token = $stream->expectCurrent(Token::IDENTIFIER, array('off', 'on', 'auto'));
+            $token = $stream->expectCurrent(
+                Token::IDENTIFIER,
+                array('off', 'on', 'auto', 'disabled', 'enabled')
+            );
         } else {
             $token = $stream->expect(Token::STRING);
         }
