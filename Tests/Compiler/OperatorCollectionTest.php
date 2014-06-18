@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Templating\Compiler;
+namespace Minty\Compiler;
 
 class OperatorCollectionTest extends \PHPUnit_Framework_TestCase
 {
@@ -14,7 +14,7 @@ class OperatorCollectionTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->mockOperator = $this->getMockBuilder('\\Modules\\Templating\\Compiler\\Operator')
+        $this->mockOperator = $this->getMockBuilder('\\Minty\\Compiler\\Operator')
             ->setMethods(array('operators'))
             ->setConstructorArgs(array(1))
             ->getMockForAbstractClass();
@@ -23,7 +23,7 @@ class OperatorCollectionTest extends \PHPUnit_Framework_TestCase
             ->method('operators')
             ->will($this->returnValue(array('+', '-')));
 
-        $this->otherOperator = $this->getMockBuilder('\\Modules\\Templating\\Compiler\\Operator')
+        $this->otherOperator = $this->getMockBuilder('\\Minty\\Compiler\\Operator')
             ->setMethods(array('operators'))
             ->setConstructorArgs(array(1))
             ->getMockForAbstractClass();
@@ -61,7 +61,7 @@ class OperatorCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($this->collection->exists($this->otherOperator));
         $this->assertFalse(
             $this->collection->exists(
-                $this->getMockBuilder('\\Modules\\Templating\\Compiler\\Operator')
+                $this->getMockBuilder('\\Minty\\Compiler\\Operator')
                     ->disableOriginalConstructor()
                     ->getMockForAbstractClass()
             )

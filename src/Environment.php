@@ -1,28 +1,28 @@
 <?php
 
 /**
- * This file is part of the Miny framework.
+ * This file is part of the Minty templating library.
  * (c) Dániel Buga <daniel@bugadani.hu>
  *
  * For licensing information see the LICENSE file.
  */
 
-namespace Modules\Templating;
+namespace Minty;
 
-use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Exceptions\TemplateNotFoundException;
-use Modules\Templating\Compiler\Exceptions\TemplatingException;
-use Modules\Templating\Compiler\ExpressionParser;
-use Modules\Templating\Compiler\FunctionCompiler;
-use Modules\Templating\Compiler\NodeTreeTraverser;
-use Modules\Templating\Compiler\NodeVisitor;
-use Modules\Templating\Compiler\OperatorCollection;
-use Modules\Templating\Compiler\Parser;
-use Modules\Templating\Compiler\Tag;
-use Modules\Templating\Compiler\TemplateFunction;
-use Modules\Templating\Compiler\Tokenizer;
-use Modules\Templating\TemplateLoaders\ChainLoader;
-use Modules\Templating\TemplateLoaders\ErrorTemplateLoader;
+use Minty\Compiler\Compiler;
+use Minty\Compiler\Exceptions\TemplateNotFoundException;
+use Minty\Compiler\Exceptions\TemplatingException;
+use Minty\Compiler\ExpressionParser;
+use Minty\Compiler\FunctionCompiler;
+use Minty\Compiler\NodeTreeTraverser;
+use Minty\Compiler\NodeVisitor;
+use Minty\Compiler\OperatorCollection;
+use Minty\Compiler\Parser;
+use Minty\Compiler\Tag;
+use Minty\Compiler\TemplateFunction;
+use Minty\Compiler\Tokenizer;
+use Minty\TemplateLoaders\ChainLoader;
+use Minty\TemplateLoaders\ErrorTemplateLoader;
 
 class Environment
 {

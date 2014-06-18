@@ -1,8 +1,8 @@
 <?php
 
-namespace Modules\Templating\Compiler;
+namespace Minty\Compiler;
 
-use Modules\Templating\Environment;
+use Minty\Environment;
 
 class TokenizerTest extends \PHPUnit_Framework_TestCase
 {
@@ -20,7 +20,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->mockLoader = $this->getMockForAbstractClass(
-            '\\Modules\\Templating\\AbstractTemplateLoader'
+            '\\Minty\\AbstractTemplateLoader'
         );
 
         $this->mockLoader->expects($this->any())
@@ -29,13 +29,13 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
         $mockEnv = new Environment($this->mockLoader, array('fallback_tag' => 'fallback'));
 
-        $testTag = $this->getMockBuilder('\\Modules\\Templating\\Compiler\\Tag')
+        $testTag = $this->getMockBuilder('\\Minty\\Compiler\\Tag')
             ->getMockForAbstractClass();
         $testTag->expects($this->any())
             ->method('getTag')
             ->will($this->returnValue('test'));
 
-        $testBlockTag = $this->getMockBuilder('\\Modules\\Templating\\Compiler\\Tag')
+        $testBlockTag = $this->getMockBuilder('\\Minty\\Compiler\\Tag')
             ->setMethods(array('hasEndingTag'))
             ->getMockForAbstractClass();
         $testBlockTag->expects($this->any())
@@ -45,7 +45,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
             ->method('hasEndingTag')
             ->will($this->returnValue(true));
 
-        $mockOperator = $this->getMockBuilder('\\Modules\\Templating\\Compiler\\Operator')
+        $mockOperator = $this->getMockBuilder('\\Minty\\Compiler\\Operator')
             ->setMethods(array('operators'))
             ->setConstructorArgs(array(1))
             ->getMockForAbstractClass();
@@ -53,7 +53,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
             ->method('operators')
             ->will($this->returnValue(array('§', '-')));
 
-        $otherOperator = $this->getMockBuilder('\\Modules\\Templating\\Compiler\\Operator')
+        $otherOperator = $this->getMockBuilder('\\Minty\\Compiler\\Operator')
             ->setMethods(array('operators'))
             ->setConstructorArgs(array(1))
             ->getMockForAbstractClass();
@@ -333,7 +333,7 @@ new line
 
     /**
      * @dataProvider unclosedSyntaxProvider
-     * @expectedException \Modules\Templating\Compiler\Exceptions\SyntaxException
+     * @expectedException \Minty\Compiler\Exceptions\SyntaxException
      */
     public function testTokenizerThrowsExceptions($template)
     {
@@ -342,7 +342,7 @@ new line
 
     public function testTokenizerUsesFallbackTagForUnknownTags()
     {
-        $fallbackTag = $this->getMockBuilder('\\Modules\\Templating\\Compiler\\Tag')
+        $fallbackTag = $this->getMockBuilder('\\Minty\\Compiler\\Tag')
             ->getMockForAbstractClass();
         $fallbackTag->expects($this->any())
             ->method('getTag')

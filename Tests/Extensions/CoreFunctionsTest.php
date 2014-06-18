@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\Templating\Extensions;
+namespace Minty\Extensions;
 
-use Modules\Templating\Context;
-use Modules\Templating\Environment;
-use Modules\Templating\TemplateLoaders\StringLoader;
+use Minty\Context;
+use Minty\Environment;
+use Minty\TemplateLoaders\StringLoader;
 
 class CoreFunctionsTest extends \PHPUnit_Framework_TestCase
 {

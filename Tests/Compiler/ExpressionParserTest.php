@@ -1,14 +1,14 @@
 <?php
 
-namespace Modules\Templating\Compiler;
+namespace Minty\Compiler;
 
-use Modules\Templating\Compiler\Nodes\ArrayIndexNode;
-use Modules\Templating\Compiler\Nodes\DataNode;
-use Modules\Templating\Compiler\Nodes\FunctionNode;
-use Modules\Templating\Compiler\Nodes\OperatorNode;
-use Modules\Templating\Compiler\Nodes\VariableNode;
-use Modules\Templating\Environment;
-use Modules\Templating\TemplateLoaders\StringLoader;
+use Minty\Compiler\Nodes\ArrayIndexNode;
+use Minty\Compiler\Nodes\DataNode;
+use Minty\Compiler\Nodes\FunctionNode;
+use Minty\Compiler\Nodes\OperatorNode;
+use Minty\Compiler\Nodes\VariableNode;
+use Minty\Environment;
+use Minty\TemplateLoaders\StringLoader;
 
 class ExpressionParserTest extends \PHPUnit_Framework_TestCase
 {
@@ -28,7 +28,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
         $this->env = new Environment(new StringLoader());
 
         $this->plusOperator = $this->getMockBuilder(
-            '\\Modules\\Templating\\Compiler\\Operator'
+            '\\Minty\\Compiler\\Operator'
         )
             ->setMethods(array('operators'))
             ->setConstructorArgs(array(1))
@@ -39,7 +39,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(array('+')));
 
         $this->multiplyOperator = $this->getMockBuilder(
-            '\\Modules\\Templating\\Compiler\\Operator'
+            '\\Minty\\Compiler\\Operator'
         )
             ->setMethods(array('operators'))
             ->setConstructorArgs(array(2))
@@ -171,7 +171,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
     public function testArraySyntaxElements($stream)
     {
         $this->assertInstanceOf(
-            '\\Modules\\Templating\\Compiler\\Nodes\\ArrayNode',
+            '\\Minty\\Compiler\\Nodes\\ArrayNode',
             $this->expressionParser->parse($stream)
         );
     }
@@ -187,7 +187,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
         /** @var $nodes FunctionNode */
         $nodes = $this->expressionParser->parse($stream);
 
-        $this->assertInstanceof('\\Modules\\Templating\\Compiler\\Nodes\\FunctionNode', $nodes);
+        $this->assertInstanceof('\\Minty\\Compiler\\Nodes\\FunctionNode', $nodes);
 
         $arguments = $nodes->getArguments();
         $this->assertEquals(0, count($arguments));
@@ -208,7 +208,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
         /** @var $nodes FunctionNode */
         $nodes = $this->expressionParser->parse($stream);
 
-        $this->assertInstanceof('\\Modules\\Templating\\Compiler\\Nodes\\FunctionNode', $nodes);
+        $this->assertInstanceof('\\Minty\\Compiler\\Nodes\\FunctionNode', $nodes);
 
         /** @var $arguments DataNode[] */
         $arguments = $nodes->getArguments();
@@ -218,7 +218,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Modules\Templating\Compiler\Exceptions\SyntaxException
+     * @expectedException \Minty\Compiler\Exceptions\SyntaxException
      */
     public function testTrailingCommaIsNotAllowedInArgumentList()
     {
@@ -244,7 +244,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
         /** @var $node VariableNode */
         $node = $this->expressionParser->parse($stream);
 
-        $this->assertInstanceOf('\\Modules\\Templating\\Compiler\\Nodes\\VariableNode', $node);
+        $this->assertInstanceOf('\\Minty\\Compiler\\Nodes\\VariableNode', $node);
         $this->assertEquals('foo', $node->getName());
     }
 
@@ -266,12 +266,12 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
         /** @var $keyNode DataNode */
         $keyNode = $this->getPropertyOfArrayIndexNode($node, 'key');
 
-        $this->assertInstanceOf('\\Modules\\Templating\\Compiler\\Nodes\\ArrayIndexNode', $node);
+        $this->assertInstanceOf('\\Minty\\Compiler\\Nodes\\ArrayIndexNode', $node);
 
-        $this->assertInstanceOf('\\Modules\\Templating\\Compiler\\Nodes\\VariableNode', $nameNode);
+        $this->assertInstanceOf('\\Minty\\Compiler\\Nodes\\VariableNode', $nameNode);
         $this->assertEquals('foo', $nameNode->getName());
 
-        $this->assertInstanceOf('\\Modules\\Templating\\Compiler\\Nodes\\DataNode', $keyNode);
+        $this->assertInstanceOf('\\Minty\\Compiler\\Nodes\\DataNode', $keyNode);
         $this->assertEquals('bar', $keyNode->getValue());
     }
 
@@ -290,7 +290,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
 
         /** @var $node ArrayIndexNode */
         $node = $this->expressionParser->parse($stream);
-        $this->assertInstanceOf('\\Modules\\Templating\\Compiler\\Nodes\\ArrayIndexNode', $node);
+        $this->assertInstanceOf('\\Minty\\Compiler\\Nodes\\ArrayIndexNode', $node);
 
         //secound access
         /** @var $identifierNode ArrayIndexNode */
@@ -299,11 +299,11 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
         $keyNode = $this->getPropertyOfArrayIndexNode($node, 'key');
 
         $this->assertInstanceOf(
-            '\\Modules\\Templating\\Compiler\\Nodes\\ArrayIndexNode',
+            '\\Minty\\Compiler\\Nodes\\ArrayIndexNode',
             $identifierNode
         );
         $this->assertInstanceOf(
-            '\\Modules\\Templating\\Compiler\\Nodes\\DataNode',
+            '\\Minty\\Compiler\\Nodes\\DataNode',
             $keyNode
         );
         $this->assertEquals('baz', $keyNode->getValue());
@@ -315,11 +315,11 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
         $firstKeyNode = $this->getPropertyOfArrayIndexNode($identifierNode, 'key');
 
         $this->assertInstanceOf(
-            '\\Modules\\Templating\\Compiler\\Nodes\\VariableNode',
+            '\\Minty\\Compiler\\Nodes\\VariableNode',
             $firstIdentifierNode
         );
         $this->assertInstanceOf(
-            '\\Modules\\Templating\\Compiler\\Nodes\\DataNode',
+            '\\Minty\\Compiler\\Nodes\\DataNode',
             $firstKeyNode
         );
         $this->assertEquals('foo', $firstIdentifierNode->getName());
@@ -327,7 +327,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Modules\Templating\Compiler\Exceptions\SyntaxException
+     * @expectedException \Minty\Compiler\Exceptions\SyntaxException
      */
     public function testArrayIndexingRequiresAnIndex()
     {

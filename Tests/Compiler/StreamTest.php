@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Templating\Compiler;
+namespace Minty\Compiler;
 
 class StreamTest extends \PHPUnit_Framework_TestCase
 {
@@ -36,7 +36,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Modules\Templating\Compiler\Exceptions\SyntaxException
+     * @expectedException \Minty\Compiler\Exceptions\SyntaxException
      */
     public function testThatFailedExpectationThrowsException()
     {

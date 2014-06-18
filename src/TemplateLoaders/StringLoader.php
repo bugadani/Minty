@@ -1,17 +1,17 @@
 <?php
 
 /**
- * This file is part of the Miny framework.
+ * This file is part of the Minty templating library.
  * (c) Dániel Buga <daniel@bugadani.hu>
  *
  * For licensing information see the LICENSE file.
  */
 
-namespace Modules\Templating\TemplateLoaders;
+namespace Minty\TemplateLoaders;
 
-use Modules\Templating\AbstractTemplateLoader;
-use Modules\Templating\Environment;
-use Modules\Templating\iEnvironmentAware;
+use Minty\AbstractTemplateLoader;
+use Minty\Environment;
+use Minty\iEnvironmentAware;
 
 class StringLoader extends AbstractTemplateLoader implements iEnvironmentAware
 {

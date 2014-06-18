@@ -1,13 +1,13 @@
 <?php
 
 /**
- * This file is part of the Miny framework.
+ * This file is part of the Minty templating library.
  * (c) Dániel Buga <daniel@bugadani.hu>
  *
  * For licensing information see the LICENSE file.
  */
 
-namespace Modules\Templating\Compiler\Exceptions;
+namespace Minty\Compiler\Exceptions;
 
 class TemplatingException extends \RuntimeException
 {

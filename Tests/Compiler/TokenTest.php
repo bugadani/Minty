@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Templating\Compiler;
+namespace Minty\Compiler;
 
 class TokenTest extends \PHPUnit_Framework_TestCase
 {

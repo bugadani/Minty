@@ -1,18 +1,18 @@
 <?php
 
 /**
- * This file is part of the Miny framework.
+ * This file is part of the Minty templating library.
  * (c) Dániel Buga <daniel@bugadani.hu>
  *
  * For licensing information see the LICENSE file.
  */
 
-namespace Modules\Templating\Compiler\NodeVisitors;
+namespace Minty\Compiler\NodeVisitors;
 
-use Modules\Templating\Compiler\Node;
-use Modules\Templating\Compiler\Nodes\TagNode;
-use Modules\Templating\Compiler\NodeVisitor;
-use Modules\Templating\Compiler\Tags\ForTag;
+use Minty\Compiler\Node;
+use Minty\Compiler\Nodes\TagNode;
+use Minty\Compiler\NodeVisitor;
+use Minty\Compiler\Tags\ForTag;
 
 class ForLoopOptimizer extends NodeVisitor
 {

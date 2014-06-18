@@ -1,16 +1,16 @@
 <?php
 
 /**
- * This file is part of the Miny framework.
+ * This file is part of the Minty templating library.
  * (c) Dániel Buga <daniel@bugadani.hu>
  *
  * For licensing information see the LICENSE file.
  */
 
-namespace Modules\Templating\Compiler;
+namespace Minty\Compiler;
 
-use Modules\Templating\Compiler\Exceptions\SyntaxException;
-use Modules\Templating\Environment;
+use Minty\Compiler\Exceptions\SyntaxException;
+use Minty\Environment;
 
 class Tokenizer
 {

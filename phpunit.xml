@@ -13,7 +13,7 @@
         syntaxCheck="false"
         >
     <testsuites>
-        <testsuite name="Miny Templating Test Suite">
+        <testsuite name="Minty Test Suite">
             <directory>./Tests/</directory>
         </testsuite>
     </testsuites>

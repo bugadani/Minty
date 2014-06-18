@@ -1,6 +1,6 @@
-Miny Templating for template designers
+Minty for template designers
 ========
-This document describes the basics of the templating language provided by the Miny Templating library.
+This document describes the basics of the templating language provided by the Minty library.
 
 Outline
 --------

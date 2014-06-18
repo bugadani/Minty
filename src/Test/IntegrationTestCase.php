@@ -1,9 +1,9 @@
 <?php
 
-namespace Modules\Templating\Test;
+namespace Minty\Test;
 
-use Modules\Templating\Environment;
-use Modules\Templating\TemplateLoaders\StringLoader;
+use Minty\Environment;
+use Minty\TemplateLoaders\StringLoader;
 
 abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
 {

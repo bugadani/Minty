@@ -1,18 +1,18 @@
 <?php
 
 /**
- * This file is part of the Miny framework.
+ * This file is part of the Minty templating library.
  * (c) Dániel Buga <daniel@bugadani.hu>
  *
  * For licensing information see the LICENSE file.
  */
 
-namespace Modules\Templating\Compiler\NodeVisitors;
+namespace Minty\Compiler\NodeVisitors;
 
-use Modules\Templating\Compiler\Node;
-use Modules\Templating\Compiler\Nodes\ClassNode;
-use Modules\Templating\Compiler\Nodes\VariableNode;
-use Modules\Templating\Compiler\NodeVisitor;
+use Minty\Compiler\Node;
+use Minty\Compiler\Nodes\ClassNode;
+use Minty\Compiler\Nodes\VariableNode;
+use Minty\Compiler\NodeVisitor;
 
 class SelfAccessOptimizer extends NodeVisitor
 {

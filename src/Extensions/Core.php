@@ -1,88 +1,88 @@
 <?php
 
 /**
- * This file is part of the Miny framework.
+ * This file is part of the Minty templating library.
  * (c) Dániel Buga <daniel@bugadani.hu>
  *
  * For licensing information see the LICENCE file.
  */
 
-namespace Modules\Templating\Extensions;
+namespace Minty\Extensions;
 
-use Modules\Templating\Compiler\NodeVisitors\SafeOutputVisitor;
-use Modules\Templating\Compiler\Operator;
-use Modules\Templating\Compiler\Operators\ArithmeticOperators\AdditionOperator;
-use Modules\Templating\Compiler\Operators\ArithmeticOperators\DivisionOperator;
-use Modules\Templating\Compiler\Operators\ArithmeticOperators\ExponentialOperator;
-use Modules\Templating\Compiler\Operators\ArithmeticOperators\MultiplicationOperator;
-use Modules\Templating\Compiler\Operators\ArithmeticOperators\RemainderOperator;
-use Modules\Templating\Compiler\Operators\ArithmeticOperators\SubtractionOperator;
-use Modules\Templating\Compiler\Operators\BitwiseOperators\BitwiseAndOperator;
-use Modules\Templating\Compiler\Operators\BitwiseOperators\BitwiseNotOperator;
-use Modules\Templating\Compiler\Operators\BitwiseOperators\BitwiseOrOperator;
-use Modules\Templating\Compiler\Operators\BitwiseOperators\BitwiseXorOperator;
-use Modules\Templating\Compiler\Operators\BitwiseOperators\ShiftLeftOperator;
-use Modules\Templating\Compiler\Operators\BitwiseOperators\ShiftRightOperator;
-use Modules\Templating\Compiler\Operators\ComparisonOperators\EqualsOperator;
-use Modules\Templating\Compiler\Operators\ComparisonOperators\GreaterThanOperator;
-use Modules\Templating\Compiler\Operators\ComparisonOperators\GreaterThanOrEqualsOperator;
-use Modules\Templating\Compiler\Operators\ComparisonOperators\IdenticalOperator;
-use Modules\Templating\Compiler\Operators\ComparisonOperators\LessThanOperator;
-use Modules\Templating\Compiler\Operators\ComparisonOperators\LessThanOrEqualsOperator;
-use Modules\Templating\Compiler\Operators\ComparisonOperators\NotEqualsOperator;
-use Modules\Templating\Compiler\Operators\ComparisonOperators\NotIdenticalOperator;
-use Modules\Templating\Compiler\Operators\ConcatenationOperator;
-use Modules\Templating\Compiler\Operators\ExclusiveRangeOperator;
-use Modules\Templating\Compiler\Operators\ExistenceOperators\IsNotSetOperator;
-use Modules\Templating\Compiler\Operators\ExistenceOperators\IsSetOperator;
-use Modules\Templating\Compiler\Operators\FalseCoalescingOperator;
-use Modules\Templating\Compiler\Operators\FilterOperator;
-use Modules\Templating\Compiler\Operators\LogicOperators\AndOperator;
-use Modules\Templating\Compiler\Operators\LogicOperators\NotOperator;
-use Modules\Templating\Compiler\Operators\LogicOperators\OrOperator;
-use Modules\Templating\Compiler\Operators\LogicOperators\XorOperator;
-use Modules\Templating\Compiler\Operators\PropertyAccessOperator;
-use Modules\Templating\Compiler\Operators\RangeOperator;
-use Modules\Templating\Compiler\Operators\TestOperators\ContainsOperator;
-use Modules\Templating\Compiler\Operators\TestOperators\DivisibleByOperator;
-use Modules\Templating\Compiler\Operators\TestOperators\EndsOperator;
-use Modules\Templating\Compiler\Operators\TestOperators\MatchesOperator;
-use Modules\Templating\Compiler\Operators\TestOperators\NotContainsOperator;
-use Modules\Templating\Compiler\Operators\TestOperators\NotDivisibleByOperator;
-use Modules\Templating\Compiler\Operators\TestOperators\NotEndsOperator;
-use Modules\Templating\Compiler\Operators\TestOperators\NotMatchesOperator;
-use Modules\Templating\Compiler\Operators\TestOperators\NotStartsOperator;
-use Modules\Templating\Compiler\Operators\TestOperators\StartsOperator;
-use Modules\Templating\Compiler\Operators\UnaryOperators\EmptyOperator;
-use Modules\Templating\Compiler\Operators\UnaryOperators\EvenOperator;
-use Modules\Templating\Compiler\Operators\UnaryOperators\MinusOperator;
-use Modules\Templating\Compiler\Operators\UnaryOperators\NotEmptyOperator;
-use Modules\Templating\Compiler\Operators\UnaryOperators\OddOperator;
-use Modules\Templating\Compiler\Operators\UnaryOperators\PlusOperator;
-use Modules\Templating\Compiler\Operators\UnaryOperators\PostDecrementOperator;
-use Modules\Templating\Compiler\Operators\UnaryOperators\PostIncrementOperator;
-use Modules\Templating\Compiler\Operators\UnaryOperators\PreDecrementOperator;
-use Modules\Templating\Compiler\Operators\UnaryOperators\PreIncrementOperator;
-use Modules\Templating\Compiler\Tags\AutofilterTag;
-use Modules\Templating\Compiler\Tags\CaptureTag;
-use Modules\Templating\Compiler\Tags\CaseTag;
-use Modules\Templating\Compiler\Tags\DoTag;
-use Modules\Templating\Compiler\Tags\ElseIfTag;
-use Modules\Templating\Compiler\Tags\ElseTag;
-use Modules\Templating\Compiler\Tags\ForTag;
-use Modules\Templating\Compiler\Tags\IfTag;
-use Modules\Templating\Compiler\Tags\ListTag;
-use Modules\Templating\Compiler\Tags\PrintTag;
-use Modules\Templating\Compiler\Tags\SwitchTag;
-use Modules\Templating\Compiler\Tags\TemplateExtension\BlockTag;
-use Modules\Templating\Compiler\Tags\TemplateExtension\EmbedTag;
-use Modules\Templating\Compiler\Tags\TemplateExtension\ExtendsTag;
-use Modules\Templating\Compiler\Tags\TemplateExtension\IncludeTag;
-use Modules\Templating\Compiler\Tags\TemplateExtension\ParentTag;
-use Modules\Templating\Compiler\TemplateFunction;
-use Modules\Templating\Context;
-use Modules\Templating\Environment;
-use Modules\Templating\Extension;
+use Minty\Compiler\NodeVisitors\SafeOutputVisitor;
+use Minty\Compiler\Operator;
+use Minty\Compiler\Operators\ArithmeticOperators\AdditionOperator;
+use Minty\Compiler\Operators\ArithmeticOperators\DivisionOperator;
+use Minty\Compiler\Operators\ArithmeticOperators\ExponentialOperator;
+use Minty\Compiler\Operators\ArithmeticOperators\MultiplicationOperator;
+use Minty\Compiler\Operators\ArithmeticOperators\RemainderOperator;
+use Minty\Compiler\Operators\ArithmeticOperators\SubtractionOperator;
+use Minty\Compiler\Operators\BitwiseOperators\BitwiseAndOperator;
+use Minty\Compiler\Operators\BitwiseOperators\BitwiseNotOperator;
+use Minty\Compiler\Operators\BitwiseOperators\BitwiseOrOperator;
+use Minty\Compiler\Operators\BitwiseOperators\BitwiseXorOperator;
+use Minty\Compiler\Operators\BitwiseOperators\ShiftLeftOperator;
+use Minty\Compiler\Operators\BitwiseOperators\ShiftRightOperator;
+use Minty\Compiler\Operators\ComparisonOperators\EqualsOperator;
+use Minty\Compiler\Operators\ComparisonOperators\GreaterThanOperator;
+use Minty\Compiler\Operators\ComparisonOperators\GreaterThanOrEqualsOperator;
+use Minty\Compiler\Operators\ComparisonOperators\IdenticalOperator;
+use Minty\Compiler\Operators\ComparisonOperators\LessThanOperator;
+use Minty\Compiler\Operators\ComparisonOperators\LessThanOrEqualsOperator;
+use Minty\Compiler\Operators\ComparisonOperators\NotEqualsOperator;
+use Minty\Compiler\Operators\ComparisonOperators\NotIdenticalOperator;
+use Minty\Compiler\Operators\ConcatenationOperator;
+use Minty\Compiler\Operators\ExclusiveRangeOperator;
+use Minty\Compiler\Operators\ExistenceOperators\IsNotSetOperator;
+use Minty\Compiler\Operators\ExistenceOperators\IsSetOperator;
+use Minty\Compiler\Operators\FalseCoalescingOperator;
+use Minty\Compiler\Operators\FilterOperator;
+use Minty\Compiler\Operators\LogicOperators\AndOperator;
+use Minty\Compiler\Operators\LogicOperators\NotOperator;
+use Minty\Compiler\Operators\LogicOperators\OrOperator;
+use Minty\Compiler\Operators\LogicOperators\XorOperator;
+use Minty\Compiler\Operators\PropertyAccessOperator;
+use Minty\Compiler\Operators\RangeOperator;
+use Minty\Compiler\Operators\TestOperators\ContainsOperator;
+use Minty\Compiler\Operators\TestOperators\DivisibleByOperator;
+use Minty\Compiler\Operators\TestOperators\EndsOperator;
+use Minty\Compiler\Operators\TestOperators\MatchesOperator;
+use Minty\Compiler\Operators\TestOperators\NotContainsOperator;
+use Minty\Compiler\Operators\TestOperators\NotDivisibleByOperator;
+use Minty\Compiler\Operators\TestOperators\NotEndsOperator;
+use Minty\Compiler\Operators\TestOperators\NotMatchesOperator;
+use Minty\Compiler\Operators\TestOperators\NotStartsOperator;
+use Minty\Compiler\Operators\TestOperators\StartsOperator;
+use Minty\Compiler\Operators\UnaryOperators\EmptyOperator;
+use Minty\Compiler\Operators\UnaryOperators\EvenOperator;
+use Minty\Compiler\Operators\UnaryOperators\MinusOperator;
+use Minty\Compiler\Operators\UnaryOperators\NotEmptyOperator;
+use Minty\Compiler\Operators\UnaryOperators\OddOperator;
+use Minty\Compiler\Operators\UnaryOperators\PlusOperator;
+use Minty\Compiler\Operators\UnaryOperators\PostDecrementOperator;
+use Minty\Compiler\Operators\UnaryOperators\PostIncrementOperator;
+use Minty\Compiler\Operators\UnaryOperators\PreDecrementOperator;
+use Minty\Compiler\Operators\UnaryOperators\PreIncrementOperator;
+use Minty\Compiler\Tags\AutofilterTag;
+use Minty\Compiler\Tags\CaptureTag;
+use Minty\Compiler\Tags\CaseTag;
+use Minty\Compiler\Tags\DoTag;
+use Minty\Compiler\Tags\ElseIfTag;
+use Minty\Compiler\Tags\ElseTag;
+use Minty\Compiler\Tags\ForTag;
+use Minty\Compiler\Tags\IfTag;
+use Minty\Compiler\Tags\ListTag;
+use Minty\Compiler\Tags\PrintTag;
+use Minty\Compiler\Tags\SwitchTag;
+use Minty\Compiler\Tags\TemplateExtension\BlockTag;
+use Minty\Compiler\Tags\TemplateExtension\EmbedTag;
+use Minty\Compiler\Tags\TemplateExtension\ExtendsTag;
+use Minty\Compiler\Tags\TemplateExtension\IncludeTag;
+use Minty\Compiler\Tags\TemplateExtension\ParentTag;
+use Minty\Compiler\TemplateFunction;
+use Minty\Context;
+use Minty\Environment;
+use Minty\Extension;
 
 class Core extends Extension
 {
@@ -215,7 +215,7 @@ class Core extends Extension
             new TemplateFunction('count', null, array('is_safe' => true)),
             new TemplateFunction('cycle', $namespace . '\template_function_cycle'),
             new TemplateFunction('date_format', $namespace . '\template_function_dateFormat'),
-            new TemplateFunction('default', null, array('compiler' => '\Modules\Templating\Extensions\Compilers\DefaultCompiler')),
+            new TemplateFunction('default', null, array('compiler' => '\Minty\Extensions\Compilers\DefaultCompiler')),
             new TemplateFunction('divisible', $namespace . '\template_function_divisible'),
             new TemplateFunction('extract', $namespace . '\template_function_extract', array('needs_context' => true)),
             new TemplateFunction('empty', $namespace . '\template_function_empty'),

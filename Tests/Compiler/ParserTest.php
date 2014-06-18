@@ -1,8 +1,8 @@
 <?php
 
-namespace Modules\Templating\Compiler;
+namespace Minty\Compiler;
 
-use Modules\Templating\Environment;
+use Minty\Environment;
 
 class ParserTest extends \PHPUnit_Framework_TestCase
 {
@@ -34,7 +34,7 @@ class ParserTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $mockLoader = $this->getMockForAbstractClass(
-            '\\Modules\\Templating\\AbstractTemplateLoader'
+            '\\Minty\\AbstractTemplateLoader'
         );
 
         $mockLoader->expects($this->any())
@@ -44,20 +44,20 @@ class ParserTest extends \PHPUnit_Framework_TestCase
         $this->env = new Environment($mockLoader);
 
         $this->expressionParserMock = $this->getMockBuilder(
-            '\\Modules\\Templating\\Compiler\\ExpressionParser'
+            '\\Minty\\Compiler\\ExpressionParser'
         )
             ->disableOriginalConstructor()
             ->setMethods(array('parse'))
             ->getMock();
 
-        $this->tag = $this->getMockBuilder('\\Modules\\Templating\\Compiler\\Tag')
+        $this->tag = $this->getMockBuilder('\\Minty\\Compiler\\Tag')
             ->setMethods(array('parse'))
             ->getMockForAbstractClass();
         $this->tag->expects($this->any())
             ->method('getTag')
             ->will($this->returnValue('test'));
 
-        $this->blockTag = $this->getMockBuilder('\\Modules\\Templating\\Compiler\\Tag')
+        $this->blockTag = $this->getMockBuilder('\\Minty\\Compiler\\Tag')
             ->setMethods(array('hasEndingTag', 'parse'))
             ->getMockForAbstractClass();
         $this->blockTag->expects($this->any())
@@ -152,7 +152,7 @@ class ParserTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Modules\Templating\Compiler\Exceptions\ParseException
+     * @expectedException \Minty\Compiler\Exceptions\ParseException
      */
     public function testExceptionIsThrownForUnknownTags()
     {
@@ -164,7 +164,7 @@ class ParserTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Modules\Templating\Compiler\Exceptions\ParseException
+     * @expectedException \Minty\Compiler\Exceptions\ParseException
      */
     public function testExceptionIsThrownForTokensThatAreNotExpected()
     {
@@ -176,7 +176,7 @@ class ParserTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Modules\Templating\Compiler\Exceptions\ParseException
+     * @expectedException \Minty\Compiler\Exceptions\ParseException
      */
     public function testExceptionIsThrownWhenNotInBlock()
     {

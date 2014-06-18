@@ -1,17 +1,17 @@
 <?php
 
 /**
- * This file is part of the Miny framework.
+ * This file is part of the Minty templating library.
  * (c) Dániel Buga <daniel@bugadani.hu>
  *
  * For licensing information see the LICENCE file.
  */
 
-namespace Modules\Templating\Extensions;
+namespace Minty\Extensions;
 
-use Modules\Templating\Compiler\NodeVisitors\ForLoopOptimizer;
-use Modules\Templating\Compiler\NodeVisitors\SelfAccessOptimizer;
-use Modules\Templating\Extension;
+use Minty\Compiler\NodeVisitors\ForLoopOptimizer;
+use Minty\Compiler\NodeVisitors\SelfAccessOptimizer;
+use Minty\Extension;
 
 class Optimizer extends Extension
 {

@@ -1,16 +1,16 @@
 <?php
 
 /**
- * This file is part of the Miny framework.
+ * This file is part of the Minty templating library.
  * (c) Dániel Buga <daniel@bugadani.hu>
  *
  * For licensing information see the LICENSE file.
  */
 
-namespace Modules\Templating\Compiler\Nodes;
+namespace Minty\Compiler\Nodes;
 
-use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\Node;
+use Minty\Compiler\Compiler;
+use Minty\Compiler\Node;
 
 class FileNode extends RootNode
 {
@@ -36,8 +36,8 @@ class FileNode extends RootNode
             $compiler->indented("namespace %s;\n", $childNode->getNameSpace());
         }
 
-        $compiler->indented('use Modules\\Templating\\Environment;');
-        $compiler->indented('use Modules\\Templating\\Context;');
+        $compiler->indented('use Minty\\Environment;');
+        $compiler->indented('use Minty\\Context;');
 
         $compiler->add("\n");
 

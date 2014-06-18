@@ -6,14 +6,14 @@
  * Time: 21:46
  */
 
-namespace Modules\Templating\IntegrationTests;
+namespace Minty\IntegrationTests;
 
-use Modules\Templating\Compiler\TemplateFunction;
-use Modules\Templating\Environment;
-use Modules\Templating\Extensions\Core;
-use Modules\Templating\Extensions\Optimizer;
-use Modules\Templating\TemplateLoaders\StringLoader;
-use Modules\Templating\Test\IntegrationTestCase;
+use Minty\Compiler\TemplateFunction;
+use Minty\Environment;
+use Minty\Extensions\Core;
+use Minty\Extensions\Optimizer;
+use Minty\TemplateLoaders\StringLoader;
+use Minty\Test\IntegrationTestCase;
 
 class OptimizerIntegrationTest extends IntegrationTestCase
 {

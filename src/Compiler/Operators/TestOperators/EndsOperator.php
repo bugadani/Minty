@@ -1,15 +1,15 @@
 <?php
 
 /**
- * This file is part of the Miny framework.
+ * This file is part of the Minty templating library.
  * (c) Dániel Buga <daniel@bugadani.hu>
  *
  * For licensing information see the LICENSE file.
  */
 
-namespace Modules\Templating\Compiler\Operators\TestOperators;
+namespace Minty\Compiler\Operators\TestOperators;
 
-use Modules\Templating\Compiler\Operators\FunctionOperator;
+use Minty\Compiler\Operators\FunctionOperator;
 
 class EndsOperator extends FunctionOperator
 {

@@ -1,13 +1,11 @@
 {
-    "name": "miny/templating",
-    "description": "The Templating package of the Miny Framework.",
+    "name": "bugadani/minty",
+    "description": "Minty templating engine",
     "minimum-stability": "dev",
     "license": "MIT",
     "type": "library",
     "require": {
-        "php": ">=5.3.3",
-        "miny/framework": "dev-master",
-        "miny/annotation": "dev-master"
+        "php": ">=5.3.3"
     },
     "authors": [
         {
@@ -17,7 +15,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "Modules\\Templating\\": "src/"
+            "Minty\\": "src/"
         }
     }
 }

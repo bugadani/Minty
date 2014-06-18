@@ -1,21 +1,21 @@
 <?php
 
 /**
- * This file is part of the Miny framework.
+ * This file is part of the Minty templating library.
  * (c) Dániel Buga <daniel@bugadani.hu>
  *
  * For licensing information see the LICENSE file.
  */
 
-namespace Modules\Templating\Compiler;
+namespace Minty\Compiler;
 
-use Modules\Templating\Compiler\Exceptions\ParseException;
-use Modules\Templating\Compiler\Nodes\ClassNode;
-use Modules\Templating\Compiler\Nodes\DataNode;
-use Modules\Templating\Compiler\Nodes\FileNode;
-use Modules\Templating\Compiler\Nodes\PrintNode;
-use Modules\Templating\Compiler\Nodes\RootNode;
-use Modules\Templating\Environment;
+use Minty\Compiler\Exceptions\ParseException;
+use Minty\Compiler\Nodes\ClassNode;
+use Minty\Compiler\Nodes\DataNode;
+use Minty\Compiler\Nodes\FileNode;
+use Minty\Compiler\Nodes\PrintNode;
+use Minty\Compiler\Nodes\RootNode;
+use Minty\Environment;
 
 class Parser
 {

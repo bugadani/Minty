@@ -1,17 +1,17 @@
 <?php
 
 /**
- * This file is part of the Miny framework.
+ * This file is part of the Minty templating library.
  * (c) Dániel Buga <daniel@bugadani.hu>
  *
  * For licensing information see the LICENSE file.
  */
 
-namespace Modules\Templating\Compiler\Tags\TemplateExtension;
+namespace Minty\Compiler\Tags\TemplateExtension;
 
-use Modules\Templating\Compiler\Parser;
-use Modules\Templating\Compiler\Stream;
-use Modules\Templating\Compiler\Tag;
+use Minty\Compiler\Parser;
+use Minty\Compiler\Stream;
+use Minty\Compiler\Tag;
 
 class ExtendsTag extends Tag
 {

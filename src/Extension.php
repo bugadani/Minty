@@ -1,18 +1,18 @@
 <?php
 
 /**
- * This file is part of the Miny framework.
+ * This file is part of the Minty templating library.
  * (c) Dániel Buga <daniel@bugadani.hu>
  *
  * For licensing information see the LICENCE file.
  */
 
-namespace Modules\Templating;
+namespace Minty;
 
-use Modules\Templating\Compiler\NodeVisitor;
-use Modules\Templating\Compiler\Operator;
-use Modules\Templating\Compiler\Tag;
-use Modules\Templating\Compiler\TemplateFunction;
+use Minty\Compiler\NodeVisitor;
+use Minty\Compiler\Operator;
+use Minty\Compiler\Tag;
+use Minty\Compiler\TemplateFunction;
 
 abstract class Extension
 {

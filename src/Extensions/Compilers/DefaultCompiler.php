@@ -1,17 +1,17 @@
 <?php
 
 /**
- * This file is part of the Miny framework.
+ * This file is part of the Minty templating library.
  * (c) Dániel Buga <bugadani@gmail.com>
  *
  * For licensing information see the LICENSE file.
  */
 
-namespace Modules\Templating\Extensions\Compilers;
+namespace Minty\Extensions\Compilers;
 
-use Modules\Templating\Compiler\Compiler;
-use Modules\Templating\Compiler\FunctionCompiler;
-use Modules\Templating\Compiler\TemplateFunction;
+use Minty\Compiler\Compiler;
+use Minty\Compiler\FunctionCompiler;
+use Minty\Compiler\TemplateFunction;
 
 /**
  * @author Dániel Buga <bugadani@gmail.com>

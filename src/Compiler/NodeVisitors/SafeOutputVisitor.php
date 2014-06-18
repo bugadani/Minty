@@ -1,28 +1,28 @@
 <?php
 
 /**
- * This file is part of the Miny framework.
+ * This file is part of the Minty templating library.
  * (c) Dániel Buga <daniel@bugadani.hu>
  *
  * For licensing information see the LICENSE file.
  */
 
-namespace Modules\Templating\Compiler\NodeVisitors;
+namespace Minty\Compiler\NodeVisitors;
 
-use Modules\Templating\Compiler\Node;
-use Modules\Templating\Compiler\Nodes\ClassNode;
-use Modules\Templating\Compiler\Nodes\DataNode;
-use Modules\Templating\Compiler\Nodes\FunctionNode;
-use Modules\Templating\Compiler\Nodes\IdentifierNode;
-use Modules\Templating\Compiler\Nodes\OperatorNode;
-use Modules\Templating\Compiler\Nodes\PrintNode;
-use Modules\Templating\Compiler\Nodes\TagNode;
-use Modules\Templating\Compiler\Nodes\VariableNode;
-use Modules\Templating\Compiler\NodeVisitor;
-use Modules\Templating\Compiler\Operators\FilterOperator;
-use Modules\Templating\Compiler\Tags\AutofilterTag;
-use Modules\Templating\Environment;
-use Modules\Templating\iEnvironmentAware;
+use Minty\Compiler\Node;
+use Minty\Compiler\Nodes\ClassNode;
+use Minty\Compiler\Nodes\DataNode;
+use Minty\Compiler\Nodes\FunctionNode;
+use Minty\Compiler\Nodes\IdentifierNode;
+use Minty\Compiler\Nodes\OperatorNode;
+use Minty\Compiler\Nodes\PrintNode;
+use Minty\Compiler\Nodes\TagNode;
+use Minty\Compiler\Nodes\VariableNode;
+use Minty\Compiler\NodeVisitor;
+use Minty\Compiler\Operators\FilterOperator;
+use Minty\Compiler\Tags\AutofilterTag;
+use Minty\Environment;
+use Minty\iEnvironmentAware;
 
 class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
 {
