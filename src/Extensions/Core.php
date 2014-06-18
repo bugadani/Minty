@@ -220,7 +220,17 @@ class Core extends Extension
             new TemplateFunction('extract', $namespace . '\template_function_extract', array('needs_context' => true)),
             new TemplateFunction('empty', $namespace . '\template_function_empty'),
             new TemplateFunction('ends', $namespace . '\template_function_ends'),
-            new TemplateFunction('filter', $namespace . '\template_function_filter', array('is_safe' => true)),
+            new TemplateFunction('filter', $namespace . '\template_function_filter', array(
+                'is_safe'           => true,
+                'needs_environment' => true
+            )),
+            new TemplateFunction('filter_html', 'htmlspecialchars', array(
+                'is_safe' => array(
+                    'xml',
+                    'html'
+                )
+            )),
+            new TemplateFunction('filter_json', 'json_encode', array('is_safe' => 'json')),
             new TemplateFunction('first', $namespace . '\template_function_first'),
             new TemplateFunction('format', 'sprintf'),
             new TemplateFunction('in', $namespace . '\template_function_in'),
@@ -361,19 +371,16 @@ function template_function_extract(Context $context, $source, $keys)
     }
 }
 
-function template_function_filter($data, $for = 'html')
+function template_function_filter(Environment $environment, $data, $for = 'html')
 {
     if (!is_string($data)) {
         return $data;
     }
-    switch ($for) {
-        default:
-        case 'html':
-            return htmlspecialchars($data);
-
-        case 'json':
-            return json_encode($data);
+    if (!$environment->hasFunction('filter_' . $for)) {
+        $for = $environment->getOption('default_filter_strategy', 'html');
     }
+
+    return $environment->getFunction('filter_' . $for)->call($data);
 }
 
 function template_function_first($data, $number = 1)
