@@ -28,16 +28,6 @@ class Stream extends \SplDoublyLinkedList
     /**
      * @return Token
      */
-    public function prev()
-    {
-        parent::prev();
-
-        return $this->current();
-    }
-
-    /**
-     * @return Token
-     */
     public function next()
     {
         parent::next();
@@ -96,7 +86,7 @@ class Stream extends \SplDoublyLinkedList
         if ($token->test($type, $value)) {
             return $token;
         }
-        parent::prev();
+        $this->prev();
 
         return false;
     }

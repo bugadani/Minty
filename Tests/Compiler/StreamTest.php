@@ -14,8 +14,6 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $stream->next());
         $this->assertEquals(3, $stream->next());
         $this->assertEquals(3, $stream->current());
-        $this->assertEquals(2, $stream->prev());
-        $this->assertEquals(1, $stream->prev());
     }
 
     public function testTestFunctions()
