@@ -75,6 +75,7 @@ class Parser
                 $node = new PrintNode();
                 $node->addData('is_safe', true);
                 $node->addChild(new DataNode($value), 'expression');
+                $node->setParent($root);
                 break;
 
             case Token::TAG:
@@ -84,15 +85,15 @@ class Parser
                 $stream->nextTokenIf(Token::EXPRESSION_START);
 
                 $node = $this->tags[$value]->parse($this, $stream);
+                if ($node instanceof Node) {
+                    $node->setParent($root);
+                }
                 break;
 
             default:
                 $type = $token->getTypeString();
                 $line = $token->getLine();
                 throw new ParseException("Unexpected {$type} ({$value}) token", $line);
-        }
-        if (isset($node)) {
-            $node->setParent($root);
         }
 
         return $stream->next();
