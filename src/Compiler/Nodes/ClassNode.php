@@ -27,7 +27,6 @@ class ClassNode extends Node
             'template_base_class',
             'Minty\\Template'
         );
-        $this->addData('self_accessed', true);
 
         $className = $env->getTemplateClassName($templateName);
 
@@ -136,18 +135,7 @@ class ClassNode extends Node
         $compiler->indented('public function %s(Context $context)', $method);
         $compiler->indented('{');
         $compiler->indent();
-
-        if ($this->getData('self_accessed')) {
-            if ($method !== 'displayTemplate') {
-                $compiler->indented('$oldSelf = $context->__get("_self");');
-            }
-            $compiler->indented('$context->__set("_self", $this);');
-        }
         $compiler->compileNode($body);
-        if ($this->getData('self_accessed') && $method !== 'displayTemplate') {
-            $compiler->indented('$context->__set("_self", $oldSelf);');
-        }
-
         $compiler->outdent();
         $compiler->indented("}\n");
     }

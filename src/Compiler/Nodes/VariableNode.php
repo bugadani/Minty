@@ -15,8 +15,12 @@ class VariableNode extends IdentifierNode
 {
     public function compile(Compiler $compiler)
     {
-        $compiler
-            ->add('$context->')
-            ->add($this->getName());
+        if ($this->getName() === '_self') {
+            $compiler->add('$this');
+        } else {
+            $compiler
+                ->add('$context->')
+                ->add($this->getName());
+        }
     }
 }

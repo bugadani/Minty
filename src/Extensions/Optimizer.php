@@ -10,7 +10,6 @@
 namespace Minty\Extensions;
 
 use Minty\Compiler\NodeVisitors\ForLoopOptimizer;
-use Minty\Compiler\NodeVisitors\SelfAccessOptimizer;
 use Minty\Extension;
 
 class Optimizer extends Extension
@@ -24,8 +23,7 @@ class Optimizer extends Extension
     public function getNodeVisitors()
     {
         return array(
-            new ForLoopOptimizer(),
-            new SelfAccessOptimizer()
+            new ForLoopOptimizer()
         );
     }
 }

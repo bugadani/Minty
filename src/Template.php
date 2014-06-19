@@ -32,6 +32,12 @@ abstract class Template
     private $blocks;
 
     /**
+     * @var array
+     */
+    private $importedBlocks = array();
+    private $importFrom = array();
+
+    /**
      * @var string
      */
     private $templateName;
@@ -54,6 +60,18 @@ abstract class Template
         }
 
         $this->blocks = $blocks;
+    }
+
+    public function importBlocks($from, $blocks)
+    {
+        $from = $this->environment->load($from);
+        if ($blocks === true) {
+            $this->importFrom[] = $from;
+        } else {
+            foreach ($blocks as $block) {
+                $this->importedBlocks[$block] = $from;
+            }
+        }
     }
 
     public function __get($key)
@@ -104,8 +122,11 @@ abstract class Template
         }
         $blockPresent = in_array($blockName, $base->blocks);
         if ($parentBlock || !$blockPresent) {
-            $this->renderParentBlock($base, $blockName, $context);
-        } elseif ($blockPresent) {
+            if($this->renderParentBlock($base, $blockName, $context)) {
+                return;
+            }
+        }
+        if ($blockPresent) {
             $base->{'block_' . $blockName}($context);
         } else {
             throw new \RuntimeException("Block {$blockName} was not found.");
@@ -130,7 +151,7 @@ abstract class Template
      * @param          $blockName
      * @param Context  $context
      *
-     * @throws \RuntimeException
+     * @return bool
      */
     private function renderParentBlock(Template $parent, $blockName, Context $context)
     {
@@ -139,9 +160,9 @@ abstract class Template
             if (in_array($blockName, $parent->blocks)) {
                 $parent->{'block_' . $blockName}($context);
 
-                return;
+                return true;
             }
         }
-        throw new \RuntimeException("Parent for block '{$blockName}' was not found.");
+        return false;
     }
 }
