@@ -3,8 +3,10 @@ Test that the 'is set' test works as intended
 --TEMPLATE--
 { $bar is set ? 'not ok' : 'ok' }
 { $foo is set ? 'ok' : 'not ok' }
+{ $foobar.baz is set ? 'ok' : 'not ok' }
 --DATA--
-array('foo' => true)
+array('foo' => true, 'foobar' => array('baz' => true))
 --EXPECT--
+ok
 ok
 ok

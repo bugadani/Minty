@@ -11,7 +11,6 @@ namespace Minty\Compiler\Operators\ExistenceOperators;
 
 use Minty\Compiler\Compiler;
 use Minty\Compiler\Nodes\ArrayIndexNode;
-use Minty\Compiler\Nodes\FunctionNode;
 use Minty\Compiler\Nodes\IdentifierNode;
 use Minty\Compiler\Nodes\OperatorNode;
 use Minty\Compiler\Nodes\VariableNode;
@@ -39,11 +38,7 @@ class IsSetOperator extends Operator
             $right = $operand->getChild(OperatorNode::OPERAND_RIGHT);
             $left  = $operand->getChild(OperatorNode::OPERAND_LEFT);
 
-            if ($right instanceof FunctionNode) {
-                $compiler->add('$this->hasMethod(');
-            } else {
-                $compiler->add('$context->hasProperty(');
-            }
+            $compiler->add('$context->hasProperty(');
 
             $compiler
                 ->compileNode($left)

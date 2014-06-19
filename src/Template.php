@@ -32,12 +32,6 @@ abstract class Template
     private $blocks;
 
     /**
-     * @var array
-     */
-    private $importedBlocks = array();
-    private $importFrom = array();
-
-    /**
      * @var string
      */
     private $templateName;
@@ -60,18 +54,6 @@ abstract class Template
         }
 
         $this->blocks = $blocks;
-    }
-
-    public function importBlocks($from, $blocks)
-    {
-        $from = $this->environment->load($from);
-        if ($blocks === true) {
-            $this->importFrom[] = $from;
-        } else {
-            foreach ($blocks as $block) {
-                $this->importedBlocks[$block] = $from;
-            }
-        }
     }
 
     public function __get($key)
@@ -101,15 +83,6 @@ abstract class Template
     public function getEnvironment()
     {
         return $this->environment;
-    }
-
-    public function hasMethod($object, $method)
-    {
-        if (!is_object($object)) {
-            throw new \UnexpectedValueException('Variable is not an object.');
-        }
-
-        return method_exists($object, $method);
     }
 
     public function renderBlock($blockName, Context $context, $parentBlock = false)
