@@ -83,7 +83,13 @@ class Context
             }
         }
         if (is_object($structure)) {
-            return $structure->$key;
+            if (isset($structure->$key)) {
+                return $structure->$key;
+            }
+            $methodName = 'get' . ucfirst($key);
+            if (method_exists($structure, $methodName)) {
+                return $structure->$methodName();
+            }
         }
         if (!$this->environment->getOption('strict_mode', true)) {
             return $key;
@@ -94,7 +100,7 @@ class Context
     public function hasProperty($structure, $key)
     {
         if (is_array($structure)) {
-            return (isset($structure[$key]));
+            return isset($structure[$key]);
         }
         if ($structure instanceof \ArrayAccess) {
             if (isset($structure[$key])) {
@@ -102,7 +108,13 @@ class Context
             }
         }
         if (is_object($structure)) {
-            return isset($structure->$key);
+            if(isset($structure->$key)) {
+                return true;
+            }
+            $methodName = 'has' . ucfirst($key);
+            if(method_exists($structure, $methodName)) {
+                return $structure->$methodName();
+            }
         }
         throw new \UnexpectedValueException('Variable is not an array or an object.');
     }

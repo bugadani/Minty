@@ -75,6 +75,19 @@ abstract class Template
         }
     }
 
+    public function __isset($key)
+    {
+        switch ($key) {
+            case 'template':
+            case 'extension':
+                return true;
+            case 'parent':
+                return isset($this->parentTemplate);
+            default:
+                return false;
+        }
+    }
+
     protected function setParentTemplate($parentTemplate)
     {
         $this->parentTemplate = $parentTemplate;
@@ -95,7 +108,7 @@ abstract class Template
         }
         $blockPresent = in_array($blockName, $base->blocks);
         if ($parentBlock || !$blockPresent) {
-            if($this->renderParentBlock($base, $blockName, $context)) {
+            if ($this->renderParentBlock($base, $blockName, $context)) {
                 return;
             }
         }
@@ -136,6 +149,7 @@ abstract class Template
                 return true;
             }
         }
+
         return false;
     }
 }
