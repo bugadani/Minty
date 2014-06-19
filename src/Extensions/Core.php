@@ -299,8 +299,12 @@ function traversableToArray($data)
     }
     if (is_array($data)) {
         return $data;
+    } elseif (method_exists($data, 'toArray')) {
+        $data = $data->toArray();
+        if (is_array($data)) {
+            return $data;
+        }
     }
-
     throw new \InvalidArgumentException('Expected an array or traversable object.');
 }
 
