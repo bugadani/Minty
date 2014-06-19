@@ -34,7 +34,7 @@ class PropertyAccessOperator extends Operator
             $compiler->compileNode($right);
         } else {
             $compiler
-                ->add('$context->getProperty(')
+                ->add('$context->' . $this->getMethodName($node) . '(')
                 ->compileNode($object)
                 ->add(', ');
             if ($right instanceof IdentifierNode && !$right instanceof VariableNode) {
@@ -44,5 +44,19 @@ class PropertyAccessOperator extends Operator
             }
             $compiler->add(')');
         }
+    }
+
+    /**
+     * @param OperatorNode $node
+     *
+     * @return string
+     */
+    private function getMethodName(OperatorNode $node)
+    {
+        if ($node->hasData('existence') && $node->getData('existence') === true) {
+            return 'hasProperty';
+        }
+
+        return 'getProperty';
     }
 }
