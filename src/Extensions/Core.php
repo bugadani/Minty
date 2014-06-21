@@ -73,6 +73,7 @@ use Minty\Compiler\Tags\ForTag;
 use Minty\Compiler\Tags\IfTag;
 use Minty\Compiler\Tags\ListTag;
 use Minty\Compiler\Tags\PrintTag;
+use Minty\Compiler\Tags\SetTag;
 use Minty\Compiler\Tags\SwitchTag;
 use Minty\Compiler\Tags\TemplateExtension\BlockTag;
 use Minty\Compiler\Tags\TemplateExtension\EmbedTag;
@@ -187,6 +188,7 @@ class Core extends Extension
             new ListTag(),
             new ParentTag(),
             new PrintTag(),
+            new SetTag(),
             new SwitchTag()
         );
     }
