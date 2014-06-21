@@ -73,8 +73,7 @@ class Parser
         switch ($token->getType()) {
             case Token::TEXT:
                 $node = new PrintNode();
-                $node->addData('is_safe', true);
-                $node->addChild(new DataNode($value), 'expression');
+                $node->addData('data', $value);
                 $node->setParent($root);
                 break;
 

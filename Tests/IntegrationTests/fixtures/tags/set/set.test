@@ -1,0 +1,6 @@
+--TEST--
+Test that a variable can be set using the set tag
+--TEMPLATE--
+{ set $foo: 'bar' }{ $foo }
+--EXPECT--
+bar

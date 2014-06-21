@@ -21,6 +21,7 @@ use Minty\Compiler\Nodes\VariableNode;
 use Minty\Compiler\NodeVisitor;
 use Minty\Compiler\Operators\FilterOperator;
 use Minty\Compiler\Tags\AutofilterTag;
+use Minty\Compiler\Tags\PrintTag;
 use Minty\Environment;
 use Minty\iEnvironmentAware;
 
@@ -115,7 +116,7 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
      */
     private function isPrintNode(Node $node)
     {
-        return $node instanceof PrintNode;
+        return $node instanceof TagNode && $node->getTag() instanceof PrintTag;
     }
 
     /**

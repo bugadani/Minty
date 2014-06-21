@@ -10,7 +10,19 @@ such as HTML, XML, LaTeX, etc.
 A template consists of **expressions** which get replaced with their values and **tags** that are responsible for
  basic functions and control the logic of the template.
 
-These building blocks are delimited by `{ ... }`.
+These building blocks (tags) are delimited by `{ ... }`.
+
+Tags
+--------
+A tag is an expression in braces. Tags usually start with the name of the tag that is followed by a
+tag-specific sequence of keywords and parameters. These tags get replaced by something that is determined by
+the tag itself, for example an `include` tag will be replaced by whatever
+the included template displays.
+
+Blocks
+--------
+Blocks are special tags: they have an ending tag that closes the block. Blocks operate on the template that is
+enclosed by them. For example, an `if` block displays the enclosed template only when the condition is true.
 
 Comments
 --------
@@ -23,7 +35,7 @@ Variables are prefixed with a dollar (`$`) sign that is followed by the name of 
 
 ### Setting variables ###
 
-Setting a variable can be done using the assignment tag.
+Setting a variable can be done using the assignment syntax. This syntax is a syntactic sugar for the `set` tag.
 This contains the variable followed by a colon (`:`) followed by the value expression.
 
 Example: `{$foo: 'bar'}`
@@ -63,6 +75,11 @@ The keys are optional. When not specified, keys begin with 0 and each element ha
 greater than the previous.
 
 Example: `[:foo, :bar, :baz]` - here `foo` has index 0, `baz` has index 2.
+
+Any valid expression that evaluates to a string or integer may be used as array key. Also, bare words
+are accepted and treated like strings to provide a cleaner syntax. Note that this only applies to array keys.
+
+    [key: 'value', other: 'other value']
 
 Arrays can be nested - `[ :foo => [1, 2], :bar => [3, 4] ]`
 

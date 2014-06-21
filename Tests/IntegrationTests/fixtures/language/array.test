@@ -1,0 +1,25 @@
+--TEST--
+Test that the array syntaxes work
+--TEMPLATE--
+{ [1, 2, 3]|dump }
+{ [:string => 'foo', :foo => 'bar']|dump }
+{ [bare => 'foo', word => 'bar']|dump }
+--EXPECT--
+Array
+(
+    [0] => 1
+    [1] => 2
+    [2] => 3
+)
+
+Array
+(
+    [string] => foo
+    [foo] => bar
+)
+
+Array
+(
+    [bare] => foo
+    [word] => bar
+)

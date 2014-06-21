@@ -93,6 +93,14 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
 
         $file = str_replace($directory . DIRECTORY_SEPARATOR, '', $file);
 
+        $testDescriptor = strtr(
+            $testDescriptor,
+            array(
+                "\r\n" => "\n",
+                "\n\r" => "\n"
+            )
+        );
+
         $test      = $this->getBlock($testDescriptor, 'TEST');
         $templates = $this->getTemplateBlocks($testDescriptor);
         $expect    = $this->getBlock($testDescriptor, 'EXPECT');

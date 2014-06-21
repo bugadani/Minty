@@ -47,7 +47,12 @@ class ArrayNode extends Node
                 $compiler->add(', ');
             }
             if (isset($this->keys[$i])) {
-                $compiler->compileNode($this->keys[$i]);
+                $keyNode = $this->keys[$i];
+                if ($keyNode instanceof IdentifierNode) {
+                    $compiler->compileString($keyNode->getName());
+                } else {
+                    $compiler->compileNode($keyNode);
+                }
                 $compiler->add(' => ');
             }
             $compiler->compileNode($this->values[$i]);

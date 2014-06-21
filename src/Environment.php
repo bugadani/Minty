@@ -240,6 +240,16 @@ class Environment
     }
 
     /**
+     * @param $tag
+     *
+     * @return Tag
+     */
+    public function getTag($tag)
+    {
+        return $this->tags[$tag];
+    }
+
+    /**
      * @return Tag[]
      */
     public function getTags()

@@ -1,0 +1,6 @@
+--TEST--
+Test that multiple variables can be set at the same time using the set tag
+--TEMPLATE--
+{ set $foo: 'bar', $bar: 'baz' }{ $foo ~ $bar }
+--EXPECT--
+barbaz

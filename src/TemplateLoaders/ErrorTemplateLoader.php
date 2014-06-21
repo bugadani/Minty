@@ -47,6 +47,6 @@ class ErrorTemplateLoader extends StringLoader
 </ol></code></pre>
 { {$closingTagPrefix}block }";
 
-        return strtr($source, array("\n" => ''));
+        return strtr($source, array(PHP_EOL => ''));
     }
 }

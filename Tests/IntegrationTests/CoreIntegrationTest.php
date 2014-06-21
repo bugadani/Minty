@@ -38,6 +38,11 @@ class CoreIntegrationTest extends IntegrationTestCase
                 }, array('is_safe' => 'json')
             )
         );
+        $env->addFunction(
+            new TemplateFunction('dump', function ($data) {
+                return print_r($data, 1);
+            }, array('is_safe' => true))
+        );
         $env->addExtension(new Core());
 
         return $env;

@@ -4,12 +4,14 @@ Literals
 { :foo }
 { 'bar' }
 { 1 }
-{ "\n" }
+a{ "\n" }b
 { 1.5 }
+$foo
 --EXPECT--
 foo
 bar
 1
-
-
+a
+b
 1.5
+$foo
