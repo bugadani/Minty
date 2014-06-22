@@ -15,7 +15,6 @@ use Minty\Compiler\Nodes\DataNode;
 use Minty\Compiler\Nodes\FunctionNode;
 use Minty\Compiler\Nodes\IdentifierNode;
 use Minty\Compiler\Nodes\OperatorNode;
-use Minty\Compiler\Nodes\PrintNode;
 use Minty\Compiler\Nodes\TagNode;
 use Minty\Compiler\Nodes\VariableNode;
 use Minty\Compiler\NodeVisitor;
