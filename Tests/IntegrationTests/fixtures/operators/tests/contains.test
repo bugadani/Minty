@@ -1,10 +1,10 @@
 --TEST--
 Test that the 'in' test works as intended
 --TEMPLATE--
-{ if 'oob' in 'foobar' }ok{ else }not ok{ endif }
-{ if 'oob' in 'bar' }not ok{ else }ok{ endif }
-{ if 'bar' in ['foo', 'baz', 'foobar'] }not ok{ else }ok{ endif }
-{ if 'bar' in ['foo', 'baz', 'bar'] }ok{ else }not ok{ endif }
+{ 'oob' in 'foobar' ? 'ok' : 'no ok' }
+{ 'oob' in 'bar' ? 'not ok' : 'ok' }
+{ 'bar' in ['foo', 'baz', 'foobar'] ? 'not ok' : 'ok' }
+{ 'bar' in ['foo', 'baz', 'bar'] ? 'ok' : 'not ok' }
 --EXPECT--
 ok
 ok

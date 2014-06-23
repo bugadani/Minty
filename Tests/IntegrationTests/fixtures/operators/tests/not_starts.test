@@ -1,12 +1,12 @@
 --TEST--
 Test that the 'not starts with' test works as intended
 --TEMPLATE--
-{ if 'foobar' does not start with 'oo' }ok{ else }not ok{endif}
-{ if 'foobar' not starts with 'oo' }ok{ else }not ok{endif}
-{ if 'foobar' does not start with 'fo' }not ok{ else }ok{endif}
-{ if 'foobar' not starts with 'fo' }not ok{ else }ok{endif}
-{ if !('foobar' starts with 'oo') }ok{ else }not ok{endif}
-{ if !('foobar' starts with 'fo') }not ok{ else }ok{endif}
+{ 'foobar' does not start with 'oo' ? 'ok' : 'not ok' }
+{ 'foobar' not starts with 'oo' ? 'ok' : 'not ok' }
+{ 'foobar' does not start with 'fo' ? 'not ok' : 'ok' }
+{ 'foobar' not starts with 'fo' ? 'not ok' : 'ok' }
+{ !('foobar' starts with 'oo') ? 'ok' : 'not ok' }
+{ !('foobar' starts with 'fo') ? 'not ok' : 'ok' }
 --EXPECT--
 ok
 ok

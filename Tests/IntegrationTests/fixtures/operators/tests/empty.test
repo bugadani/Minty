@@ -1,8 +1,8 @@
 --TEST--
 Test that the 'is empty' test works as intended
 --TEMPLATE--
-{ if 'foobar' is empty }not ok{ else }ok{ endif }
-{ if null is empty }ok{ else }not ok{ endif }
+{ 'foobar' is empty ? 'not ok' : 'ok' }
+{ null is empty ? 'ok' : 'not ok' }
 --EXPECT--
 ok
 ok

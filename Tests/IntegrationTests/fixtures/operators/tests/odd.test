@@ -1,10 +1,10 @@
 --TEST--
 Test that the 'is odd' test works as intended
 --TEMPLATE--
-{ if 3 is odd }ok{ else }not ok{endif}
-{ if 3 is not even }ok{ else }not ok{endif}
-{ if 4 is odd }not ok{ else }ok{endif}
-{ if 4 is not even }not ok{ else }ok{endif}
+{ 3 is odd ? 'ok' : 'not ok' }
+{ 3 is not even ? 'ok' : 'not ok' }
+{ 4 is odd ? 'not ok' : 'ok' }
+{ 4 is not even ? 'not ok' : 'ok' }
 --EXPECT--
 ok
 ok

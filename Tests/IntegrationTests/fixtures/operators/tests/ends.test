@@ -1,8 +1,8 @@
 --TEST--
 Test that the 'ends with' test works as intended
 --TEMPLATE--
-{ if 'foobar' ends with 'foo' }not ok{ else }ok{endif}
-{ if 'foobar' ends with 'bar' }ok{ else }not ok{endif}
+{ 'foobar' ends with 'foo' ? 'not ok' : ok }
+{ 'foobar' ends with 'bar' ? 'ok' : 'not ok' }
 --EXPECT--
 ok
 ok

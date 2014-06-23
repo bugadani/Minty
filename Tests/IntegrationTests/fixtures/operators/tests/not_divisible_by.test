@@ -1,10 +1,10 @@
 --TEST--
 Test that the 'not divisible by' test works as intended
 --TEMPLATE--
-{ if 6 is not divisible by 3 }not ok{ else }ok{endif}
-{ if 6 is not divisible by 4 }ok{ else }not ok{endif}
-{ if !(6 is divisible by 3) }not ok{ else }ok{endif}
-{ if !(6 is divisible by 4) }ok{ else }not ok{endif}
+{ 6 is not divisible by 3 ? 'not ok' : 'ok' }
+{ 6 is not divisible by 4 ? 'ok' : 'not ok' }
+{ !(6 is divisible by 3) ? 'not ok' : 'ok' }
+{ !(6 is divisible by 4) ? 'ok' : 'not ok' }
 --EXPECT--
 ok
 ok

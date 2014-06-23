@@ -1,12 +1,12 @@
 --TEST--
 Test that the 'not ends with' test works as intended
 --TEMPLATE--
-{ if 'foobar' does not end with 'ba' }ok{ else }not ok{endif}
-{ if 'foobar' not ends with 'ba' }ok{ else }not ok{endif}
-{ if 'foobar' does not end with 'ar' }not ok{ else }ok{endif}
-{ if 'foobar' not ends with 'ar' }not ok{ else }ok{endif}
-{ if !('foobar' ends with 'ba') }ok{ else }not ok{endif}
-{ if !('foobar' ends with 'ar') }not ok{ else }ok{endif}
+{ 'foobar' does not end with 'ba' ? 'ok' : 'not ok' }
+{ 'foobar' not ends with 'ba' ? 'ok' : 'not ok' }
+{ 'foobar' does not end with 'ar' ? 'not ok' : 'ok' }
+{ 'foobar' not ends with 'ar' ? 'not ok' : 'ok' }
+{ !('foobar' ends with 'ba') ? 'ok' : 'not ok' }
+{ !('foobar' ends with 'ar') ? 'not ok' : 'ok' }
 --EXPECT--
 ok
 ok
