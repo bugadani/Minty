@@ -71,11 +71,7 @@ abstract class Node
 
     public function addData($key, $value)
     {
-        if ($key === null) {
-            $this->data[] = $value;
-        } else {
-            $this->data[$key] = $value;
-        }
+        $this->data[$key] = $value;
     }
 
     public function getData($key)
