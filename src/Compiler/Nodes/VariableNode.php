@@ -18,9 +18,7 @@ class VariableNode extends IdentifierNode
         if ($this->getName() === '_self') {
             $compiler->add('$this');
         } else {
-            $compiler
-                ->add('$context->')
-                ->add($this->getName());
+            $compiler->add('$context->' . $this->getName());
         }
     }
 }

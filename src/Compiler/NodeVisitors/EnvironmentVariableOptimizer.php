@@ -61,20 +61,32 @@ class EnvironmentVariableOptimizer extends NodeVisitor implements iEnvironmentAw
             $this->currentBlock        = $node;
             $this->environmentAccessed = false;
         } elseif (isset($this->currentBlock) && !$this->environmentAccessed) {
-            if ($this->isEnvironmentVariable($node)) {
-                $this->environmentAccessed = true;
-            } elseif ($node instanceof FunctionNode) {
-                if (!$node->getObject()) {
-                    $this->environmentAccessed = $this->functionNeedsEnvironment($node);
-                } elseif ($this->functionCallOnEnvironment($node)) {
-                    $this->environmentAccessed = true;
-                }
-            } elseif ($this->isFilterOperator($node)) {
-                $this->environmentAccessed = $this->functionNeedsEnvironment(
-                    $node->getChild(OperatorNode::OPERAND_RIGHT)
-                );
-            }
+            $this->environmentAccessed = $this->checkForEnvironmentAccess($node);
         }
+    }
+
+    /**
+     * @param Node $node
+     *
+     * @return bool
+     */
+    private function checkForEnvironmentAccess(Node $node)
+    {
+        if ($this->isEnvironmentVariable($node)) {
+            return true;
+        } elseif ($node instanceof FunctionNode) {
+            if ($node->getObject()) {
+                return $this->isEnvironmentVariable($node->getObject());
+            }
+
+            $function = $node;
+        } elseif ($this->isFilterOperator($node)) {
+            $function = $node->getChild(OperatorNode::OPERAND_RIGHT);
+        } else {
+            return false;
+        }
+
+        return $this->functionNeedsEnvironment($function);
     }
 
     public function leaveNode(Node $node)
@@ -89,21 +101,11 @@ class EnvironmentVariableOptimizer extends NodeVisitor implements iEnvironmentAw
         return true;
     }
 
-    /**
-     * @param Node $node
-     *
-     * @return bool
-     */
     private function isFilterOperator(Node $node)
     {
         return $node instanceof OperatorNode && $node->getOperator() instanceof FilterOperator;
     }
 
-    /**
-     * @param IdentifierNode $node
-     *
-     * @return bool
-     */
     private function functionNeedsEnvironment(IdentifierNode $node)
     {
         $function = $this->environment->getFunction($node->getName());
@@ -112,7 +114,9 @@ class EnvironmentVariableOptimizer extends NodeVisitor implements iEnvironmentAw
             return true;
         }
 
-        $callback = $this->environment->getFunction($node->getName())->getCallback();
+        $callback = $function->getCallback();
+
+        //this is the condition FunctionCompiler uses to check if a function can be directly compiled
         if (!is_string($callback) || strpos($callback, ':') !== false) {
             return true;
         }
@@ -120,11 +124,6 @@ class EnvironmentVariableOptimizer extends NodeVisitor implements iEnvironmentAw
         return false;
     }
 
-    /**
-     * @param Node $node
-     *
-     * @return bool
-     */
     private function isBlockRoot(Node $node)
     {
         if (!isset($this->currentClassNode)) {
@@ -137,25 +136,6 @@ class EnvironmentVariableOptimizer extends NodeVisitor implements iEnvironmentAw
         return in_array($node, $this->currentClassNode->getChildren(), true);
     }
 
-    /**
-     * @param FunctionNode $node
-     *
-     * @return bool
-     */
-    private function functionCallOnEnvironment(FunctionNode $node)
-    {
-        if (!$node->getObject()) {
-            return false;
-        }
-
-        return $this->isEnvironmentVariable($node->getObject());
-    }
-
-    /**
-     * @param Node $node
-     *
-     * @return bool
-     */
     private function isEnvironmentVariable(Node $node)
     {
         return $node instanceof TempVariableNode && $node->getName() === 'environment';
