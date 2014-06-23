@@ -14,30 +14,18 @@ use Minty\Compiler\Node;
 
 class ArrayIndexNode extends Node
 {
-    /**
-     * @var Node
-     */
-    private $identifier;
-
-    /**
-     * @var Node
-     */
-    private $key;
 
     public function __construct(Node $identifier, Node $key)
     {
-        $this->identifier = $identifier;
-        $this->key        = $key;
-
-        $identifier->setParent($this);
-        $key->setParent($this);
+        $this->addChild($identifier, 'identifier');
+        $this->addChild($key, 'key');
     }
 
     public function compile(Compiler $compiler)
     {
-        $compiler->compileNode($this->identifier)
+        $compiler->compileNode($this->getChild('identifier'))
             ->add('[')
-            ->compileNode($this->key)
+            ->compileNode($this->getChild('key'))
             ->add(']');
     }
 }

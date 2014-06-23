@@ -55,7 +55,7 @@ class PrintTag extends Tag
             }
 
             $function = new FunctionNode('filter', $arguments);
-            $expression->setParent($function);
+            $function->addChild($expression);
             $expression = $function;
         }
         $compiler

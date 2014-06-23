@@ -16,26 +16,12 @@ class ArrayNode extends Node
 {
     private $itemCount = 0;
 
-    /**
-     * @var Node[]
-     */
-    private $keys = array();
-
-    /**
-     * @var Node[]
-     */
-    private $values = array();
-
     public function add(Node $value, Node $key = null)
     {
-        $this->values[] = $value;
-        $value->setParent($this);
-
+        $this->addChild($value, 'value_' . $this->itemCount);
         if ($key) {
-            $this->keys[$this->itemCount] = $key;
-            $key->setParent($this);
+            $this->addChild($key, 'key_' . $this->itemCount);
         }
-
         ++$this->itemCount;
     }
 
@@ -46,11 +32,11 @@ class ArrayNode extends Node
             if ($i !== 0) {
                 $compiler->add(', ');
             }
-            if (isset($this->keys[$i])) {
-                $compiler->compileNode($this->keys[$i]);
+            if ($this->hasChild('key_' . $i)) {
+                $compiler->compileNode($this->getChild('key_' . $i));
                 $compiler->add(' => ');
             }
-            $compiler->compileNode($this->values[$i]);
+            $compiler->compileNode($this->getChild('value_' . $i));
         }
         $compiler->add(')');
     }

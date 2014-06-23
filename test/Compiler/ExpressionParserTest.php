@@ -262,9 +262,9 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
         $node = $this->expressionParser->parse($stream);
 
         /** @var $nameNode VariableNode */
-        $nameNode = $this->getPropertyOfArrayIndexNode($node, 'identifier');
+        $nameNode = $node->getChild('identifier');
         /** @var $keyNode DataNode */
-        $keyNode = $this->getPropertyOfArrayIndexNode($node, 'key');
+        $keyNode = $node->getChild('key');
 
         $this->assertInstanceOf('\\Minty\\Compiler\\Nodes\\ArrayIndexNode', $node);
 
@@ -294,9 +294,9 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
 
         //secound access
         /** @var $identifierNode ArrayIndexNode */
-        $identifierNode = $this->getPropertyOfArrayIndexNode($node, 'identifier');
+        $identifierNode = $node->getChild('identifier');
         /** @var $keyNode DataNode */
-        $keyNode = $this->getPropertyOfArrayIndexNode($node, 'key');
+        $keyNode = $node->getChild('key');
 
         $this->assertInstanceOf(
             '\\Minty\\Compiler\\Nodes\\ArrayIndexNode',
@@ -310,9 +310,9 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
 
         //first access
         /** @var $firstIdentifierNode VariableNode */
-        $firstIdentifierNode = $this->getPropertyOfArrayIndexNode($identifierNode, 'identifier');
+        $firstIdentifierNode = $identifierNode->getChild('identifier');
         /** @var $firstKeyNode DataNode */
-        $firstKeyNode = $this->getPropertyOfArrayIndexNode($identifierNode, 'key');
+        $firstKeyNode = $identifierNode->getChild('key');
 
         $this->assertInstanceOf(
             '\\Minty\\Compiler\\Nodes\\VariableNode',
@@ -339,20 +339,5 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
         ));
 
         $this->expressionParser->parse($stream);
-    }
-
-    /**
-     * @param $node
-     * @param $propertyName
-     *
-     * @return array
-     */
-    private function getPropertyOfArrayIndexNode(ArrayIndexNode $node, $propertyName)
-    {
-        $reflection = new \ReflectionClass($node);
-        $property   = $reflection->getProperty($propertyName);
-        $property->setAccessible(true);
-
-        return $property->getValue($node);
     }
 }

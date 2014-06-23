@@ -73,7 +73,7 @@ class Parser
             case Token::TEXT:
                 $node = new PrintNode();
                 $node->addData('data', $value);
-                $node->setParent($root);
+                $root->addChild($node);
                 break;
 
             case Token::TAG:
@@ -84,7 +84,7 @@ class Parser
 
                 $node = $this->tags[$value]->parse($this, $stream);
                 if ($node instanceof Node) {
-                    $node->setParent($root);
+                    $root->addChild($node);
                 }
                 break;
 
