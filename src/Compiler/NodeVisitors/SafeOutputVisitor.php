@@ -146,7 +146,9 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
             if ($node->getObject()) {
                 return false;
             } else {
-                return $this->isFunctionSafe($node->getName());
+                return $this->isFunctionSafe(
+                    $node->getName()
+                );
             }
         }
 
@@ -161,7 +163,9 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
     private function isFilterSafe(OperatorNode $node)
     {
         if ($this->functionLevel++ === 0) {
-            return $this->isFunctionSafe($node->getChild(OperatorNode::OPERAND_RIGHT)->getName());
+            return $this->isFunctionSafe(
+                $node->getChild(OperatorNode::OPERAND_RIGHT)->getName()
+            );
         }
 
         return true;
