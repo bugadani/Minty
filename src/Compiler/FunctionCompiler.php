@@ -21,7 +21,7 @@ class FunctionCompiler
             $compiler->add($callback);
         } else {
             $compiler
-                ->add('$this->getEnvironment()->getFunction(')
+                ->add('$environment->getFunction(')
                 ->compileString($function->getFunctionName())
                 ->add(')->call');
         }

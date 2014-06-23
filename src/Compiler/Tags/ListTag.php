@@ -39,15 +39,11 @@ class ListTag extends Tag
     public function compile(Compiler $compiler, TagNode $node)
     {
         $compiler
-            ->indented('$list_source = ')
+            ->indented('foreach (')
             ->compileNode($node->getChild('expression'))
-            ->add(';');
-
-        $compiler
-            ->indented('$loader = $this->getEnvironment();')
-            ->indented('foreach ($list_source as $element) {')
+            ->add(' as $element) {')
             ->indent()
-            ->indented('$loader->render(')
+            ->indented('$environment->render(')
             ->compileNode($node->getChild('template'))
             ->add(', $element);')
             ->outdent()

@@ -10,6 +10,7 @@
 namespace Minty\Compiler\Tags\TemplateExtension;
 
 use Minty\Compiler\Compiler;
+use Minty\Compiler\Nodes\FunctionNode;
 use Minty\Compiler\Nodes\TagNode;
 use Minty\Compiler\Nodes\TempVariableNode;
 use Minty\Compiler\Parser;
@@ -28,17 +29,13 @@ class IncludeTag extends Tag
     public function compile(Compiler $compiler, TagNode $node)
     {
         $compiler
-            ->indented('$this->getEnvironment()->render(')
-            ->compileNode($node->getChild('template'))
-            ->add(', ')
-            ->compileNode($node->getChild('arguments'))
-            ->add(');');
+            ->indented('')
+            ->compileNode($node->getChild('expression'))
+            ->add(';');
     }
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $node = new TagNode($this);
-
         $templateName = $parser->parseExpression($stream);
         if ($stream->current()->test(Token::IDENTIFIER, 'using')) {
             $contextNode = $parser->parseExpression($stream);
@@ -46,8 +43,14 @@ class IncludeTag extends Tag
             $contextNode = new TempVariableNode('context');
         }
 
-        $node->addChild($templateName, 'template');
-        $node->addChild($contextNode, 'arguments');
+        $functionNode = new FunctionNode('render', array(
+            $templateName,
+            $contextNode
+        ));
+        $functionNode->setObject(new TempVariableNode('environment'));
+
+        $node = new TagNode($this);
+        $node->addChild($functionNode, 'expression');
 
         return $node;
     }

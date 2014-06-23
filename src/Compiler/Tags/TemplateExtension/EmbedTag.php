@@ -11,6 +11,7 @@ namespace Minty\Compiler\Tags\TemplateExtension;
 
 use Minty\Compiler\Compiler;
 use Minty\Compiler\Nodes\ClassNode;
+use Minty\Compiler\Nodes\FunctionNode;
 use Minty\Compiler\Nodes\TagNode;
 use Minty\Compiler\Nodes\TempVariableNode;
 use Minty\Compiler\Parser;
@@ -34,21 +35,14 @@ class EmbedTag extends Tag
     public function compile(Compiler $compiler, TagNode $node)
     {
         $compiler->indented(
-            '$embedded = new %s($this->getEnvironment());',
+            '$embedded = new %s($environment);',
             $node->getData('template')
         );
 
         $compiler
-            ->indented('$embedded->displayTemplate(')
-            ->indent()
-            ->indented('$this->getEnvironment()->createContext(')
-            ->indent()
             ->indented('')
-            ->compileNode($node->getChild('arguments'))
-            ->outdent()
-            ->indented(')')
-            ->outdent()
-            ->indented(');');
+            ->compileNode($node->getChild('display'))
+            ->add(';');
     }
 
     public function parse(Parser $parser, Stream $stream)
@@ -76,7 +70,6 @@ class EmbedTag extends Tag
         } else {
             $contextNode = new TempVariableNode('context');
         }
-        $node->addChild($contextNode, 'arguments');
         $stream->expectCurrent(Token::EXPRESSION_END);
 
         $classNode->addChild(
@@ -84,6 +77,14 @@ class EmbedTag extends Tag
             '__main_template_block'
         );
         $parser->setCurrentClassNode($oldClassNode);
+
+        $createContextNode = new FunctionNode('createContext', array($contextNode));
+        $functionNode      = new FunctionNode('displayTemplate', array($createContextNode));
+
+        $createContextNode->setObject(new TempVariableNode('environment'));
+        $functionNode->setObject(new TempVariableNode('embedded'));
+
+        $node->addChild($functionNode, 'display');
 
         return $node;
     }
