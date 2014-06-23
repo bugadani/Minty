@@ -14,10 +14,20 @@ use Minty\Compiler\Nodes\TagNode;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
 use Minty\Compiler\Tag;
+use Minty\Compiler\Tags\Helpers\MethodNodeHelper;
 use Minty\Compiler\Token;
 
 class BlockTag extends Tag
 {
+    /**
+     * @var MethodNodeHelper
+     */
+    private $helper;
+
+    public function __construct(MethodNodeHelper $helper)
+    {
+        $this->helper = $helper;
+    }
 
     public function hasEndingTag()
     {
@@ -31,9 +41,10 @@ class BlockTag extends Tag
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        $compiler->indented('$this->renderBlock(')
-            ->compileString($node->getData('template'))
-            ->add(', $context);');
+        $compiler
+            ->indented('')
+            ->compileNode($node->getChild('expression'))
+            ->add(';');
     }
 
     public function parse(Parser $parser, Stream $stream)
@@ -48,8 +59,6 @@ class BlockTag extends Tag
         );
         $parser->leaveBlock();
 
-        return new TagNode($this, array(
-            'template' => $templateName
-        ));
+        return $this->helper->createRenderBlockNode($this, $templateName);
     }
 }

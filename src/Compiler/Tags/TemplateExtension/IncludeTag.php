@@ -10,16 +10,25 @@
 namespace Minty\Compiler\Tags\TemplateExtension;
 
 use Minty\Compiler\Compiler;
-use Minty\Compiler\Nodes\FunctionNode;
 use Minty\Compiler\Nodes\TagNode;
 use Minty\Compiler\Nodes\TempVariableNode;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
 use Minty\Compiler\Tag;
+use Minty\Compiler\Tags\Helpers\MethodNodeHelper;
 use Minty\Compiler\Token;
 
 class IncludeTag extends Tag
 {
+    /**
+     * @var MethodNodeHelper
+     */
+    private $helper;
+
+    public function __construct(MethodNodeHelper $helper)
+    {
+        $this->helper = $helper;
+    }
 
     public function getTag()
     {
@@ -43,15 +52,6 @@ class IncludeTag extends Tag
             $contextNode = new TempVariableNode('context');
         }
 
-        $functionNode = new FunctionNode('render', array(
-            $templateName,
-            $contextNode
-        ));
-        $functionNode->setObject(new TempVariableNode('environment'));
-
-        $node = new TagNode($this);
-        $node->addChild($functionNode, 'expression');
-
-        return $node;
+        return $this->helper->createRenderFunctionNode($this, $templateName, $contextNode);
     }
 }

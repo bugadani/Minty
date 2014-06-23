@@ -38,6 +38,12 @@ class FunctionNode extends IdentifierNode
         }
     }
 
+    public function addArgument($argument)
+    {
+        $this->arguments[] = $argument;
+        $this->addChild($argument, 'argument_' . $this->argumentCount++);
+    }
+
     public function getArguments()
     {
         return $this->arguments;

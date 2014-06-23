@@ -70,6 +70,7 @@ use Minty\Compiler\Tags\DoTag;
 use Minty\Compiler\Tags\ElseIfTag;
 use Minty\Compiler\Tags\ElseTag;
 use Minty\Compiler\Tags\ForTag;
+use Minty\Compiler\Tags\Helpers\MethodNodeHelper;
 use Minty\Compiler\Tags\IfTag;
 use Minty\Compiler\Tags\ListTag;
 use Minty\Compiler\Tags\PrintTag;
@@ -172,9 +173,11 @@ class Core extends Extension
 
     public function getTags()
     {
+        $methodHelper = new MethodNodeHelper();
+
         return array(
             new AutofilterTag(),
-            new BlockTag(),
+            new BlockTag($methodHelper),
             new CaptureTag(),
             new CaseTag(),
             new DoTag(),
@@ -184,9 +187,9 @@ class Core extends Extension
             new ExtendsTag(),
             new ForTag(),
             new IfTag(),
-            new IncludeTag(),
-            new ListTag(),
-            new ParentTag(),
+            new IncludeTag($methodHelper),
+            new ListTag($methodHelper),
+            new ParentTag($methodHelper),
             new PrintTag(),
             new SetTag(),
             new SwitchTag()

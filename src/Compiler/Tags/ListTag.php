@@ -10,16 +10,25 @@
 namespace Minty\Compiler\Tags;
 
 use Minty\Compiler\Compiler;
-use Minty\Compiler\Nodes\FunctionNode;
 use Minty\Compiler\Nodes\TagNode;
 use Minty\Compiler\Nodes\TempVariableNode;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
 use Minty\Compiler\Tag;
+use Minty\Compiler\Tags\Helpers\MethodNodeHelper;
 use Minty\Compiler\Token;
 
 class ListTag extends Tag
 {
+    /**
+     * @var MethodNodeHelper
+     */
+    private $helper;
+
+    public function __construct(MethodNodeHelper $helper)
+    {
+        $this->helper = $helper;
+    }
 
     public function getTag()
     {
@@ -28,19 +37,18 @@ class ListTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $node = new TagNode($this);
+        $source = $parser->parseExpression($stream);
 
-        $node->addChild($parser->parseExpression($stream), 'expression');
         $stream->expectCurrent(Token::IDENTIFIER, 'using');
 
-        $renderFunction = new FunctionNode('render', array(
+        $node = $this->helper->createRenderFunctionNode(
+            $this,
             $parser->parseExpression($stream),
             new TempVariableNode('element')
-        ));
-        $renderFunction->setObject(new TempVariableNode('environment'));
-
-        $node->addChild($renderFunction, 'render');
+        );
         $stream->expectCurrent(Token::EXPRESSION_END);
+
+        $node->addChild($source, 'source');
 
         return $node;
     }
@@ -49,11 +57,11 @@ class ListTag extends Tag
     {
         $compiler
             ->indented('foreach (')
-            ->compileNode($node->getChild('expression'))
+            ->compileNode($node->getChild('source'))
             ->add(' as $element) {')
             ->indent()
             ->indented('')
-            ->compileNode($node->getChild('render'))
+            ->compileNode($node->getChild('expression'))
             ->add(';')
             ->outdent()
             ->indented('}');

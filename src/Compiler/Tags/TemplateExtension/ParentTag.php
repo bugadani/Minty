@@ -11,16 +11,23 @@ namespace Minty\Compiler\Tags\TemplateExtension;
 
 use Minty\Compiler\Compiler;
 use Minty\Compiler\Nodes\DataNode;
-use Minty\Compiler\Nodes\FunctionNode;
 use Minty\Compiler\Nodes\TagNode;
-use Minty\Compiler\Nodes\TempVariableNode;
-use Minty\Compiler\Nodes\VariableNode;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
 use Minty\Compiler\Tag;
+use Minty\Compiler\Tags\Helpers\MethodNodeHelper;
 
 class ParentTag extends Tag
 {
+    /**
+     * @var MethodNodeHelper
+     */
+    private $helper;
+
+    public function __construct(MethodNodeHelper $helper)
+    {
+        $this->helper = $helper;
+    }
 
     public function getTag()
     {
@@ -29,15 +36,8 @@ class ParentTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $functionNode = new FunctionNode('renderBlock', array(
-            new DataNode($parser->getCurrentBlock()),
-            new TempVariableNode('context'),
-            new DataNode(true)
-        ));
-        $functionNode->setObject(new VariableNode('_self'));
-
-        $node = new TagNode($this);
-        $node->addChild($functionNode, 'expression');
+        $node = $this->helper->createRenderBlockNode($this, $parser->getCurrentBlock());
+        $node->getChild('expression')->addArgument(new DataNode(true));
 
         return $node;
     }
