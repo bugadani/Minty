@@ -190,11 +190,6 @@ class Environment
         return $this->options[$key];
     }
 
-    public function setOption($key, $value)
-    {
-        $this->options[$key] = $value;
-    }
-
     /**
      * @param Extension $extension
      */

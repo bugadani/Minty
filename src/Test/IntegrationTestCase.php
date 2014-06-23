@@ -19,10 +19,20 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
      */
     private $environment;
 
+    /**
+     * @var \ReflectionProperty
+     */
+    private $optionsProperty;
+
     public function setUp()
     {
         $this->stringLoader = new StringLoader();
         $this->environment  = $this->getEnvironment($this->stringLoader);
+
+        //this is needed to set options
+        $reflection            = new \ReflectionClass($this->environment);
+        $this->optionsProperty = $reflection->getProperty('options');
+        $this->optionsProperty->setAccessible(true);
     }
 
     public function tearDown()
@@ -139,7 +149,11 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
         $exception
     ) {
         //global counter to provide random namespaces to avoid class name collision
-        $this->environment->setOption('cache_namespace', 'test_' . ++self::$counter);
+        $options = $this->optionsProperty->getValue($this->environment);
+
+        $options['cache_namespace'] = 'test_' . ++self::$counter;
+
+        $this->optionsProperty->setValue($this->environment, $options);
         foreach ($templates as $name => $template) {
             $this->stringLoader->addTemplate($name, $template);
         }
