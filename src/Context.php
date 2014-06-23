@@ -11,21 +11,13 @@ namespace Minty;
 
 class Context
 {
-    /**
-     * @var Environment
-     */
-    private $environment;
+    private $strictMode;
     private $variables;
 
     public function __construct(Environment $environment, $variables = array())
     {
-        $this->environment = $environment;
-        $this->variables   = $this->ensureArray($variables);
-    }
-
-    public function getEnvironment()
-    {
-        return $this->environment;
+        $this->variables  = $this->ensureArray($variables);
+        $this->strictMode = $environment->getOption('strict_mode');
     }
 
     public function add($variables)
@@ -49,7 +41,7 @@ class Context
         if (isset($this->variables[$key])) {
             return $this->variables[$key];
         }
-        if (!$this->environment->getOption('strict_mode')) {
+        if (!$this->strictMode) {
             return $key;
         }
         throw new \OutOfBoundsException("Variable {$key} is not set.");
@@ -81,7 +73,7 @@ class Context
                 return $structure->$methodName();
             }
         }
-        if (!$this->environment->getOption('strict_mode')) {
+        if (!$this->strictMode) {
             return $key;
         }
         throw new \UnexpectedValueException('Variable is not an array or an object.');

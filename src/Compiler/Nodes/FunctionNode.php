@@ -64,7 +64,7 @@ class FunctionNode extends IdentifierNode
 
             if ($function->getOption('needs_environment')) {
                 $getEnvironmentNode = new FunctionNode('getEnvironment');
-                $getEnvironmentNode->setObject(new TempVariableNode('context'));
+                $getEnvironmentNode->setObject(new VariableNode('_self'));
                 array_unshift($this->arguments, $getEnvironmentNode);
             }
             if ($function->getOption('needs_context')) {

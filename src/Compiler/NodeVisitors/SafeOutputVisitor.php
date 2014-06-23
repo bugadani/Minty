@@ -13,9 +13,9 @@ use Minty\Compiler\Node;
 use Minty\Compiler\Nodes\ClassNode;
 use Minty\Compiler\Nodes\DataNode;
 use Minty\Compiler\Nodes\FunctionNode;
-use Minty\Compiler\Nodes\IdentifierNode;
 use Minty\Compiler\Nodes\OperatorNode;
 use Minty\Compiler\Nodes\TagNode;
+use Minty\Compiler\Nodes\TempVariableNode;
 use Minty\Compiler\Nodes\VariableNode;
 use Minty\Compiler\NodeVisitor;
 use Minty\Compiler\Operators\FilterOperator;
@@ -26,6 +26,7 @@ use Minty\iEnvironmentAware;
 
 class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
 {
+    private $defaultAutofilterStrategy;
     /**
      * @var Environment
      */
@@ -44,8 +45,9 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
 
     public function setEnvironment(Environment $environment)
     {
-        $this->autofilter  = $environment->getOption('autofilter');
-        $this->environment = $environment;
+        $this->autofilter                = $environment->getOption('autofilter');
+        $this->environment               = $environment;
+        $this->defaultAutofilterStrategy = $environment->getOption('default_autofilter_strategy');
     }
 
     public function enterNode(Node $node)
@@ -56,7 +58,7 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
             if ($dot !== false) {
                 $this->extension = substr($template, $dot + 1);
             } else {
-                $this->extension = $this->environment->getOption('default_autofilter_strategy');
+                $this->extension = $this->defaultAutofilterStrategy;
             }
         } elseif ($this->inTag) {
             if (!$this->autofilter) {
@@ -65,7 +67,7 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
             if ($this->isFilterOperator($node)) {
                 $this->isSafe &= $this->isFilterSafe($node);
             } elseif ($node instanceof FunctionNode) {
-                $this->isSafe &= $this->isFunctionSafe($node);
+                $this->isSafe &= $this->isFunctionNodeSafe($node);
             } elseif ($this->functionLevel === 0) {
                 if ($this->isUnsafeVariable($node)) {
                     $this->isSafe = false;
@@ -88,7 +90,7 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
                 $node->addData('is_safe', !$this->autofilter || $this->isSafe);
                 if ($this->autofilter) {
                     if ($this->autofilter === 1) {
-                        $filterFor = $this->createTemplateExtensionNode();
+                        $filterFor = new TempVariableNode('this->extension');
                     } else {
                         $filterFor = new DataNode($this->autofilter);
                     }
@@ -136,36 +138,17 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
     }
 
     /**
-     * @return OperatorNode
-     */
-    private function createTemplateExtensionNode()
-    {
-        $filterFor = new OperatorNode(
-            $this->environment->getBinaryOperators()->getOperator('.')
-        );
-        $filterFor->addChild(new VariableNode('_self'), OperatorNode::OPERAND_LEFT);
-        $filterFor->addChild(
-            new IdentifierNode('extension'),
-            OperatorNode::OPERAND_RIGHT
-        );
-
-        return $filterFor;
-    }
-
-    /**
      * @param FunctionNode $node
      *
      * @return bool
      */
-    private function isFunctionSafe(FunctionNode $node)
+    private function isFunctionNodeSafe(FunctionNode $node)
     {
         if ($this->functionLevel++ === 0) {
             if ($node->getObject()) {
                 return false;
             } else {
-                $function = $this->environment->getFunction($node->getName());
-
-                return $function->getOption('is_safe');
+                return $this->isFunctionSafe($node->getName());
             }
         }
 
@@ -180,18 +163,26 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
     private function isFilterSafe(OperatorNode $node)
     {
         if ($this->functionLevel++ === 0) {
-            $function = $this->environment->getFunction(
-                $node->getChild(OperatorNode::OPERAND_RIGHT)->getName()
-            );
-            $safeFor  = $function->getOption('is_safe');
-
-            if (is_array($safeFor)) {
-                $safeFor = in_array($this->autofilter, $safeFor);
-            }
-
-            return $safeFor === true || $safeFor === $this->autofilter;
+            return $this->isFunctionSafe($node->getChild(OperatorNode::OPERAND_RIGHT)->getName());
         }
 
         return true;
+    }
+
+    /**
+     * @param $function
+     *
+     * @return mixed
+     */
+    private function isFunctionSafe($function)
+    {
+        $function = $this->environment->getFunction($function);
+        $safeFor  = $function->getOption('is_safe');
+
+        if (is_array($safeFor)) {
+            $safeFor = in_array($this->autofilter, $safeFor);
+        }
+
+        return $safeFor === true || $safeFor === $this->autofilter;
     }
 }
