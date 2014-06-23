@@ -228,8 +228,11 @@ class Tokenizer
             $expression = $tag;
         }
 
-        $this->pushToken(Token::TAG, $tagName);
-
+        if (is_string($this->tags[$tagName])) {
+            $this->pushToken(Token::TAG, $this->tags[$tagName]);
+        } else {
+            $this->pushToken(Token::TAG, $tagName);
+        }
         //tokenize the tag expression if any
         if ($expression === '') {
             return;

@@ -5,6 +5,6 @@ This test covers switch blocks with simple expression
 { case 1 }not ok
 { case 2 }ok
 { else }not ok
-{ endswitch }
+{ /switch }
 --EXPECT--
 ok

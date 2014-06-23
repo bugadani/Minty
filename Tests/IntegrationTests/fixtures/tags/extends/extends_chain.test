@@ -3,14 +3,14 @@ Test the extends tag when the parent is also extending an other template.
 --TEMPLATE--
 { extends 'parent' }
 Child
-{ block foo }foo{ endblock }
+{ block foo }foo{ /block }
 --TEMPLATE parent--
 { extends 'parent2' }
 Parent
-{ block foo }bar{ endblock }
+{ block foo }bar{ /block }
 --TEMPLATE parent2--
 Parent2
-{ block foo }foobar{ endblock }
+{ block foo }foobar{ /block }
 --EXPECT--
 Parent2
 foo

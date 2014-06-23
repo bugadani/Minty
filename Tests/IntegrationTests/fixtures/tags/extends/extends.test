@@ -3,10 +3,10 @@ Test the basic use case of the extends tag.
 --TEMPLATE--
 { extends 'parent' }
 Child
-{ block foo }foo{ endblock }
+{ block foo }foo{ /block }
 --TEMPLATE parent--
 Parent
-{ block foo }bar{ endblock }
+{ block foo }bar{ /block }
 --EXPECT--
 Parent
 foo

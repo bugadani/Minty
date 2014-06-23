@@ -3,15 +3,15 @@ Test embed tag when the embedded template extends an other
 --TEMPLATE--
 Oof
 { embed 'embedded' }
-{ block foo }bar{ endblock }
-{ endembed }
+{ block foo }bar{ /block }
+{ /embed }
 --TEMPLATE embedded--
 { extends 'extended' }
-{ block foo }foo{ endblock }
+{ block foo }foo{ /block }
 --TEMPLATE extended--
 Header
-{ block bar }baz{ endblock }
-{ block foo }foobar{ endblock }
+{ block bar }baz{ /block }
+{ block foo }foobar{ /block }
 --EXPECT--
 Oof
 Header

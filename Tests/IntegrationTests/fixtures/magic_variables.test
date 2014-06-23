@@ -5,11 +5,11 @@ Test that _self returns the name of the template where it was used
 { block content }{ parent }{ $_self.parent.template }
 { $_self.extension }
 { $_self.template }
-{ endblock }
+{ /block }
 --TEMPLATE foo.html--
 { block content }{ $_self.template }
 { $_self.extension }
-{ endblock }
+{ /block }
 --EXPECT--
 foo.html
 html

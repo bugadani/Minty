@@ -41,7 +41,7 @@ class ErrorTemplateLoader extends StringLoader
         <b>{\$line}</b>
     { else }
         { \$line }
-    { endif }
+    { {$closingTagPrefix}if }
     </li>
 { {$closingTagPrefix}for }
 </ol></code></pre>

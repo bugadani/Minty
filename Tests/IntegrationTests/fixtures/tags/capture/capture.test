@@ -3,7 +3,7 @@ Test basic use case of the capture tag
 --TEMPLATE--
 { capture into $foo }
 foobar
-{ endcapture }
+{ /capture }
 { $foo }
 --EXPECT--
 

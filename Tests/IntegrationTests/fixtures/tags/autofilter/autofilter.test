@@ -4,7 +4,7 @@ Test that the automatic filtering based on template extension works. The default
 { $foo }
 { include 'template.json' }
 { include 'template.html' }
-{ embed 'template.json' }{ endembed }
+{ embed 'template.json' }{ /embed }
 --TEMPLATE template.html--
 { $foo }
 --TEMPLATE template.json--

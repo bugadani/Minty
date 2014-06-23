@@ -121,7 +121,7 @@ class Environment
 
         $default_options = array(
             'autofilter'                  => 1,
-            'block_end_prefix'            => 'end',
+            'block_end_prefix'            => '/',
             'cache'                       => false,
             'cache_namespace'             => '',
             'debug'                       => false,

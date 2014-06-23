@@ -1,6 +1,6 @@
 --TEST--
 This test covers for block with a non-empty list and else clause
 --TEMPLATE--
-{ for $i in 1..5}{ $i }{ else }empty{ endfor }
+{ for $i in 1..5}{ $i }{ else }empty{ /for }
 --EXPECT--
 12345

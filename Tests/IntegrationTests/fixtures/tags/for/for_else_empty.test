@@ -1,6 +1,6 @@
 --TEST--
 This test covers for block with empty list and else clause
 --TEMPLATE--
-{ for $i in [] }{ $i }{ else }empty{ endfor }
+{ for $i in [] }{ $i }{ else }empty{ /for }
 --EXPECT--
 empty

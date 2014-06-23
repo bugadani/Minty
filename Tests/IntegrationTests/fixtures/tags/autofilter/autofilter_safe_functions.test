@@ -2,9 +2,9 @@
 Test that the automatic filtering marks strategy-safe functions correctly safe
 --TEMPLATE--
 {autofilter 'html'}{ $foo|html_safe }
-{ $foo|json_safe }{ endautofilter }
+{ $foo|json_safe }{ /autofilter }
 {autofilter 'json'}{ $foo|html_safe }
-{ $foo|json_safe }{ endautofilter }
+{ $foo|json_safe }{ /autofilter }
 --DATA--
 array('foo' => '<>{}')
 --EXPECT--

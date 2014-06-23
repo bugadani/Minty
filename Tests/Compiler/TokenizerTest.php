@@ -79,7 +79,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
         $template = str_repeat('foo', 100000);
         $template .= '{raw}';
         $template .= str_repeat('foo', 100000);
-        $template .= '{endraw}{#';
+        $template .= '{/raw}{#';
         $template .= str_repeat('foo', 100000);
         $template .= '#}';
         $this->tokenizer->tokenize($template);
@@ -87,7 +87,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     public function testTokenizerDoesNotParseTagsInRawBlock()
     {
-        $stream = $this->tokenizer->tokenize('{ raw }{test}{ endraw }');
+        $stream = $this->tokenizer->tokenize('{ raw }{test}{ /raw }');
         $stream->expect(Token::TEXT, '{test}');
         $stream->expect(Token::EOF);
     }
@@ -136,11 +136,11 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
     public function testTokenizerAcceptsCustomBlockClosingTagPrefix()
     {
         $env       = new Environment($this->mockLoader, array(
-            'block_end_prefix' => '/'
+            'block_end_prefix' => 'end'
         ));
         $tokenizer = new Tokenizer($env);
 
-        return $tokenizer->tokenize('{raw}some random content {}{/raw{/raw}');
+        return $tokenizer->tokenize('{raw}some random content {}{endraw{endraw}');
     }
 
     /**
@@ -148,12 +148,12 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
      */
     public function testRawBlocksAreNotParsed(Stream $stream)
     {
-        $this->assertEquals('some random content {}{/raw', $stream->next()->getValue());
+        $this->assertEquals('some random content {}{endraw', $stream->next()->getValue());
     }
 
     public function testCommentsAreNotRemovedFromRawBlocks()
     {
-        $stream = $this->tokenizer->tokenize('{raw}something {# comment #} something{endraw}');
+        $stream = $this->tokenizer->tokenize('{raw}something {# comment #} something{/raw}');
 
         $this->assertEquals('something {# comment #} something', $stream->next()->getValue());
     }
@@ -267,7 +267,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     public function testClosingTagsAreParsed()
     {
-        $stream = $this->tokenizer->tokenize('{ testblock }{ endtestblock }');
+        $stream = $this->tokenizer->tokenize('{ testblock }{ /testblock }');
         $stream->expect(Token::TAG, 'testblock');
         $stream->expect(Token::TAG, 'endtestblock');
         $stream->expect(Token::EOF);
@@ -282,7 +282,7 @@ string" §
 § tag}
 {raw}text
 new line
-{endraw} {#
+{/raw} {#
 
  multiline comment
 
@@ -323,7 +323,7 @@ new line
     {
         return array(
             array('{raw}unclosed raw block{'),
-            array('{raw}unclosed raw block{endraw'),
+            array('{raw}unclosed raw block{/raw'),
             array('{"unterminated string'),
             array('{"unterminated \\" \\\\\\"'),
             array('{unclosed tag'),

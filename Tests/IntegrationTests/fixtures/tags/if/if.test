@@ -1,9 +1,9 @@
 --TEST--
 This test covers if, else and endif with simple expressions
 --TEMPLATE--
-{ if true }ok{ endif }
-{ if false }not ok{ else }ok{ endif }
-{ if false }not ok{ elseif true }ok{ else }not ok{ endif }
+{ if true }ok{ /if }
+{ if false }not ok{ else }ok{ /if }
+{ if false }not ok{ elseif true }ok{ else }not ok{ /if }
 --EXPECT--
 ok
 ok

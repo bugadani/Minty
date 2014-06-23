@@ -3,8 +3,8 @@ Test that the automatic filtering can be nested
 --TEMPLATE--
 { $foo }
 { autofilter 'json' }{ $foo }
-{ autofilter off }{ $foo }{ endautofilter }
-{ $foo }{ endautofilter }
+{ autofilter off }{ $foo }{ /autofilter }
+{ $foo }{ /autofilter }
 { $foo }
 --TEMPLATE template.html--
 { $foo }

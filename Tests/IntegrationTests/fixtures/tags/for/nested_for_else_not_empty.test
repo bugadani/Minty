@@ -1,8 +1,8 @@
 --TEST--
 This test covers for block with a non-empty list and else clause
 --TEMPLATE--
-{ for $i in 1..5}{ for $j in 1..$i }{ $j }{ endfor }
-{ else }empty{ endfor }
+{ for $i in 1..5}{ for $j in 1..$i }{ $j }{ /for }
+{ else }empty{ /for }
 --EXPECT--
 1
 12
