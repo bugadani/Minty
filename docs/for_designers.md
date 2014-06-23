@@ -22,7 +22,14 @@ the included template displays.
 Blocks
 --------
 Blocks are special tags: they have an ending tag that closes the block. Blocks operate on the template that is
-enclosed by them. For example, an `if` block displays the enclosed template only when the condition is true.
+enclosed by the opening and closing tag. For example, an `if` block displays the enclosed template only when
+the condition is true.
+
+    { if $number = 2 }
+        The number was two.
+    { else }
+        The number was { $number }
+    { /if }
 
 Comments
 --------
