@@ -112,20 +112,33 @@ class Environment
     private $errorTemplateLoaderLoaded = false;
 
     /**
-     * @var string
-     */
-    private $errorTemplate;
-
-    /**
      * @param AbstractTemplateLoader $loader
      * @param array                  $options
      */
     public function __construct(AbstractTemplateLoader $loader, array $options = array())
     {
         $this->addTemplateLoader($loader);
-        $this->options       = $options;
-        $this->errorTemplate = $this->getOption('error_template', '__compile_error_template');
-        if ($this->errorTemplate !== '__compile_error_template') {
+
+        $default_options = array(
+            'autofilter'                  => 1,
+            'block_end_prefix'            => 'end',
+            'cache'                       => false,
+            'cache_namespace'             => '',
+            'debug'                       => false,
+            'default_autofilter_strategy' => 'html',
+            'delimiters'                  => array(
+                'tag'     => array('{', '}'),
+                'comment' => array('{#', '#}')
+            ),
+            'error_template'              => '__compile_error_template',
+            'fallback_tag'                => 'print',
+            'global_variables'            => array(),
+            'strict_mode'                 => true,
+            'template_base_class'         => 'Minty\\Template'
+        );
+        $this->options   = array_merge($default_options, $options);
+
+        if ($this->options['error_template'] !== '__compile_error_template') {
             //don't load the built-in error template loader
             $this->errorTemplateLoaderLoaded = true;
         }
@@ -154,7 +167,7 @@ class Environment
 
     public function getCachePath($cacheKey)
     {
-        return $this->getOption('cache') . '/' . $cacheKey . '.php';
+        return $this->options['cache'] . '/' . $cacheKey . '.php';
     }
 
     public function addGlobalVariable($name, $value)
@@ -164,19 +177,14 @@ class Environment
 
     /**
      * @param $key
-     * @param $default
      *
      * @throws \OutOfBoundsException
      * @return mixed
      */
-    public function getOption($key, $default = null)
+    public function getOption($key)
     {
         if (!isset($this->options[$key])) {
-            if ($default === null) {
-                throw new \OutOfBoundsException("Option {$key} is not set.");
-            }
-
-            return $default;
+            throw new \OutOfBoundsException("Option {$key} is not set.");
         }
 
         return $this->options[$key];
@@ -380,7 +388,7 @@ class Environment
 
     private function compileIfNeeded($templateName)
     {
-        $cacheEnabled = $this->getOption('cache', false);
+        $cacheEnabled = $this->options['cache'];
         if ($cacheEnabled) {
             if ($this->loader->isCacheFresh($templateName)) {
                 //The template is already compiled and up to date
@@ -436,7 +444,7 @@ class Environment
     public function getTemplateClassName($template)
     {
         $cacheKey       = $this->loader->getCacheKey($template);
-        $cacheNamespace = $this->getOption('cache_namespace', '');
+        $cacheNamespace = $this->options['cache_namespace'];
         $cacheKey       = preg_replace('/[^\w\\/]+/', '_', $cacheKey);
 
         return $cacheNamespace . '\\' . strtr($cacheKey, '/', '\\');
@@ -470,7 +478,7 @@ class Environment
             return $variables;
         }
         $context = new Context($this, $variables);
-        $context->add($this->getOption('global_variables', array()));
+        $context->add($this->options['global_variables']);
 
         return $context;
     }
@@ -489,7 +497,7 @@ class Environment
                 );
                 $this->errorTemplateLoaderLoaded = true;
             }
-            $object = $this->load($this->errorTemplate);
+            $object = $this->load($this->options['error_template']);
             $object->displayTemplate(
                 $this->createContext(
                     array(

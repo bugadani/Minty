@@ -11,7 +11,6 @@ namespace Minty\Compiler;
 
 use Minty\Compiler\Exceptions\ParseException;
 use Minty\Compiler\Nodes\ClassNode;
-use Minty\Compiler\Nodes\DataNode;
 use Minty\Compiler\Nodes\FileNode;
 use Minty\Compiler\Nodes\PrintNode;
 use Minty\Compiler\Nodes\RootNode;
@@ -55,7 +54,7 @@ class Parser
         $this->expressionParser = $expressionParser;
         $this->environment      = $environment;
         $this->tags             = $environment->getTags();
-        $this->fallbackTagName  = $environment->getOption('fallback_tag', false);
+        $this->fallbackTagName  = $environment->getOption('fallback_tag');
     }
 
     /**

@@ -44,7 +44,7 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
 
     public function setEnvironment(Environment $environment)
     {
-        $this->autofilter  = $environment->getOption('autoescape', 1);
+        $this->autofilter  = $environment->getOption('autofilter');
         $this->environment = $environment;
     }
 
@@ -56,10 +56,7 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
             if ($dot !== false) {
                 $this->extension = substr($template, $dot + 1);
             } else {
-                $this->extension = $this->environment->getOption(
-                    'default_autofilter_strategy',
-                    'html'
-                );
+                $this->extension = $this->environment->getOption('default_autofilter_strategy');
             }
         } elseif ($this->inTag) {
             if (!$this->autofilter) {

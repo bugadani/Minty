@@ -23,10 +23,7 @@ class ClassNode extends Node
     public function __construct(Environment $env, $templateName)
     {
         $this->templateName = $templateName;
-        $this->baseClass    = $env->getOption(
-            'template_base_class',
-            'Minty\\Template'
-        );
+        $this->baseClass    = $env->getOption('template_base_class');
 
         $className = $env->getTemplateClassName($templateName);
 

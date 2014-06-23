@@ -42,16 +42,10 @@ class Tokenizer
 
     public function __construct(Environment $environment)
     {
-        $this->fallbackTagName = $environment->getOption('fallback_tag', false);
-        $this->blockEndPrefix  = $environment->getOption('block_end_prefix', 'end');
+        $this->fallbackTagName = $environment->getOption('fallback_tag');
+        $this->blockEndPrefix  = $environment->getOption('block_end_prefix');
         $this->operators       = $environment->getOperatorSymbols();
-        $this->delimiters      = $environment->getOption(
-            'delimiters',
-            array(
-                'tag'     => array('{', '}'),
-                'comment' => array('{#', '#}')
-            )
-        );
+        $this->delimiters      = $environment->getOption('delimiters');
 
         $this->tags = $environment->getTags();
         foreach ($this->tags as $name => $tag) {
@@ -298,7 +292,7 @@ class Tokenizer
         } elseif (is_numeric($part)) {
             $number = (float) $part;
             //check whether the number can be represented as an integer
-            if(ctype_digit($part) && $number <= PHP_INT_MAX) {
+            if (ctype_digit($part) && $number <= PHP_INT_MAX) {
                 $number = (int) $part;
             }
             $this->pushToken(Token::LITERAL, $number);

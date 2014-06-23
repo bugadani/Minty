@@ -59,7 +59,7 @@ class Context
         if (isset($this->variables[$key])) {
             return $this->variables[$key];
         }
-        if (!$this->environment->getOption('strict_mode', true)) {
+        if (!$this->environment->getOption('strict_mode')) {
             return $key;
         }
         throw new \OutOfBoundsException("Variable {$key} is not set.");
@@ -91,7 +91,7 @@ class Context
                 return $structure->$methodName();
             }
         }
-        if (!$this->environment->getOption('strict_mode', true)) {
+        if (!$this->environment->getOption('strict_mode')) {
             return $key;
         }
         throw new \UnexpectedValueException('Variable is not an array or an object.');
@@ -108,11 +108,11 @@ class Context
             }
         }
         if (is_object($structure)) {
-            if(isset($structure->$key)) {
+            if (isset($structure->$key)) {
                 return true;
             }
             $methodName = 'has' . ucfirst($key);
-            if(method_exists($structure, $methodName)) {
+            if (method_exists($structure, $methodName)) {
                 return $structure->$methodName();
             }
         }

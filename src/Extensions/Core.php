@@ -383,7 +383,7 @@ function template_function_filter(Environment $environment, $data, $for = 'html'
         return $data;
     }
     if (!$environment->hasFunction('filter_' . $for)) {
-        $for = $environment->getOption('default_filter_strategy', 'html');
+        $for = $environment->getOption('default_autofilter_strategy');
     }
 
     return $environment->getFunction('filter_' . $for)->call($data);

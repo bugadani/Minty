@@ -20,7 +20,7 @@ class ErrorTemplateLoader extends StringLoader
         $this->addTemplate(
             '__compile_error_template',
             $this->getCompileErrorTemplate(
-                $environment->getOption('block_end_prefix', 'end')
+                $environment->getOption('block_end_prefix')
             )
         );
     }
