@@ -58,7 +58,6 @@ abstract class Node
 
     public function removeChild($key)
     {
-        unset($this->children[$key]->parent);
         unset($this->children[$key]);
     }
 

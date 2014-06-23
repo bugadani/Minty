@@ -90,9 +90,15 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
     {
         if ($this->inTag) {
             if ($this->isPrintNode($node)) {
-                $node->addData('is_safe', !$this->autofilter || $this->isSafe);
-                if ($this->autofilter) {
-                    $node->addChild(new DataNode($this->autofilter), 'filter_for');
+                $safe = !$this->autofilter || $this->isSafe;
+                if ($this->autofilter && !$safe) {
+                    $node->addChild(
+                        new FunctionNode('filter', array(
+                            $node->getChild('expression'),
+                            new DataNode($this->autofilter)
+                        )),
+                        'expression'
+                    );
                 }
                 $this->inTag = false;
             } elseif ($node instanceof FunctionNode || $this->isFilterOperator($node)) {

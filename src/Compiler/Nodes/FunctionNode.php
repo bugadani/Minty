@@ -15,6 +15,7 @@ use Minty\Compiler\Node;
 class FunctionNode extends IdentifierNode
 {
     private $arguments;
+    private $argumentCount;
 
     /**
      * @var Node|null
@@ -24,12 +25,17 @@ class FunctionNode extends IdentifierNode
     public function __construct($functionName, array $arguments = array())
     {
         parent::__construct($functionName);
-        $this->arguments = $arguments;
+        $this->setArguments($arguments);
     }
 
     public function setArguments(array $arguments)
     {
         $this->arguments = $arguments;
+
+        $this->argumentCount = 0;
+        foreach ($arguments as $argument) {
+            $this->addChild($argument, 'argument_' . $this->argumentCount++);
+        }
     }
 
     public function getArguments()

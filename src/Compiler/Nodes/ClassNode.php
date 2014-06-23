@@ -132,7 +132,9 @@ class ClassNode extends Node
         $compiler->indented('public function %s(Context $context)', $method);
         $compiler->indented('{');
         $compiler->indent();
-        $compiler->indented('$environment = $this->getEnvironment();');
+        if (!$body->hasData('environment_accessed') || $body->getData('environment_accessed')) {
+            $compiler->indented('$environment = $this->getEnvironment();');
+        }
         $compiler->compileNode($body);
         $compiler->outdent();
         $compiler->indented("}\n");

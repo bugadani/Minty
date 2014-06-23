@@ -10,7 +10,6 @@
 namespace Minty\Compiler\Tags;
 
 use Minty\Compiler\Compiler;
-use Minty\Compiler\Nodes\FunctionNode;
 use Minty\Compiler\Nodes\TagNode;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
@@ -45,22 +44,9 @@ class PrintTag extends Tag
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        $expression = $node->getChild('expression');
-
-        if (!$node->getData('is_safe')) {
-            $arguments = array($expression);
-
-            if ($node->hasChild('filter_for')) {
-                $arguments[] = $node->getChild('filter_for');
-            }
-
-            $function = new FunctionNode('filter', $arguments);
-            $function->addChild($expression);
-            $expression = $function;
-        }
         $compiler
             ->indented('echo ')
-            ->compileNode($expression)
+            ->compileNode($node->getChild('expression'))
             ->add(';');
     }
 }

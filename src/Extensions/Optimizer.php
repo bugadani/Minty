@@ -9,6 +9,7 @@
 
 namespace Minty\Extensions;
 
+use Minty\Compiler\NodeVisitors\EnvironmentVariableOptimizer;
 use Minty\Compiler\NodeVisitors\ForLoopOptimizer;
 use Minty\Extension;
 
@@ -23,7 +24,8 @@ class Optimizer extends Extension
     public function getNodeVisitors()
     {
         return array(
-            new ForLoopOptimizer()
+            new ForLoopOptimizer(),
+            new EnvironmentVariableOptimizer()
         );
     }
 }

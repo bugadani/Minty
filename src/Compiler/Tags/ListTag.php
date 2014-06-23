@@ -10,7 +10,9 @@
 namespace Minty\Compiler\Tags;
 
 use Minty\Compiler\Compiler;
+use Minty\Compiler\Nodes\FunctionNode;
 use Minty\Compiler\Nodes\TagNode;
+use Minty\Compiler\Nodes\TempVariableNode;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
 use Minty\Compiler\Tag;
@@ -30,7 +32,14 @@ class ListTag extends Tag
 
         $node->addChild($parser->parseExpression($stream), 'expression');
         $stream->expectCurrent(Token::IDENTIFIER, 'using');
-        $node->addChild($parser->parseExpression($stream), 'template');
+
+        $renderFunction = new FunctionNode('render', array(
+            $parser->parseExpression($stream),
+            new TempVariableNode('element')
+        ));
+        $renderFunction->setObject(new TempVariableNode('environment'));
+
+        $node->addChild($renderFunction, 'render');
         $stream->expectCurrent(Token::EXPRESSION_END);
 
         return $node;
@@ -43,9 +52,9 @@ class ListTag extends Tag
             ->compileNode($node->getChild('expression'))
             ->add(' as $element) {')
             ->indent()
-            ->indented('$environment->render(')
-            ->compileNode($node->getChild('template'))
-            ->add(', $element);')
+            ->indented('')
+            ->compileNode($node->getChild('render'))
+            ->add(';')
             ->outdent()
             ->indented('}');
     }
