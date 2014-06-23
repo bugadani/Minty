@@ -6,6 +6,8 @@ Test that the raw filter disables escaping
 { raw($foo) }
 { $foo ~ $foo|raw }
 { ($foo ~ $foo)|raw }
+{ $foo|raw|upper }
+{ upper(raw($foo)) }
 --DATA--
 array('foo' => '<a>')
 --EXPECT--
@@ -14,3 +16,5 @@ array('foo' => '<a>')
 <a>
 &lt;a&gt;&lt;a&gt;
 <a><a>
+&lt;A&gt;
+&lt;A&gt;
