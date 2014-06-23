@@ -14,6 +14,7 @@ use Minty\Compiler\Exceptions\ParseException;
 use Minty\Compiler\Nodes\FunctionNode;
 use Minty\Compiler\Nodes\IdentifierNode;
 use Minty\Compiler\Nodes\OperatorNode;
+use Minty\Compiler\Nodes\VariableNode;
 use Minty\Compiler\Operator;
 
 class FilterOperator extends Operator
@@ -32,7 +33,7 @@ class FilterOperator extends Operator
             $arguments = $filter->getArguments();
             array_unshift($arguments, $data);
             $filter->setArguments($arguments);
-        } elseif ($filter instanceof IdentifierNode) {
+        } elseif ($filter instanceof IdentifierNode && !$filter instanceof VariableNode) {
             $filter = new FunctionNode($filter->getName(), array($data));
         } else {
             throw new ParseException('Invalid filter node.');

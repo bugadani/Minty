@@ -10,8 +10,8 @@
 namespace Minty\Compiler\Operators;
 
 use Minty\Compiler\Compiler;
-use Minty\Compiler\Nodes\IdentifierNode;
 use Minty\Compiler\Nodes\OperatorNode;
+use Minty\Compiler\Nodes\VariableNode;
 use Minty\Compiler\Operator;
 
 class FalseCoalescingOperator extends Operator
@@ -27,7 +27,7 @@ class FalseCoalescingOperator extends Operator
         $left = $node->getChild(OperatorNode::OPERAND_LEFT);
 
         $compiler->add('(');
-        if ($left instanceof IdentifierNode) {
+        if ($left instanceof VariableNode) {
             $compiler
                 ->add('isset(')
                 ->compileNode($left)

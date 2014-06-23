@@ -11,9 +11,7 @@ namespace Minty\Compiler\Operators;
 
 use Minty\Compiler\Compiler;
 use Minty\Compiler\Nodes\FunctionNode;
-use Minty\Compiler\Nodes\IdentifierNode;
 use Minty\Compiler\Nodes\OperatorNode;
-use Minty\Compiler\Nodes\VariableNode;
 use Minty\Compiler\Operator;
 
 class PropertyAccessOperator extends Operator
@@ -36,13 +34,9 @@ class PropertyAccessOperator extends Operator
             $compiler
                 ->add('$context->' . $this->getMethodName($node) . '(')
                 ->compileNode($object)
-                ->add(', ');
-            if ($right instanceof IdentifierNode && !$right instanceof VariableNode) {
-                $compiler->compileString($right->getName());
-            } else {
-                $compiler->compileNode($right);
-            }
-            $compiler->add(')');
+                ->add(', ')
+                ->compileNode($right)
+                ->add(')');
         }
     }
 

@@ -29,8 +29,9 @@ class PrintTag extends Tag
     {
         $expression = $parser->parseExpression($stream);
         if ($stream->current()->test(Token::PUNCTUATION, ':')) {
-            $setTag = $parser->getEnvironment()->getTag('set');
-            $node = new TagNode($setTag);
+            $node = new TagNode(
+                $parser->getEnvironment()->getTag('set')
+            );
             $node->addChild($parser->parseExpression($stream), 'value_0');
             $node->addChild($expression, 'expression_0');
             $node->addData('variables', 1);
@@ -51,8 +52,6 @@ class PrintTag extends Tag
 
             if ($node->hasChild('filter_for')) {
                 $arguments[] = $node->getChild('filter_for');
-            } elseif ($node->hasData('filter_for')) {
-                $arguments[] = $node->getData('filter_for');
             }
 
             $function = new FunctionNode('filter', $arguments);

@@ -28,6 +28,6 @@ class IdentifierNode extends Node
 
     public function compile(Compiler $compiler)
     {
-        throw new \RuntimeException('IdentifierNode should not be compiled directly');
+        $compiler->compileString($this->name);
     }
 }
