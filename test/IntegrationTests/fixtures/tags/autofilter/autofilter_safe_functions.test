@@ -5,10 +5,14 @@ Test that the automatic filtering marks strategy-safe functions correctly safe
 { $foo|json_safe }{ /autofilter }
 {autofilter 'json'}{ $foo|html_safe }
 { $foo|json_safe }{ /autofilter }
+{ include 'template.html' }
+--TEMPLATE template.html--
+{ $foo|html_safe }
 --DATA--
 array('foo' => '<>{}')
 --EXPECT--
 <>{}
 &lt;&gt;{}
 "<>{}"
+<>{}
 <>{}

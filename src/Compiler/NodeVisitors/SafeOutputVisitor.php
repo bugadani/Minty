@@ -15,7 +15,6 @@ use Minty\Compiler\Nodes\DataNode;
 use Minty\Compiler\Nodes\FunctionNode;
 use Minty\Compiler\Nodes\OperatorNode;
 use Minty\Compiler\Nodes\TagNode;
-use Minty\Compiler\Nodes\TempVariableNode;
 use Minty\Compiler\Nodes\VariableNode;
 use Minty\Compiler\NodeVisitor;
 use Minty\Compiler\Operators\FilterOperator;
@@ -26,7 +25,6 @@ use Minty\iEnvironmentAware;
 
 class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
 {
-    private $defaultAutofilterStrategy;
     /**
      * @var Environment
      */
@@ -36,6 +34,7 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
     private $isSafe;
     private $autofilter;
     private $autofilterStack = array();
+    private $defaultAutofilterStrategy;
     private $extension;
 
     public function getPriority()
@@ -45,8 +44,8 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
 
     public function setEnvironment(Environment $environment)
     {
-        $this->autofilter                = $environment->getOption('autofilter');
         $this->environment               = $environment;
+        $this->autofilter = $environment->getOption('autofilter');
         $this->defaultAutofilterStrategy = $environment->getOption('default_autofilter_strategy');
     }
 
@@ -54,11 +53,15 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
     {
         if ($node instanceof ClassNode) {
             $template = $node->getTemplateName();
-            $dot      = strrpos($template, '.');
-            if ($dot !== false) {
-                $this->extension = substr($template, $dot + 1);
-            } else {
-                $this->extension = $this->defaultAutofilterStrategy;
+            if ($this->autofilter === 1) {
+                $dot = strrpos($template, '.');
+                if ($dot !== false) {
+                    $this->extension = substr($template, $dot + 1);
+                } else {
+                    $this->extension = $this->defaultAutofilterStrategy;
+                }
+                $this->autofilterStack[] = $this->autofilter;
+                $this->autofilter        = $this->extension;
             }
         } elseif ($this->inTag) {
             if (!$this->autofilter) {
@@ -89,18 +92,13 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
             if ($this->isPrintNode($node)) {
                 $node->addData('is_safe', !$this->autofilter || $this->isSafe);
                 if ($this->autofilter) {
-                    if ($this->autofilter === 1) {
-                        $filterFor = new TempVariableNode('this->extension');
-                    } else {
-                        $filterFor = new DataNode($this->autofilter);
-                    }
-                    $node->addChild($filterFor, 'filter_for');
+                    $node->addChild(new DataNode($this->autofilter), 'filter_for');
                 }
                 $this->inTag = false;
             } elseif ($node instanceof FunctionNode || $this->isFilterOperator($node)) {
                 --$this->functionLevel;
             }
-        } elseif ($this->isAutofilterTag($node)) {
+        } elseif ($this->isAutofilterTag($node) || $node instanceof ClassNode) {
             $this->autofilter = array_pop($this->autofilterStack);
         }
 
@@ -180,7 +178,9 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
         $safeFor  = $function->getOption('is_safe');
 
         if (is_array($safeFor)) {
-            $safeFor = in_array($this->autofilter, $safeFor);
+            if (in_array($this->autofilter, $safeFor, true)) {
+                return true;
+            }
         }
 
         return $safeFor === true || $safeFor === $this->autofilter;
