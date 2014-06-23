@@ -363,12 +363,12 @@ class ExpressionParser
                 return false;
             }
 
-            //e.g. (5 divisible by 2 disivible by 3) is not considered valid
+            //e.g. (5 is divisible by 2 is disivible by 3) is not considered valid
             $symbols = $operator->operators();
             if (is_array($symbols)) {
                 $symbols = implode(', ', $symbols);
             }
-            throw new ParseException("Binary operator {$symbols} is not associative.");
+            throw new ParseException("Binary operator '{$symbols}' is not associative.");
         }
 
         return $top->getPrecedence() >= $operator->getPrecedence();
