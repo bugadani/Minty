@@ -76,7 +76,7 @@ class Context
         if (!$this->strictMode) {
             return $key;
         }
-        throw new \UnexpectedValueException('Variable is not an array or an object.');
+        throw new \UnexpectedValueException('Property not set: ' . $key);
     }
 
     public function hasProperty($structure, $key)
@@ -97,6 +97,7 @@ class Context
             if (method_exists($structure, $methodName)) {
                 return $structure->$methodName();
             }
+            return false;
         }
         throw new \UnexpectedValueException('Variable is not an array or an object.');
     }
