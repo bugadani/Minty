@@ -10,7 +10,6 @@
 namespace Minty\Compiler\Nodes;
 
 use Minty\Compiler\Compiler;
-use Minty\Compiler\Exceptions\ParseException;
 use Minty\Compiler\Node;
 
 class FunctionNode extends IdentifierNode
