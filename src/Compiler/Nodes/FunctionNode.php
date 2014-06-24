@@ -50,13 +50,9 @@ class FunctionNode extends IdentifierNode
         return $this->arguments;
     }
 
-    public function setObject(IdentifierNode $object)
+    public function setObject(Node $object)
     {
-        if($object instanceof VariableNode || $object instanceof TempVariableNode || $object instanceof FunctionNode) {
-            $this->object = $object;
-        } else {
-            throw new ParseException("Invalid method call.");
-        }
+        $this->object = $object;
     }
 
     /**
