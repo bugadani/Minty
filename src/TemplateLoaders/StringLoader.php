@@ -37,7 +37,7 @@ class StringLoader extends AbstractTemplateLoader implements iEnvironmentAware
             $this->getCacheKey($template)
         );
 
-        return is_file($cachePath) && !$this->environment->getOption('debug');
+        return is_file($cachePath);
     }
 
     public function exists($template)

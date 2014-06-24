@@ -84,6 +84,7 @@ class Parser
 
                 $node = $this->tags[$value]->parse($this, $stream);
                 if ($node instanceof Node) {
+                    $node->addData('line', $token->getLine());
                     $root->addChild($node);
                 }
                 break;

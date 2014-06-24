@@ -40,6 +40,9 @@ class TagNode extends Node
 
     public function compile(Compiler $compiler)
     {
+        if ($compiler->getEnvironment()->getOption('debug')) {
+            $compiler->indented('//Line %d: %s tag', $this->getData('line'), $this->tag->getTag());
+        }
         $this->tag->compile($compiler, $this);
     }
 }

@@ -26,9 +26,11 @@ Other options
    Sets the automatic filtering mode. Values:
      - `0`, `false`: don't filter output automatically.
      - `1`: filter output based on file extension
+ * `debug`
+   When set to `true`, extra information is compiled in form of comments into the template.
  * `default_autofilter_strategy`
    This options affects how values are filtered. When filtering is set to automatic mode this option
    works as if files without extension had the extension set by this option. For more information, see
    [filtering](filtering.md).
  * `strict_mode`
-   Tells whether non-existing variables should print their names or throw errors.
+   When true, variables that are not set will use their names as value.

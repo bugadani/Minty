@@ -117,8 +117,6 @@ class Environment
      */
     public function __construct(AbstractTemplateLoader $loader, array $options = array())
     {
-        $this->addTemplateLoader($loader);
-
         $default_options = array(
             'autofilter'                  => 1,
             'block_end_prefix'            => '/',
@@ -138,6 +136,7 @@ class Environment
         );
         $this->options   = array_merge($default_options, $options);
 
+        $this->addTemplateLoader($loader);
         if ($this->options['error_template'] !== '__compile_error_template') {
             //don't load the built-in error template loader
             $this->errorTemplateLoaderLoaded = true;
