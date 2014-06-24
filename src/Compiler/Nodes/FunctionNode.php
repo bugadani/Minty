@@ -10,6 +10,7 @@
 namespace Minty\Compiler\Nodes;
 
 use Minty\Compiler\Compiler;
+use Minty\Compiler\Exceptions\ParseException;
 use Minty\Compiler\Node;
 
 class FunctionNode extends IdentifierNode
@@ -49,9 +50,13 @@ class FunctionNode extends IdentifierNode
         return $this->arguments;
     }
 
-    public function setObject(Node $object)
+    public function setObject(IdentifierNode $object)
     {
-        $this->object = $object;
+        if($object instanceof VariableNode || $object instanceof TempVariableNode || $object instanceof FunctionNode) {
+            $this->object = $object;
+        } else {
+            throw new ParseException("Invalid method call.");
+        }
     }
 
     /**
