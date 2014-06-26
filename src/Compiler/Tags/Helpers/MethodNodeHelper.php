@@ -9,6 +9,7 @@
 
 namespace Minty\Compiler\Tags\Helpers;
 
+use Minty\Compiler\Node;
 use Minty\Compiler\Nodes\FunctionNode;
 use Minty\Compiler\Nodes\IdentifierNode;
 use Minty\Compiler\Nodes\TagNode;
@@ -26,7 +27,7 @@ class MethodNodeHelper
         return $functionNode;
     }
 
-    public function createRenderBlockNode(Tag $tag, $templateName)
+    public function createRenderBlockNode(Tag $tag, $templateName, Node $contextNode = null)
     {
         $node = new TagNode($tag);
         $node->addChild(
@@ -35,7 +36,7 @@ class MethodNodeHelper
                 'renderBlock',
                 array(
                     new IdentifierNode($templateName),
-                    new TempVariableNode('context')
+                    $contextNode ? : new TempVariableNode('context')
                 )
             ),
             'expression'
