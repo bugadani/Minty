@@ -116,7 +116,7 @@ class Parser
         );
         $this->classNode->addChild(
             $this->parseBlock($stream, null, Token::EOF),
-            '__main_template_block'
+            ClassNode::MAIN_TEMPLATE_BLOCK
         );
 
         return $fileNode;
