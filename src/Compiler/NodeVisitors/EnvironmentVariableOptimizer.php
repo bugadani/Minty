@@ -76,7 +76,7 @@ class EnvironmentVariableOptimizer extends NodeVisitor implements iEnvironmentAw
             return true;
         } elseif ($node instanceof FunctionNode) {
             if ($node->getObject()) {
-                return $this->isEnvironmentVariable($node->getObject());
+                return $this->checkForEnvironmentObject($node->getObject());
             }
 
             $function = $node;
@@ -139,5 +139,14 @@ class EnvironmentVariableOptimizer extends NodeVisitor implements iEnvironmentAw
     private function isEnvironmentVariable(Node $node)
     {
         return $node instanceof TempVariableNode && $node->getName() === 'environment';
+    }
+
+    private function checkForEnvironmentObject(Node $node)
+    {
+        if ($node instanceof FunctionNode) {
+            return $this->checkForEnvironmentObject($node->getObject());
+        }
+
+        return $this->isEnvironmentVariable($node);
     }
 }
