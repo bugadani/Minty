@@ -66,6 +66,7 @@ use Minty\Compiler\Operators\UnaryOperators\PreIncrementOperator;
 use Minty\Compiler\Tags\AutofilterTag;
 use Minty\Compiler\Tags\CaptureTag;
 use Minty\Compiler\Tags\CaseTag;
+use Minty\Compiler\Tags\DisplayTag;
 use Minty\Compiler\Tags\DoTag;
 use Minty\Compiler\Tags\ElseIfTag;
 use Minty\Compiler\Tags\ElseTag;
@@ -77,6 +78,7 @@ use Minty\Compiler\Tags\PrintTag;
 use Minty\Compiler\Tags\SetTag;
 use Minty\Compiler\Tags\SwitchTag;
 use Minty\Compiler\Tags\TemplateExtension\BlockTag;
+use Minty\Compiler\Tags\TemplateExtension\DefineTag;
 use Minty\Compiler\Tags\TemplateExtension\EmbedTag;
 use Minty\Compiler\Tags\TemplateExtension\ExtendsTag;
 use Minty\Compiler\Tags\TemplateExtension\IncludeTag;
@@ -180,7 +182,9 @@ class Core extends Extension
             new BlockTag($methodHelper),
             new CaptureTag(),
             new CaseTag(),
+            new DefineTag(),
             new DoTag(),
+            new DisplayTag($methodHelper),
             new ElseIfTag(),
             new ElseTag(),
             new EmbedTag(),

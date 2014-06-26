@@ -1,0 +1,12 @@
+--TEST--
+Test the basic use case of the display tag.
+--TEMPLATE--
+{ block foo }{ $foo }{ /block }
+{ display foo }
+{ display foo using [foo: 'bar'] }
+--DATA--
+array('foo' => 'foobar')
+--EXPECT--
+foobar
+foobar
+bar
