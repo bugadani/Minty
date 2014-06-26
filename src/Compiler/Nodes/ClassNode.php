@@ -20,6 +20,8 @@ class ClassNode extends Node
     private $parentTemplateName;
     private $baseClass;
 
+    const MAIN_TEMPLATE_BLOCK = '__main_template_block';
+
     public function __construct(Environment $env, $templateName)
     {
         $this->templateName = $templateName;
@@ -76,7 +78,7 @@ class ClassNode extends Node
         if (!isset($this->parentTemplateName)) {
 
             //compile the main block method
-            $body = $this->getChild('__main_template_block');
+            $body = $this->getChild(self::MAIN_TEMPLATE_BLOCK);
             $this->compileBlock($compiler, 'displayTemplate', $body);
 
         } elseif (!$this->parentTemplateName instanceof DataNode) {
@@ -92,7 +94,7 @@ class ClassNode extends Node
             $compiler->outdent();
             $compiler->indented("}\n");
         }
-        $this->removeChild('__main_template_block');
+        $this->removeChild(self::MAIN_TEMPLATE_BLOCK);
 
         //compile blocks
         foreach ($this->getChildren() as $method => $body) {
@@ -109,8 +111,10 @@ class ClassNode extends Node
         $compiler->indented('{');
         $compiler->indent();
 
+        $blockNames = array_keys($this->getChildren());
+        $blockNames = array_diff($blockNames, array(self::MAIN_TEMPLATE_BLOCK));
         $compiler->indented('$blocks = ')
-            ->compileArray(array_keys($this->getChildren()), false)
+            ->compileArray($blockNames, false)
             ->add(';');
 
         $compiler
