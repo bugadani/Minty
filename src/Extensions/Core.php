@@ -364,7 +364,7 @@ function template_function_divisible($data, $num)
 {
     $div = $data / $num;
 
-    return $div === (int) $div;
+    return $div === (int)$div;
 }
 
 function template_function_empty($data)
@@ -379,7 +379,7 @@ function template_function_ends($data, $str)
 
 function template_function_extract(Context $context, $source, $keys)
 {
-    foreach ((array) $keys as $key) {
+    foreach ((array)$keys as $key) {
         $context->$key = $context->getProperty($source, $key);
     }
 }
