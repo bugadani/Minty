@@ -11,7 +11,6 @@ namespace Minty\Compiler\NodeVisitors;
 
 use Minty\Compiler\Node;
 use Minty\Compiler\Nodes\ClassNode;
-use Minty\Compiler\Nodes\DataNode;
 use Minty\Compiler\Nodes\FunctionNode;
 use Minty\Compiler\Nodes\IdentifierNode;
 use Minty\Compiler\Nodes\OperatorNode;
@@ -190,7 +189,7 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
         if ($this->inTag) {
             if ($this->isPrintNode($node)) {
                 if ($this->autofilter && !$this->isSafe) {
-                    $this->addFilterNode($node);
+                    $this->addFilterNode($node, $this->autofilter);
                 }
                 $this->inTag = false;
             } elseif ($node instanceof FunctionNode || $this->isFilterOperator($node)) {
@@ -205,15 +204,17 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
 
     /**
      * @param Node $node
+     * @param      $for
      */
-    private function addFilterNode(Node $node)
+    private function addFilterNode(Node $node, $for)
     {
-        $arguments = array(
-            $node->getChild('expression'),
-            new DataNode($this->autofilter)
-        );
+        if (!$this->environment->hasFunction('filter_' . $for)) {
+            $for = $this->defaultAutofilterStrategy;
+        }
         $node->addChild(
-            new FunctionNode('filter', $arguments),
+            new FunctionNode('filter_' . $for, array(
+                $node->getChild('expression')
+            )),
             'expression'
         );
     }
