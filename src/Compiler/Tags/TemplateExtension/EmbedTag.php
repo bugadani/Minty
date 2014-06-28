@@ -34,10 +34,11 @@ class EmbedTag extends Tag
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        $compiler->indented(
-            '$embedded = new %s($environment);',
-            $node->getData('template')
-        );
+        $compiler
+            ->indented('$embedded = new ' . $node->getData('template'))
+            ->add('(')
+            ->compileNode($node->getChild('environment'))
+            ->add(');');
 
         $compiler
             ->indented('')
@@ -50,23 +51,27 @@ class EmbedTag extends Tag
         $fileNode = $parser->getCurrentFileNode();
 
         /** @var $classNode ClassNode */
-        $embeddedClassName = $fileNode->getNextEmbeddedTemplateName();
-        $classNode         = $fileNode->addChild(
+        $classNode = $fileNode->addChild(
             new ClassNode(
                 $parser->getEnvironment(),
-                $embeddedClassName
+                $fileNode->getNextEmbeddedTemplateName()
             )
         );
 
         $node = new TagNode($this, array(
             'template' => $classNode->getClassName()
         ));
+
+        //force the optimizer to compile $environment
+        $environmentNode = new TempVariableNode('environment');
         $classNode->setParentTemplate($parser->parseExpression($stream));
 
         $oldClassNode = $parser->getCurrentClassNode();
         $parser->setCurrentClassNode($classNode);
         if ($stream->current()->test(Token::IDENTIFIER, 'using')) {
             $contextNode = $parser->parseExpression($stream);
+            $contextNode = new FunctionNode('createContext', array($contextNode));
+            $contextNode->setObject($environmentNode);
         } else {
             $contextNode = new TempVariableNode('context');
         }
@@ -74,16 +79,14 @@ class EmbedTag extends Tag
 
         $classNode->addChild(
             $parser->parseBlock($stream, 'endembed'),
-            '__main_template_block'
+            ClassNode::MAIN_TEMPLATE_BLOCK
         );
         $parser->setCurrentClassNode($oldClassNode);
 
-        $createContextNode = new FunctionNode('createContext', array($contextNode));
-        $functionNode      = new FunctionNode('displayTemplate', array($createContextNode));
-
-        $createContextNode->setObject(new TempVariableNode('environment'));
+        $functionNode = new FunctionNode('displayTemplate', array($contextNode));
         $functionNode->setObject(new TempVariableNode('embedded'));
 
+        $node->addChild($environmentNode, 'environment');
         $node->addChild($functionNode, 'display');
 
         return $node;
