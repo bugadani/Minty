@@ -239,7 +239,24 @@ class Core extends Extension
                     'html'
                 )
             )),
-            new TemplateFunction('filter_json', 'json_encode', array('is_safe' => 'json')),
+            new TemplateFunction('filter_xml', 'htmlspecialchars', array(
+                'is_safe' => array(
+                    'xml',
+                    'html'
+                )
+            )),
+            new TemplateFunction('filter_js', 'json_encode', array(
+                'is_safe' => array(
+                    'js',
+                    'json'
+                )
+            )),
+            new TemplateFunction('filter_json', 'json_encode', array(
+                'is_safe' => array(
+                    'js',
+                    'json'
+                )
+            )),
             new TemplateFunction('first', $namespace . '\template_function_first'),
             new TemplateFunction('format', 'sprintf'),
             new TemplateFunction('in', $namespace . '\template_function_in'),
