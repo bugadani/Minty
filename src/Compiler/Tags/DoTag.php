@@ -9,8 +9,7 @@
 
 namespace Minty\Compiler\Tags;
 
-use Minty\Compiler\Compiler;
-use Minty\Compiler\Nodes\TagNode;
+use Minty\Compiler\Nodes\ExpressionNode;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
 use Minty\Compiler\Tag;
@@ -25,20 +24,6 @@ class DoTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $node = new TagNode($this);
-        $node->addChild(
-            $parser->parseExpression($stream),
-            'expression'
-        );
-
-        return $node;
-    }
-
-    public function compile(Compiler $compiler, TagNode $node)
-    {
-        $compiler
-            ->indented('')
-            ->compileNode($node->getChild('expression'))
-            ->add(';');
+        return new ExpressionNode($parser->parseExpression($stream));
     }
 }

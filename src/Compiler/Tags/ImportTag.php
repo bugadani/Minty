@@ -9,8 +9,7 @@
 
 namespace Minty\Compiler\Tags;
 
-use Minty\Compiler\Compiler;
-use Minty\Compiler\Nodes\TagNode;
+use Minty\Compiler\Nodes\ExpressionNode;
 use Minty\Compiler\Nodes\VariableNode;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
@@ -35,17 +34,8 @@ class ImportTag extends Tag
         return 'import';
     }
 
-    public function compile(Compiler $compiler, TagNode $node)
-    {
-        $compiler
-            ->indented('')
-            ->compileNode($node->getChild('expression'))
-            ->add(';');
-    }
-
     public function parse(Parser $parser, Stream $stream)
     {
-        $node = new TagNode($this);
         if ($stream->nextTokenIf(Token::IDENTIFIER, 'all')) {
             $stream->expect(Token::IDENTIFIER, 'from');
         } else {
@@ -63,8 +53,6 @@ class ImportTag extends Tag
             $functionNode->addArgument($blocks);
         }
 
-        $node->addChild($functionNode, 'expression');
-
-        return $node;
+        return new ExpressionNode($functionNode);
     }
 }

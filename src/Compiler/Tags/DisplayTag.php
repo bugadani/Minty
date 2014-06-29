@@ -9,9 +9,7 @@
 
 namespace Minty\Compiler\Tags;
 
-use Minty\Compiler\Compiler;
 use Minty\Compiler\Nodes\FunctionNode;
-use Minty\Compiler\Nodes\TagNode;
 use Minty\Compiler\Nodes\TempVariableNode;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
@@ -47,14 +45,6 @@ class DisplayTag extends Tag
             $contextNode = new TempVariableNode('context');
         }
 
-        return $this->helper->createRenderBlockNode($this, $templateName, $contextNode);
-    }
-
-    public function compile(Compiler $compiler, TagNode $node)
-    {
-        $compiler
-            ->indented('')
-            ->compileNode($node->getChild('expression'))
-            ->add(';');
+        return $this->helper->createRenderBlockNode($templateName, $contextNode);
     }
 }

@@ -9,8 +9,6 @@
 
 namespace Minty\Compiler\Tags;
 
-use Minty\Compiler\Compiler;
-use Minty\Compiler\Nodes\TagNode;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
 use Minty\Compiler\Tag;
@@ -39,14 +37,6 @@ class BlockTag extends Tag
         return 'block';
     }
 
-    public function compile(Compiler $compiler, TagNode $node)
-    {
-        $compiler
-            ->indented('')
-            ->compileNode($node->getChild('expression'))
-            ->add(';');
-    }
-
     public function parse(Parser $parser, Stream $stream)
     {
         $templateName = $stream->expect(Token::IDENTIFIER)->getValue();
@@ -59,6 +49,6 @@ class BlockTag extends Tag
         );
         $parser->leaveBlock();
 
-        return $this->helper->createRenderBlockNode($this, $templateName);
+        return $this->helper->createRenderBlockNode($templateName);
     }
 }

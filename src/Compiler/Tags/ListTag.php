@@ -41,10 +41,13 @@ class ListTag extends Tag
 
         $stream->expectCurrent(Token::IDENTIFIER, 'using');
 
-        $node = $this->helper->createRenderFunctionNode(
-            $this,
-            $parser->parseExpression($stream),
-            new TempVariableNode('element')
+        $node = new TagNode($this);
+        $node->addChild(
+            $this->helper->createRenderFunctionNode(
+                $parser->parseExpression($stream),
+                new TempVariableNode('element')
+            ),
+            'expression'
         );
         $stream->expectCurrent(Token::EXPRESSION_END);
 
@@ -60,9 +63,7 @@ class ListTag extends Tag
             ->compileNode($node->getChild('source'))
             ->add(' as $element) {')
             ->indent()
-            ->indented('')
             ->compileNode($node->getChild('expression'))
-            ->add(';')
             ->outdent()
             ->indented('}');
     }
