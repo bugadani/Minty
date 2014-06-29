@@ -57,17 +57,14 @@ class EmbedTag extends Tag
                 $fileNode->getNextEmbeddedTemplateName()
             )
         );
-
-        $node = new TagNode($this, array(
-            'template' => $classNode->getClassName()
-        ));
-
-        //force the optimizer to compile $environment
-        $environmentNode = new TempVariableNode('environment');
         $classNode->setParentTemplate($parser->parseExpression($stream));
 
         $oldClassNode = $parser->getCurrentClassNode();
         $parser->setCurrentClassNode($classNode);
+
+        //force the optimizer to compile $environment by always using a temp variable
+        $environmentNode = new TempVariableNode('environment');
+
         if ($stream->current()->test(Token::IDENTIFIER, 'using')) {
             $contextNode = $parser->parseExpression($stream);
             $contextNode = new FunctionNode('createContext', array($contextNode));
@@ -85,6 +82,10 @@ class EmbedTag extends Tag
 
         $functionNode = new FunctionNode('displayTemplate', array($contextNode));
         $functionNode->setObject(new TempVariableNode('embedded'));
+
+        $node = new TagNode($this, array(
+            'template' => $classNode->getClassName()
+        ));
 
         $node->addChild($environmentNode, 'environment');
         $node->addChild($functionNode, 'display');
