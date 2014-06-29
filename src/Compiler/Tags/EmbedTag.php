@@ -10,6 +10,7 @@
 namespace Minty\Compiler\Tags;
 
 use Minty\Compiler\Compiler;
+use Minty\Compiler\Node;
 use Minty\Compiler\Nodes\ClassNode;
 use Minty\Compiler\Nodes\FunctionNode;
 use Minty\Compiler\Nodes\TagNode;
@@ -48,7 +49,37 @@ class EmbedTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $fileNode = $parser->getCurrentFileNode();
+        //force the optimizer to compile $environment by always using a temp variable
+        $environmentNode = new TempVariableNode('environment');
+
+        $parentTemplate = $parser->parseExpression($stream);
+
+        $functionNode = new FunctionNode('displayTemplate');
+        $functionNode->setObject(new TempVariableNode('embedded'));
+        $functionNode->addArgument(
+            $this->getContext($parser, $stream, $environmentNode)
+        );
+
+        $node = new TagNode($this, array(
+            'template' => $this->parseClass($parser, $stream, $parentTemplate)
+        ));
+
+        $node->addChild($environmentNode, 'environment');
+        $node->addChild($functionNode, 'display');
+
+        return $node;
+    }
+
+    /**
+     * @param Parser $parser
+     * @param Stream $stream
+     * @param        $parentTemplate
+     * @return ClassNode
+     */
+    private function parseClass(Parser $parser, Stream $stream, $parentTemplate)
+    {
+        $oldClassNode = $parser->getCurrentClassNode();
+        $fileNode     = $parser->getCurrentFileNode();
 
         /** @var $classNode ClassNode */
         $classNode = $fileNode->addChild(
@@ -57,22 +88,8 @@ class EmbedTag extends Tag
                 $fileNode->getNextEmbeddedTemplateName()
             )
         );
-        $classNode->setParentTemplate($parser->parseExpression($stream));
-
-        $oldClassNode = $parser->getCurrentClassNode();
+        $classNode->setParentTemplate($parentTemplate);
         $parser->setCurrentClassNode($classNode);
-
-        //force the optimizer to compile $environment by always using a temp variable
-        $environmentNode = new TempVariableNode('environment');
-
-        if ($stream->current()->test(Token::IDENTIFIER, 'using')) {
-            $contextNode = $parser->parseExpression($stream);
-            $contextNode = new FunctionNode('createContext', array($contextNode));
-            $contextNode->setObject($environmentNode);
-        } else {
-            $contextNode = new TempVariableNode('context');
-        }
-        $stream->expectCurrent(Token::EXPRESSION_END);
 
         $classNode->addChild(
             $parser->parseBlock($stream, 'endembed'),
@@ -80,16 +97,25 @@ class EmbedTag extends Tag
         );
         $parser->setCurrentClassNode($oldClassNode);
 
-        $functionNode = new FunctionNode('displayTemplate', array($contextNode));
-        $functionNode->setObject(new TempVariableNode('embedded'));
+        return $classNode->getClassName();
+    }
 
-        $node = new TagNode($this, array(
-            'template' => $classNode->getClassName()
-        ));
+    /**
+     * @param Parser $parser
+     * @param Stream $stream
+     * @param        $environmentNode
+     * @return Node
+     */
+    private function getContext(Parser $parser, Stream $stream, $environmentNode)
+    {
+        if ($stream->current()->test(Token::IDENTIFIER, 'using')) {
+            $contextNode = new FunctionNode('createContext');
+            $contextNode->addArgument($parser->parseExpression($stream));
+            $contextNode->setObject($environmentNode);
+        } else {
+            $contextNode = new TempVariableNode('context');
+        }
 
-        $node->addChild($environmentNode, 'environment');
-        $node->addChild($functionNode, 'display');
-
-        return $node;
+        return $contextNode;
     }
 }

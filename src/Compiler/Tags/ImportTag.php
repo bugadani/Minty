@@ -42,17 +42,20 @@ class ImportTag extends Tag
             $blocks = $parser->parseExpression($stream);
             $stream->expectCurrent(Token::IDENTIFIER, 'from');
         }
-        $functionNode = $this->helper->createMethodCallNode(
-            new VariableNode('_self'),
-            'importBlocks'
-        );
-        $functionNode->addArgument(
+
+        $arguments = array(
             $parser->parseExpression($stream)
         );
         if (isset($blocks)) {
-            $functionNode->addArgument($blocks);
+            $arguments[] = $blocks;
         }
 
-        return new ExpressionNode($functionNode);
+        return new ExpressionNode(
+            $this->helper->createMethodCallNode(
+                new VariableNode('_self'),
+                'importBlocks',
+                $arguments
+            )
+        );
     }
 }

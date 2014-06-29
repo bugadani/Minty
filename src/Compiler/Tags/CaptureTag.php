@@ -42,19 +42,11 @@ class CaptureTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $node = new TagNode($this);
-
         $stream->expect(Token::IDENTIFIER, 'into');
 
-        $node->addChild(
-            $parser->parseExpression($stream),
-            'into'
-        );
-
-        $node->addChild(
-            $parser->parseBlock($stream, 'endcapture'),
-            'body'
-        );
+        $node = new TagNode($this);
+        $node->addChild($parser->parseExpression($stream), 'into');
+        $node->addChild($parser->parseBlock($stream, 'endcapture'), 'body');
 
         return $node;
     }

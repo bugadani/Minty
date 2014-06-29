@@ -24,14 +24,16 @@ class ExtendsTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        if(!$parser->inMainScope()) {
+        if (!$parser->inMainScope()) {
             throw new ParseException(
                 "Extends tags must be placed in the main scope. Unexpected extends tag",
                 $stream->current()->getLine()
             );
         }
-        $parser->getCurrentClassNode()->setParentTemplate(
-            $parser->parseExpression($stream)
-        );
+        $parser
+            ->getCurrentClassNode()
+            ->setParentTemplate(
+                $parser->parseExpression($stream)
+            );
     }
 }

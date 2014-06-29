@@ -49,8 +49,6 @@ class ListTag extends Tag
             ),
             'expression'
         );
-        $stream->expectCurrent(Token::EXPRESSION_END);
-
         $node->addChild($source, 'source');
 
         return $node;
