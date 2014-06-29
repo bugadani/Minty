@@ -29,7 +29,7 @@ abstract class Template
     /**
      * @var array
      */
-    private $blocks;
+    private $blocks = array();
 
     /**
      * @var string
@@ -52,8 +52,22 @@ abstract class Template
         } else {
             $this->extension = '';
         }
+        foreach ($blocks as $block) {
+            $this->blocks[$block] = array($this, $block);
+        }
+    }
 
-        $this->blocks = $blocks;
+    public function importBlocks($source, $blocks = null)
+    {
+        $sourceTemplate = $this->environment->load($source);
+        if ($blocks === null) {
+            $blocks = array_keys($sourceTemplate->blocks);
+        }
+        foreach ((array) $blocks as $name => $block) {
+            if (!isset($this->blocks[$block])) {
+                $this->blocks[$block] = array($sourceTemplate, is_int($name) ? $block : $name);
+            }
+        }
     }
 
     public function __get($key)
@@ -106,14 +120,14 @@ abstract class Template
                 $base = $base->parentOf;
             }
         }
-        $blockPresent = in_array($blockName, $base->blocks);
+        $blockPresent = isset($base->blocks[$blockName]);
         if ($parentBlock || !$blockPresent) {
             if ($this->renderParentBlock($base, $blockName, $context)) {
                 return;
             }
         }
         if ($blockPresent) {
-            $base->{'block_' . $blockName}($context);
+            $this->callBlock($base, $blockName, $context);
         } else {
             throw new \RuntimeException("Block {$blockName} was not found.");
         }
@@ -143,13 +157,24 @@ abstract class Template
     {
         while ($parent->parentTemplate) {
             $parent = $this->environment->load($parent->parentTemplate);
-            if (in_array($blockName, $parent->blocks)) {
-                $parent->{'block_' . $blockName}($context);
+            if (isset($parent->blocks[$blockName])) {
+                $this->callBlock($parent, $blockName, $context);
 
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * @param Template $base
+     * @param          $blockName
+     * @param Context  $context
+     */
+    private function callBlock(Template $base, $blockName, Context $context)
+    {
+        list($blockContainer, $blockName) = $base->blocks[$blockName];
+        $blockContainer->{'block_' . $blockName}($context);
     }
 }

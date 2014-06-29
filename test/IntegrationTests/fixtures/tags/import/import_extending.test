@@ -1,0 +1,13 @@
+--TEST--
+Test that imported blocks may reference their parents.
+--TEMPLATE--
+{ import 'foo' from 'bar' }
+{display foo}
+--TEMPLATE bar--
+{extends 'foobar'}
+{block foo}{parent}bar{/block}
+--TEMPLATE foobar--
+{block foo}foobar{/block}
+--EXPECT--
+
+foobarbar

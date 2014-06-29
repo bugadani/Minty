@@ -1,0 +1,10 @@
+--TEST--
+Test the basic use case of the import tag.
+--TEMPLATE--
+{ import 'foo' from 'bar' }
+{display foo}
+--TEMPLATE bar--
+{ block foo }bar{ /block }
+--EXPECT--
+
+bar

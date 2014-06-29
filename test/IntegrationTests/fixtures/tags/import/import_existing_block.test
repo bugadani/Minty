@@ -1,0 +1,11 @@
+--TEST--
+Test that local blocks take precedence.
+--TEMPLATE--
+{ import 'foo' from 'bar' }
+{display foo}
+{define foo}foo{/define}
+--TEMPLATE bar--
+{ block foo }bar{ /block }
+--EXPECT--
+
+foo

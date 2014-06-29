@@ -1,0 +1,10 @@
+--TEST--
+Test that the imported blocks may be renamed.
+--TEMPLATE--
+{ import [foo: foobar] from 'bar' }
+{display foobar}
+--TEMPLATE bar--
+{ block foo }bar{ /block }
+--EXPECT--
+
+bar

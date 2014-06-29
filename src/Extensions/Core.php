@@ -81,6 +81,7 @@ use Minty\Compiler\Tags\TemplateExtension\BlockTag;
 use Minty\Compiler\Tags\TemplateExtension\DefineTag;
 use Minty\Compiler\Tags\TemplateExtension\EmbedTag;
 use Minty\Compiler\Tags\TemplateExtension\ExtendsTag;
+use Minty\Compiler\Tags\TemplateExtension\ImportTag;
 use Minty\Compiler\Tags\TemplateExtension\IncludeTag;
 use Minty\Compiler\Tags\TemplateExtension\ParentTag;
 use Minty\Compiler\TemplateFunction;
@@ -191,6 +192,7 @@ class Core extends Extension
             new ExtendsTag(),
             new ForTag(),
             new IfTag(),
+            new ImportTag($methodHelper),
             new IncludeTag($methodHelper),
             new ListTag($methodHelper),
             new ParentTag($methodHelper),
