@@ -214,14 +214,13 @@ class Core extends Extension
         return array(
             new TemplateFunction('abs'),
             new TemplateFunction('attributes', $namespace . '\template_function_attributes', array(
-                'is_safe' => array(
-                    'html',
-                    'xml'
-                )
+                'is_safe' => array('html', 'xml')
             )),
             new TemplateFunction('batch', $namespace . '\template_function_batch'),
             new TemplateFunction('capitalize', 'ucfirst'),
-            new TemplateFunction('count', null, array('is_safe' => true)),
+            new TemplateFunction('count', null, array(
+                'is_safe' => true
+            )),
             new TemplateFunction('cycle', $namespace . '\template_function_cycle'),
             new TemplateFunction('date_format', $namespace . '\template_function_dateFormat'),
             new TemplateFunction('default', null, array('compiler' => '\Minty\Extensions\Compilers\DefaultCompiler')),
@@ -234,28 +233,16 @@ class Core extends Extension
                 'needs_environment' => true
             )),
             new TemplateFunction('filter_html', 'htmlspecialchars', array(
-                'is_safe' => array(
-                    'xml',
-                    'html'
-                )
+                'is_safe' => array('xml', 'html')
             )),
             new TemplateFunction('filter_xml', 'htmlspecialchars', array(
-                'is_safe' => array(
-                    'xml',
-                    'html'
-                )
+                'is_safe' => array('xml', 'html')
             )),
             new TemplateFunction('filter_js', 'json_encode', array(
-                'is_safe' => array(
-                    'js',
-                    'json'
-                )
+                'is_safe' => array('js', 'json')
             )),
             new TemplateFunction('filter_json', 'json_encode', array(
-                'is_safe' => array(
-                    'js',
-                    'json'
-                )
+                'is_safe' => array('js', 'json')
             )),
             new TemplateFunction('first', $namespace . '\template_function_first'),
             new TemplateFunction('format', 'sprintf'),
@@ -267,12 +254,11 @@ class Core extends Extension
             new TemplateFunction('json_encode'),
             new TemplateFunction('keys', 'array_keys'),
             new TemplateFunction('last', $namespace . '\template_function_last'),
-            new TemplateFunction('length', $namespace . '\template_function_length', array('is_safe' => true)),
+            new TemplateFunction('length', $namespace . '\template_function_length', array(
+                'is_safe' => true
+            )),
             new TemplateFunction('link_to', $namespace . '\template_function_linkTo', array(
-                'is_safe' => array(
-                    'html',
-                    'xml'
-                )
+                'is_safe' => array('html', 'xml')
             )),
             new TemplateFunction('lower', 'strtolower'),
             new TemplateFunction('ltrim'),
@@ -280,13 +266,23 @@ class Core extends Extension
             new TemplateFunction('max'),
             new TemplateFunction('merge', 'array_merge'),
             new TemplateFunction('min'),
-            new TemplateFunction('nl2br', null, array('is_safe' => 'html')),
-            new TemplateFunction('number_format', null, array('is_safe' => true)),
+            new TemplateFunction('nl2br', null, array(
+                'is_safe' => 'html'
+            )),
+            new TemplateFunction('number_format', null, array(
+                'is_safe' => true
+            )),
             new TemplateFunction('pluck', $namespace . '\template_function_pluck'),
-            new TemplateFunction('pow', null, array('is_safe' => true)),
+            new TemplateFunction('pow', null, array(
+                'is_safe' => true
+            )),
             new TemplateFunction('random', $namespace . '\template_function_random'),
-            new TemplateFunction('range', null, array('is_safe' => true)),
-            new TemplateFunction('raw', $namespace . '\template_function_raw', array('is_safe' => true)),
+            new TemplateFunction('range', null, array(
+                'is_safe' => true
+            )),
+            new TemplateFunction('raw', $namespace . '\template_function_raw', array(
+                'is_safe' => true
+            )),
             new TemplateFunction('regexp_replace', $namespace . '\template_function_regexpReplace'),
             new TemplateFunction('replace', $namespace . '\template_function_replace'),
             new TemplateFunction('reverse', $namespace . '\template_function_reverse'),
@@ -294,11 +290,15 @@ class Core extends Extension
             new TemplateFunction('shuffle', $namespace . '\template_function_shuffle'),
             new TemplateFunction('slice', $namespace . '\template_function_slice'),
             new TemplateFunction('sort', $namespace . '\template_function_sort'),
-            new TemplateFunction('source', $namespace . '\template_function_source', array('needs_environment' => true)),
+            new TemplateFunction('source', $namespace . '\template_function_source', array(
+                'needs_environment' => true
+            )),
             new TemplateFunction('spacify', $namespace . '\template_function_spacify'),
             new TemplateFunction('split', $namespace . '\template_function_split'),
             new TemplateFunction('starts', $namespace . '\template_function_starts'),
-            new TemplateFunction('striptags', 'strip_tags', array('is_safe' => true)),
+            new TemplateFunction('striptags', 'strip_tags', array(
+                'is_safe' => true
+            )),
             new TemplateFunction('title_case', 'ucwords'),
             new TemplateFunction('trim'),
             new TemplateFunction('truncate', $namespace . '\template_function_truncate'),
