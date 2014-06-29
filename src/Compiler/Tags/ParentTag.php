@@ -7,18 +7,17 @@
  * For licensing information see the LICENSE file.
  */
 
-namespace Minty\Compiler\Tags\TemplateExtension;
+namespace Minty\Compiler\Tags;
 
 use Minty\Compiler\Compiler;
+use Minty\Compiler\Nodes\DataNode;
 use Minty\Compiler\Nodes\TagNode;
-use Minty\Compiler\Nodes\TempVariableNode;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
 use Minty\Compiler\Tag;
 use Minty\Compiler\Tags\Helpers\MethodNodeHelper;
-use Minty\Compiler\Token;
 
-class IncludeTag extends Tag
+class ParentTag extends Tag
 {
     /**
      * @var MethodNodeHelper
@@ -32,7 +31,15 @@ class IncludeTag extends Tag
 
     public function getTag()
     {
-        return 'include';
+        return 'parent';
+    }
+
+    public function parse(Parser $parser, Stream $stream)
+    {
+        $node = $this->helper->createRenderBlockNode($this, $parser->getCurrentBlock());
+        $node->getChild('expression')->addArgument(new DataNode(true));
+
+        return $node;
     }
 
     public function compile(Compiler $compiler, TagNode $node)
@@ -41,17 +48,5 @@ class IncludeTag extends Tag
             ->indented('')
             ->compileNode($node->getChild('expression'))
             ->add(';');
-    }
-
-    public function parse(Parser $parser, Stream $stream)
-    {
-        $templateName = $parser->parseExpression($stream);
-        if ($stream->current()->test(Token::IDENTIFIER, 'using')) {
-            $contextNode = $parser->parseExpression($stream);
-        } else {
-            $contextNode = new TempVariableNode('context');
-        }
-
-        return $this->helper->createRenderFunctionNode($this, $templateName, $contextNode);
     }
 }

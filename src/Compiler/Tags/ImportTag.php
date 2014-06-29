@@ -7,7 +7,7 @@
  * For licensing information see the LICENSE file.
  */
 
-namespace Minty\Compiler\Tags\TemplateExtension;
+namespace Minty\Compiler\Tags;
 
 use Minty\Compiler\Compiler;
 use Minty\Compiler\Nodes\TagNode;

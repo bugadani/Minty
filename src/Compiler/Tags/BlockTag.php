@@ -7,17 +7,17 @@
  * For licensing information see the LICENSE file.
  */
 
-namespace Minty\Compiler\Tags\TemplateExtension;
+namespace Minty\Compiler\Tags;
 
 use Minty\Compiler\Compiler;
-use Minty\Compiler\Nodes\DataNode;
 use Minty\Compiler\Nodes\TagNode;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
 use Minty\Compiler\Tag;
 use Minty\Compiler\Tags\Helpers\MethodNodeHelper;
+use Minty\Compiler\Token;
 
-class ParentTag extends Tag
+class BlockTag extends Tag
 {
     /**
      * @var MethodNodeHelper
@@ -29,17 +29,14 @@ class ParentTag extends Tag
         $this->helper = $helper;
     }
 
-    public function getTag()
+    public function hasEndingTag()
     {
-        return 'parent';
+        return true;
     }
 
-    public function parse(Parser $parser, Stream $stream)
+    public function getTag()
     {
-        $node = $this->helper->createRenderBlockNode($this, $parser->getCurrentBlock());
-        $node->getChild('expression')->addArgument(new DataNode(true));
-
-        return $node;
+        return 'block';
     }
 
     public function compile(Compiler $compiler, TagNode $node)
@@ -48,5 +45,20 @@ class ParentTag extends Tag
             ->indented('')
             ->compileNode($node->getChild('expression'))
             ->add(';');
+    }
+
+    public function parse(Parser $parser, Stream $stream)
+    {
+        $templateName = $stream->expect(Token::IDENTIFIER)->getValue();
+        $stream->expect(Token::EXPRESSION_END);
+
+        $parser->enterBlock($templateName);
+        $parser->getCurrentClassNode()->addChild(
+            $parser->parseBlock($stream, 'endblock'),
+            $templateName
+        );
+        $parser->leaveBlock();
+
+        return $this->helper->createRenderBlockNode($this, $templateName);
     }
 }
