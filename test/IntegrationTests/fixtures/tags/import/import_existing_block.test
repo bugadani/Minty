@@ -7,5 +7,4 @@ Test that local blocks take precedence.
 --TEMPLATE bar--
 { block foo }bar{ /block }
 --EXPECT--
-
-foo
+<h1>Failed to compile index</h1><h2>Error message:</h2><p>Block foo is already present in template index</p><h2>Template source:</h2><pre><code><ol start="1">    <li>            { import 'foo' from 'bar' }        </li>    <li>            {display foo}        </li>    <li>            {define foo}foo{/define}        </li></ol></code></pre>

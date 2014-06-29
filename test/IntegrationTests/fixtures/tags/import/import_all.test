@@ -1,0 +1,13 @@
+--TEST--
+Test that import all works.
+--TEMPLATE--
+{ import all from 'bar' }
+{display foo}
+{display bar}
+--TEMPLATE bar--
+{ block foo }bar{ /block }
+{ block bar }baz{ /block }
+--EXPECT--
+
+bar
+baz

@@ -11,4 +11,8 @@ namespace Minty\Compiler\Exceptions;
 
 class ParseException extends TemplatingException
 {
+    public function __construct($message, $line = 0)
+    {
+        parent::__construct("{$message} found in line {$line}", $line);
+    }
 }
