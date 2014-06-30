@@ -15,6 +15,6 @@ class TempVariableNode extends IdentifierNode
 {
     public function compile(Compiler $compiler)
     {
-        $compiler->add('$' . $this->getName());
+        $compiler->add('$' . $this->getData('name'));
     }
 }

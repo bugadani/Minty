@@ -14,12 +14,17 @@ abstract class Node
     /**
      * @var array
      */
-    private $data = array();
+    private $data;
 
     /**
      * @var Node[]
      */
     private $children = array();
+
+    public function __construct(array $data = array())
+    {
+        $this->data = $data;
+    }
 
     /**
      * @param Node $node

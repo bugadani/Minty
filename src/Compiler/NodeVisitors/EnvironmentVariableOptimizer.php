@@ -108,7 +108,7 @@ class EnvironmentVariableOptimizer extends NodeVisitor implements iEnvironmentAw
 
     private function functionNeedsEnvironment(IdentifierNode $node)
     {
-        $function = $this->environment->getFunction($node->getName());
+        $function = $this->environment->getFunction($node->getData('name'));
 
         if ($function->getOption('needs_environment')) {
             return true;
@@ -138,7 +138,7 @@ class EnvironmentVariableOptimizer extends NodeVisitor implements iEnvironmentAw
 
     private function isEnvironmentVariable(Node $node)
     {
-        return $node instanceof TempVariableNode && $node->getName() === 'environment';
+        return $node instanceof TempVariableNode && $node->getData('name') === 'environment';
     }
 
     private function checkForEnvironmentObject(Node $node)

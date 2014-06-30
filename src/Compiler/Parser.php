@@ -71,9 +71,11 @@ class Parser
 
         switch ($token->getType()) {
             case Token::TEXT:
-                $node = new PrintNode();
-                $node->addData('data', $value);
-                $root->addChild($node);
+                $root->addChild(
+                    new PrintNode(array(
+                        'data' => $value
+                    ))
+                );
                 break;
 
             case Token::TAG:

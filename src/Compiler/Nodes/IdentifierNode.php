@@ -14,20 +14,15 @@ use Minty\Compiler\Node;
 
 class IdentifierNode extends Node
 {
-    private $name;
-
     public function __construct($name)
     {
-        $this->name = $name;
-    }
-
-    public function getName()
-    {
-        return $this->name;
+        parent::__construct(
+            array('name' => $name)
+        );
     }
 
     public function compile(Compiler $compiler)
     {
-        $compiler->compileString($this->name);
+        $compiler->compileString($this->getData('name'));
     }
 }

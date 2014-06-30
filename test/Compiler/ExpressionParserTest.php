@@ -245,7 +245,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
         $node = $this->expressionParser->parse($stream);
 
         $this->assertInstanceOf('\\Minty\\Compiler\\Nodes\\VariableNode', $node);
-        $this->assertEquals('foo', $node->getName());
+        $this->assertEquals('foo', $node->getData('name'));
     }
 
     public function testSquareBracketsMakeArrayIndexing()
@@ -269,7 +269,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('\\Minty\\Compiler\\Nodes\\ArrayIndexNode', $node);
 
         $this->assertInstanceOf('\\Minty\\Compiler\\Nodes\\VariableNode', $nameNode);
-        $this->assertEquals('foo', $nameNode->getName());
+        $this->assertEquals('foo', $nameNode->getData('name'));
 
         $this->assertInstanceOf('\\Minty\\Compiler\\Nodes\\DataNode', $keyNode);
         $this->assertEquals('bar', $keyNode->getValue());
@@ -322,7 +322,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
             '\\Minty\\Compiler\\Nodes\\DataNode',
             $firstKeyNode
         );
-        $this->assertEquals('foo', $firstIdentifierNode->getName());
+        $this->assertEquals('foo', $firstIdentifierNode->getData('name'));
         $this->assertEquals('bar', $firstKeyNode->getValue());
     }
 

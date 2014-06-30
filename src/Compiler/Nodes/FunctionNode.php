@@ -69,10 +69,10 @@ class FunctionNode extends IdentifierNode
         if ($this->getObject()) {
             $compiler
                 ->compileNode($this->getObject())
-                ->add('->' . $this->getName())
+                ->add('->' . $this->getData('name'))
                 ->compileArgumentList($this->arguments);
         } else {
-            $function = $environment->getFunction($this->getName());
+            $function = $environment->getFunction($this->getData('name'));
 
             if ($function->getOption('needs_environment')) {
                 array_unshift($this->arguments, new TempVariableNode('environment'));

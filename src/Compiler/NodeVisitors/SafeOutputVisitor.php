@@ -150,7 +150,9 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
 
     private function isFunctionSafe(IdentifierNode $function)
     {
-        $safeFor = $this->environment->getFunction($function->getName())->getOption('is_safe');
+        $safeFor = $this->environment
+            ->getFunction($function->getData('name'))
+            ->getOption('is_safe');
 
         if (is_array($safeFor)) {
             return in_array($this->autofilter, $safeFor, true);
@@ -161,7 +163,7 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
 
     private function isUnsafeVariable(Node $node)
     {
-        return $node instanceof VariableNode && $node->getName() !== '_self';
+        return $node instanceof VariableNode && $node->getData('name') !== '_self';
     }
 
     private function isPrintNode(Node $node)
