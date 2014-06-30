@@ -107,15 +107,10 @@ class Parser
 
     public function parseTemplate(Stream $stream, $templateName)
     {
-        $fileNode = new FileNode();
+        $fileNode = new FileNode($this->environment);
 
         $this->fileNode  = $fileNode;
-        $this->classNode = $fileNode->addChild(
-            new ClassNode(
-                $this->environment,
-                $templateName
-            )
-        );
+        $this->classNode = $fileNode->addClass($templateName);
         $this->classNode->addChild(
             $this->parseBlock($stream, null, Token::EOF),
             ClassNode::MAIN_TEMPLATE_BLOCK

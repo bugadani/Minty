@@ -82,11 +82,8 @@ class EmbedTag extends Tag
         $fileNode     = $parser->getCurrentFileNode();
 
         /** @var $classNode ClassNode */
-        $classNode = $fileNode->addChild(
-            new ClassNode(
-                $parser->getEnvironment(),
-                $fileNode->getNextEmbeddedTemplateName()
-            )
+        $classNode = $fileNode->addClass(
+            $fileNode->getNextEmbeddedTemplateName()
         );
         $classNode->setParentTemplate($parentTemplate);
         $parser->setCurrentClassNode($classNode);

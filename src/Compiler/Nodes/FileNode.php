@@ -11,10 +11,34 @@ namespace Minty\Compiler\Nodes;
 
 use Minty\Compiler\Compiler;
 use Minty\Compiler\Node;
+use Minty\Environment;
 
 class FileNode extends RootNode
 {
+    /**
+     * @var Environment
+     */
+    private $environment;
     private $embeddedTemplates = 0;
+
+    public function __construct(Environment $environment)
+    {
+        $this->environment = $environment;
+    }
+
+    /**
+     * @param $templateName
+     * @return ClassNode
+     */
+    public function addClass($templateName)
+    {
+        return $this->addChild(
+            new ClassNode(
+                $this->environment,
+                $templateName
+            )
+        );
+    }
 
     public function addChild(Node $node, $key = null)
     {
