@@ -16,13 +16,6 @@ use Minty\Compiler\TemplateFunction;
 
 abstract class Extension
 {
-    private $extensionName;
-
-    public function __construct()
-    {
-        $this->extensionName = $this->getExtensionName();
-    }
-
     abstract public function getExtensionName();
 
     /**

@@ -22,8 +22,10 @@ class Context
 
     public function add($variables)
     {
-        $variables       = $this->ensureArray($variables);
-        $this->variables = array_merge($this->variables, $variables);
+        $this->variables = array_merge(
+            $this->variables,
+            $this->ensureArray($variables)
+        );
     }
 
     public function __set($key, $value)
@@ -76,7 +78,7 @@ class Context
         if (!$this->strictMode) {
             return $key;
         }
-        throw new \UnexpectedValueException('Property not set: ' . $key);
+        throw new \UnexpectedValueException("Property {$key} is not set.");
     }
 
     public function hasProperty($structure, $key)
@@ -97,6 +99,7 @@ class Context
             if (method_exists($structure, $methodName)) {
                 return $structure->$methodName();
             }
+
             return false;
         }
         throw new \UnexpectedValueException('Variable is not an array or an object.');
@@ -119,7 +122,7 @@ class Context
         } elseif ($variables instanceof \Traversable) {
             $variables = iterator_to_array($variables);
         } else {
-            throw new \InvalidArgumentException('Set expects an array as parameter.');
+            throw new \InvalidArgumentException('Context::add() expects an array as parameter.');
         }
 
         return $variables;

@@ -196,16 +196,27 @@ class Environment
     {
         $this->extensions[$extension->getExtensionName()] = $extension;
         foreach ($extension->getFunctions() as $function) {
+            $function->setExtension($extension);
             $this->addFunction($function);
         }
     }
 
     /**
      * @param TemplateFunction $function
+     * @throws \InvalidArgumentException
      */
     public function addFunction(TemplateFunction $function)
     {
-        $this->functions[$function->getFunctionName()] = $function;
+        $functionName = $function->getFunctionName();
+        if (isset($this->functions[$functionName])) {
+            $extension = $this->functions[$functionName]->getExtension()->getExtensionName();
+            $message   = "Function {$functionName} is already registered";
+            if ($extension) {
+                $message .= " in extension '{$extension}'";
+            }
+            throw new \InvalidArgumentException($message);
+        }
+        $this->functions[$functionName] = $function;
     }
 
     /**
@@ -452,18 +463,14 @@ class Environment
     public function load($template)
     {
         $template = $this->findFirstExistingTemplate($template);
-        if (isset($this->loadedTemplates[$template])) {
-            return $this->loadedTemplates[$template];
+        if (!isset($this->loadedTemplates[$template])) {
+            $this->compileIfNeeded($template);
+
+            $class                            = $this->getTemplateClassName($template);
+            $this->loadedTemplates[$template] = new $class($this);
         }
 
-        $this->compileIfNeeded($template);
-
-        $class  = $this->getTemplateClassName($template);
-        $object = new $class($this);
-
-        $this->loadedTemplates[$template] = $object;
-
-        return $object;
+        return $this->loadedTemplates[$template];
     }
 
     public function createContext($variables = array())

@@ -9,6 +9,8 @@
 
 namespace Minty\Compiler;
 
+use Minty\Extension;
+
 class TemplateFunction
 {
     /**
@@ -25,6 +27,11 @@ class TemplateFunction
      * @var callable
      */
     private $callback;
+
+    /**
+     * @var Extension
+     */
+    private $extension;
 
     /**
      * @param string $name
@@ -50,6 +57,16 @@ class TemplateFunction
             'needs_environment' => false
         );
         $this->options  = array_merge($defaults, $options);
+    }
+
+    public function setExtension(Extension $extension)
+    {
+        $this->extension = $extension;
+    }
+
+    public function getExtension()
+    {
+        return $this->extension;
     }
 
     public function getOption($key)

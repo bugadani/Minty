@@ -9,7 +9,6 @@
 
 namespace Minty\Compiler\Operators;
 
-use BadMethodCallException;
 use Minty\Compiler\Compiler;
 use Minty\Compiler\Nodes\OperatorNode;
 use Minty\Compiler\Operator;
@@ -24,7 +23,7 @@ class ConditionalOperator extends Operator
 
     public function operators()
     {
-        throw new BadMethodCallException('Conditional operator is handled differently.');
+        throw new \BadMethodCallException('Conditional operator is handled differently.');
     }
 
     public function compile(Compiler $compiler, OperatorNode $node)
