@@ -1,0 +1,8 @@
+--TEST--
+This test covers for block with keys
+--TEMPLATE--
+{for $i: $j in [foo: 'bar', bar: 'baz']}{$i}: {$j}
+{/for}
+--EXPECT--
+foo: bar
+bar: baz
