@@ -130,7 +130,7 @@ class ForTag extends Tag
 
         $i       = 0;
         $loopVar = $stream->expect(Token::VARIABLE)->getValue();
-        if ($stream->nextTokenIf(Token::PUNCTUATION, ':')) {
+        if ($stream->nextTokenIf(Token::PUNCTUATION, array(':', '=>'))) {
             $node->addChild(new VariableNode($loopVar), 'loop_key');
             $loopVar = $stream->expect(Token::VARIABLE)->getValue();
         }
