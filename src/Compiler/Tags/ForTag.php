@@ -77,10 +77,28 @@ class ForTag extends Tag
                 ->add(' => ');
         }
 
+        $variables = $node->getData('variables');
+        if ($variables === 1) {
+            $compiler
+                ->compileNode($node->getChild('loop_variable_0'))
+                ->add(') {')
+                ->indent();
+        } else {
+            $compiler
+                ->add('$loopVariable) {')
+                ->indent()
+                ->indented('list(');
+
+            for ($i = 0; $i < $variables; ++$i) {
+                if ($i > 0) {
+                    $compiler->add(', ');
+                }
+                $compiler->compileNode($node->getChild('loop_variable_' . $i));
+            }
+
+            $compiler->add(') = $loopVariable;');
+        }
         $compiler
-            ->compileNode($node->getChild('loop_variable'))
-            ->add(') {')
-            ->indent()
             ->compileNode($node->getChild('loop_body'))
             ->outdent()
             ->indented('}');
@@ -110,15 +128,23 @@ class ForTag extends Tag
             'create_stack'  => true
         ));
 
+        $i       = 0;
         $loopVar = $stream->expect(Token::VARIABLE)->getValue();
         if ($stream->nextTokenIf(Token::PUNCTUATION, ':')) {
             $node->addChild(new VariableNode($loopVar), 'loop_key');
             $loopVar = $stream->expect(Token::VARIABLE)->getValue();
         }
-        $stream->expect(Token::OPERATOR, 'in');
+        $node->addChild(new VariableNode($loopVar), 'loop_variable_' . $i++);
+
+        while ($stream->next()->test(Token::PUNCTUATION, ',')) {
+            $loopVar = $stream->expect(Token::VARIABLE)->getValue();
+            $node->addChild(new VariableNode($loopVar), 'loop_variable_' . $i++);
+        }
+        $node->addData('variables', $i);
+
+        $stream->expectCurrent(Token::OPERATOR, 'in');
 
         $node->addChild($parser->parseExpression($stream), 'source');
-        $node->addChild(new VariableNode($loopVar), 'loop_variable');
         $node->addChild($parser->parseBlock($stream, array('else', 'endfor')), 'loop_body');
 
         if ($stream->current()->test(Token::TAG, 'else')) {

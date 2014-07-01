@@ -1,0 +1,8 @@
+--TEST--
+This test covers for block with list
+--TEMPLATE--
+{for $i, $j in [['foo', 'bar'], ['baz', 'foobar']]}{$i}: {$j}
+{/for}
+--EXPECT--
+foo: bar
+baz: foobar
