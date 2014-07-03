@@ -306,6 +306,7 @@ class Core extends Extension
             new TemplateFunction('truncate', $namespace . '\template_function_truncate'),
             new TemplateFunction('upper', 'strtoupper'),
             new TemplateFunction('url_encode', $namespace . '\template_function_urlEncode'),
+            new TemplateFunction('widont', $namespace . '\template_function_widont'),
             new TemplateFunction('without', $namespace . '\template_function_without'),
             new TemplateFunction('wordwrap')
         );
@@ -627,6 +628,20 @@ function template_function_urlEncode($data, $raw = false)
     }
 
     return urlencode($data);
+}
+
+/**
+ * @see http://www.shauninman.com/archive/2006/08/22/widont_wordpress_plugin
+ */
+function template_function_widont($string)
+{
+    $string = rtrim($string);
+    $space  = strrpos($string, ' ');
+    if ($space !== false) {
+        $string[$space] = chr(160);
+    }
+
+    return $string;
 }
 
 function template_function_without($data, $without)
