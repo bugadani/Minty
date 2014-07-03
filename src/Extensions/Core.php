@@ -638,7 +638,7 @@ function template_function_widont($string)
     $string = rtrim($string);
     $space  = strrpos($string, ' ');
     if ($space !== false) {
-        $string[$space] = chr(160);
+        $string = substr($string, 0, $space) . '&nbsp;' . substr($string, $space + 1);
     }
 
     return $string;
