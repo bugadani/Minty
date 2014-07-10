@@ -63,6 +63,6 @@ class FileLoader extends AbstractTemplateLoader implements iEnvironmentAware
 
     public function getCacheKey($template)
     {
-        return $template;
+        return dirname($template) . '/template_' . basename($template);
     }
 }
