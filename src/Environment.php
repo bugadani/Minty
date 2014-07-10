@@ -478,8 +478,10 @@ class Environment
         if ($variables instanceof Context) {
             return $variables;
         }
-        $context = new Context($this, $variables);
-        $context->add($this->options['global_variables']);
+
+        //Add the globals first so locals can override them
+        $context = new Context($this, $this->options['global_variables']);
+        $context->add($variables);
 
         return $context;
     }

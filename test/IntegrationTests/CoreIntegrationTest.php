@@ -24,7 +24,8 @@ class CoreIntegrationTest extends IntegrationTestCase
     public function getEnvironment(StringLoader $loader)
     {
         $env = new Environment($loader, array(
-            'fallback_tag' => 'print'
+            'fallback_tag'     => 'print',
+            'global_variables' => array('global' => 'global variable')
         ));
         $env->addFunction(
             new TemplateFunction('html_safe', function ($data) {

@@ -1,0 +1,10 @@
+--TEST--
+Test that globals are overridden in the context
+--TEMPLATE--
+{ $global }
+{ include 'template' using [global: 'local variable'] }
+--TEMPLATE template--
+{ $global }
+--EXPECT--
+global variable
+local variable
