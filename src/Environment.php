@@ -203,6 +203,7 @@ class Environment
 
     /**
      * @param TemplateFunction $function
+     *
      * @throws \InvalidArgumentException
      */
     public function addFunction(TemplateFunction $function)
@@ -328,6 +329,18 @@ class Environment
         return $this->unaryPostfixOperators;
     }
 
+    /**
+     * @return string[]
+     */
+    public function getOperatorSymbols()
+    {
+        return array_merge(
+            $this->getBinaryOperators()->getSymbols(),
+            $this->getUnaryPrefixOperators()->getSymbols(),
+            $this->getUnaryPostfixOperators()->getSymbols()
+        );
+    }
+
     private function initOperators()
     {
         $this->binaryOperators       = new OperatorCollection();
@@ -341,16 +354,21 @@ class Environment
         }
     }
 
-    /**
-     * @return string[]
-     */
-    public function getOperatorSymbols()
+    private function initializeCompiler()
     {
-        return array_merge(
-            $this->getBinaryOperators()->getSymbols(),
-            $this->getUnaryPrefixOperators()->getSymbols(),
-            $this->getUnaryPostfixOperators()->getSymbols()
-        );
+        foreach ($this->extensions as $ext) {
+            foreach ($ext->getNodeVisitors() as $visitor) {
+                $this->addNodeVisitor($visitor);
+            }
+            foreach ($ext->getTags() as $tag) {
+                $this->addTag($tag);
+            }
+        }
+
+        $this->tokenizer         = new Tokenizer($this);
+        $this->parser            = new Parser($this, new ExpressionParser($this));
+        $this->nodeTreeTraverser = new NodeTreeTraverser($this->nodeVisitors);
+        $this->compiler          = new Compiler($this);
     }
 
     /**
@@ -363,51 +381,35 @@ class Environment
         return $this->loader->load($template);
     }
 
-    public function compileTemplate($template, $templateName)
+    private function compileTemplate($template)
     {
         if (!isset($this->compiler)) {
-            foreach ($this->extensions as $ext) {
-                foreach ($ext->getNodeVisitors() as $visitor) {
-                    $this->addNodeVisitor($visitor);
-                }
-                foreach ($ext->getTags() as $tag) {
-                    $this->addTag($tag);
-                }
-            }
-
-            $this->tokenizer         = new Tokenizer($this);
-            $this->parser            = new Parser($this, new ExpressionParser($this));
-            $this->nodeTreeTraverser = new NodeTreeTraverser($this->nodeVisitors);
-            $this->compiler          = new Compiler($this);
+            $this->initializeCompiler();
         }
-        //Tokenize and parse the template
-        $stream = $this->tokenizer->tokenize($template);
-        $node   = $this->parser->parseTemplate($stream, $templateName);
+        $templateSource = $this->getSource($template);
 
-        //Run the Node Tree Visitors
+        $stream = $this->tokenizer->tokenize($templateSource);
+        $node   = $this->parser->parseTemplate($stream, $template);
+
         $this->nodeTreeTraverser->traverse($node);
 
-        //Compile the template
         return $this->compiler->compile($node);
     }
 
-    private function compileIfNeeded($templateName)
+    private function compileIfNeeded($template)
     {
         $cacheEnabled = $this->options['cache'];
         if ($cacheEnabled) {
-            if ($this->loader->isCacheFresh($templateName)) {
+            if ($this->loader->isCacheFresh($template)) {
                 //The template is already compiled and up to date
                 return;
             }
         }
 
-        $compiled = $this->compileTemplate(
-            $this->getSource($templateName),
-            $templateName
-        );
+        $compiled = $this->compileTemplate($template);
 
         if ($cacheEnabled) {
-            $this->saveCompiledTemplate($compiled, $templateName);
+            $this->saveCompiledTemplate($compiled, $template);
         } else {
             eval('?>' . $compiled);
         }
