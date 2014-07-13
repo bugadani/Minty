@@ -296,11 +296,6 @@ class CoreFunctionsTest extends \PHPUnit_Framework_TestCase
             array(
                 'url_encode',
                 array(' '),
-                '+'
-            ),
-            array(
-                'url_encode',
-                array(' ', true),
                 '%20'
             ),
             array(

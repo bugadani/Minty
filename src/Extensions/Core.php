@@ -615,7 +615,7 @@ function template_function_truncate($string, $length, $ellipsis = '...')
     return $string;
 }
 
-function template_function_urlEncode($data, $raw = false)
+function template_function_urlEncode($data)
 {
     if ($data instanceof \Traversable) {
         $data = iterator_to_array($data);
@@ -623,11 +623,8 @@ function template_function_urlEncode($data, $raw = false)
     if (is_array($data)) {
         return http_build_query($data, '', '&');
     }
-    if ($raw) {
-        return rawurlencode($data);
-    }
 
-    return urlencode($data);
+    return rawurlencode($data);
 }
 
 /**
