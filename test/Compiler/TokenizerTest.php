@@ -16,6 +16,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
      */
     private $environment;
     private $mockLoader;
+    private $reflector;
 
     public function setUp()
     {
@@ -61,14 +62,47 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
             ->method('operators')
             ->will($this->returnValue('oper ator'));
 
-        $mockEnv->getBinaryOperators()->addOperator($mockOperator);
-        $mockEnv->getBinaryOperators()->addOperator($otherOperator);
-        $mockEnv->addTag($testTag);
-        $mockEnv->addTag($testBlockTag);
-        $mockEnv->addFunction(
-            new TemplateFunction('test', function () {
-            })
-        );
+        $extension = $this->getMockBuilder('Minty\\Extension')
+            ->setMethods(array('getBinaryOperators', 'getTags', 'getFunctions'))
+            ->getMockForAbstractClass();
+
+        $extension->expects($this->any())
+            ->method('getBinaryOperators')
+            ->will(
+                $this->returnValue(
+                    array(
+                        $mockOperator,
+                        $otherOperator
+                    )
+                )
+            );
+
+        $extension->expects($this->any())
+            ->method('getTags')
+            ->will(
+                $this->returnValue(
+                    array(
+                        $testTag,
+                        $testBlockTag
+                    )
+                )
+            );
+        $extension->expects($this->any())
+            ->method('getFunctions')
+            ->will(
+                $this->returnValue(
+                    array(
+                        new TemplateFunction('test', function () {
+                        })
+                    )
+                )
+            );
+
+        $mockEnv->addExtension($extension);
+
+        $this->reflector = new \ReflectionMethod($mockEnv, 'initializeCompiler');
+        $this->reflector->setAccessible(true);
+        $this->reflector->invoke($mockEnv);
 
         $this->tokenizer   = new Tokenizer($mockEnv);
         $this->environment = $mockEnv;
@@ -138,6 +172,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
         $env       = new Environment($this->mockLoader, array(
             'block_end_prefix' => 'end'
         ));
+        $this->reflector->invoke($env);
         $tokenizer = new Tokenizer($env);
 
         return $tokenizer->tokenize('{raw}some random content {}{endraw{endraw}');

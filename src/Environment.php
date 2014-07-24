@@ -298,10 +298,6 @@ class Environment
      */
     public function getBinaryOperators()
     {
-        if (!isset($this->binaryOperators)) {
-            $this->initOperators();
-        }
-
         return $this->binaryOperators;
     }
 
@@ -310,10 +306,6 @@ class Environment
      */
     public function getUnaryPrefixOperators()
     {
-        if (!isset($this->unaryPrefixOperators)) {
-            $this->initOperators();
-        }
-
         return $this->unaryPrefixOperators;
     }
 
@@ -322,10 +314,6 @@ class Environment
      */
     public function getUnaryPostfixOperators()
     {
-        if (!isset($this->unaryPostfixOperators)) {
-            $this->initOperators();
-        }
-
         return $this->unaryPostfixOperators;
     }
 
@@ -335,13 +323,13 @@ class Environment
     public function getOperatorSymbols()
     {
         return array_merge(
-            $this->getBinaryOperators()->getSymbols(),
-            $this->getUnaryPrefixOperators()->getSymbols(),
-            $this->getUnaryPostfixOperators()->getSymbols()
+            $this->binaryOperators->getSymbols(),
+            $this->unaryPrefixOperators->getSymbols(),
+            $this->unaryPostfixOperators->getSymbols()
         );
     }
 
-    private function initOperators()
+    private function initializeCompiler()
     {
         $this->binaryOperators       = new OperatorCollection();
         $this->unaryPrefixOperators  = new OperatorCollection();
@@ -351,12 +339,7 @@ class Environment
             $this->binaryOperators->addOperators($ext->getBinaryOperators());
             $this->unaryPrefixOperators->addOperators($ext->getPrefixUnaryOperators());
             $this->unaryPostfixOperators->addOperators($ext->getPostfixUnaryOperators());
-        }
-    }
 
-    private function initializeCompiler()
-    {
-        foreach ($this->extensions as $ext) {
             foreach ($ext->getNodeVisitors() as $visitor) {
                 $this->addNodeVisitor($visitor);
             }

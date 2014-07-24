@@ -48,8 +48,26 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
             ->method('operators')
             ->will($this->returnValue(array('*')));
 
-        $this->env->getBinaryOperators()->addOperator($this->plusOperator);
-        $this->env->getBinaryOperators()->addOperator($this->multiplyOperator);
+        $extension = $this->getMockBuilder('Minty\\Extension')
+            ->setMethods(array('getBinaryOperators'))
+            ->getMockForAbstractClass();
+
+        $extension->expects($this->once())
+            ->method('getBinaryOperators')
+            ->will(
+                $this->returnValue(
+                    array(
+                        $this->plusOperator,
+                        $this->multiplyOperator
+                    )
+                )
+            );
+
+        $this->env->addExtension($extension);
+
+        $reflector = new \ReflectionMethod($this->env, 'initializeCompiler');
+        $reflector->setAccessible(true);
+        $reflector->invoke($this->env);
 
         $this->expressionParser = new ExpressionParser($this->env);
     }
