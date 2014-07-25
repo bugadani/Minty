@@ -26,6 +26,8 @@ Other options
    Sets the automatic filtering mode. Values:
      - `0`, `false`: don't filter output automatically.
      - `1`: filter output based on file extension
+ * `cache`
+   The path of the cache directory for the compiled templates to be saved in. To disable caching, set to `false`
  * `debug`
    When set to `true`, extra information is compiled in form of comments into the template.
  * `default_autofilter_strategy`
