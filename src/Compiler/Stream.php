@@ -11,18 +11,18 @@ namespace Minty\Compiler;
 
 use Minty\Compiler\Exceptions\SyntaxException;
 
-class Stream extends \SplDoublyLinkedList
+class Stream
 {
+    private $tokens = array(null);
 
-    public function __construct(array $tokens = null)
+    public function rewind()
     {
-        $this->push(null);
-        if (!empty($tokens)) {
-            foreach ($tokens as $token) {
-                $this->push($token);
-            }
-            $this->rewind();
-        }
+        reset($this->tokens);
+    }
+
+    public function push(Token $token)
+    {
+        $this->tokens[] = $token;
     }
 
     /**
@@ -30,9 +30,15 @@ class Stream extends \SplDoublyLinkedList
      */
     public function next()
     {
-        parent::next();
+        return next($this->tokens);
+    }
 
-        return $this->current();
+    /**
+     * @return Token
+     */
+    public function current()
+    {
+        return current($this->tokens);
     }
 
     /**
@@ -43,7 +49,7 @@ class Stream extends \SplDoublyLinkedList
      */
     public function expect($type, $value = null)
     {
-        parent::next();
+        next($this->tokens);
 
         return $this->expectCurrent($type, $value);
     }
@@ -57,7 +63,7 @@ class Stream extends \SplDoublyLinkedList
      */
     public function expectCurrent($type, $value = null)
     {
-        $token = $this->current();
+        $token = current($this->tokens);
         if ($token->test($type, $value)) {
             return $token;
         }
@@ -81,12 +87,11 @@ class Stream extends \SplDoublyLinkedList
      */
     public function nextTokenIf($type, $value = null)
     {
-        parent::next();
-        $token = $this->current();
+        $token = next($this->tokens);
         if ($token->test($type, $value)) {
             return $token;
         }
-        $this->prev();
+        prev($this->tokens);
 
         return false;
     }

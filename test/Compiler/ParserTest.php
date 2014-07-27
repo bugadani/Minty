@@ -73,6 +73,22 @@ class ParserTest extends \PHPUnit_Framework_TestCase
         $this->parser = new Parser($this->env, $this->expressionParserMock);
     }
 
+    /**
+     * @param $tokens
+     *
+     * @return Stream
+     */
+    public function createStream($tokens)
+    {
+        $stream = new Stream();
+        foreach ($tokens as $token) {
+            $stream->push($token);
+        }
+        $stream->rewind();
+
+        return $stream;
+    }
+
     public function testThatEnvironmentIsSet()
     {
         $this->assertSame($this->env, $this->parser->getEnvironment());
@@ -89,7 +105,7 @@ class ParserTest extends \PHPUnit_Framework_TestCase
 
     public function testExpressionStartTokenForTagIsSkipped()
     {
-        $stream = new Stream(array(
+        $stream = $this->createStream(array(
             new Token(Token::TAG, 'test'),
             new Token(Token::EXPRESSION_START),
             new Token(Token::TAG, 'test'),
@@ -106,7 +122,7 @@ class ParserTest extends \PHPUnit_Framework_TestCase
 
     public function testParseBlockStopsAtClosingTag()
     {
-        $stream = new Stream(array(
+        $stream = $this->createStream(array(
             new Token(Token::TAG, 'testblock'),
             new Token(Token::TAG, 'test'),
             new Token(Token::TEXT, 'this will be skipped'),
@@ -140,7 +156,7 @@ class ParserTest extends \PHPUnit_Framework_TestCase
                     }
                 )
             );
-        $stream = new Stream(array(
+        $stream = $this->createStream(array(
             new Token(Token::TAG, 'testblock'),
             new Token(Token::TAG, 'test'),
             new Token(Token::TEXT, 'this will be skipped'),
@@ -156,7 +172,7 @@ class ParserTest extends \PHPUnit_Framework_TestCase
      */
     public function testExceptionIsThrownForUnknownTags()
     {
-        $stream = new Stream(array(
+        $stream = $this->createStream(array(
             new Token(Token::TAG, 'footag'),
             new Token(Token::EOF)
         ));
@@ -168,7 +184,7 @@ class ParserTest extends \PHPUnit_Framework_TestCase
      */
     public function testExceptionIsThrownForTokensThatAreNotExpected()
     {
-        $stream = new Stream(array(
+        $stream = $this->createStream(array(
             new Token(Token::LITERAL, 'foo'),
             new Token(Token::EOF)
         ));

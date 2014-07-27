@@ -5,15 +5,35 @@ namespace Minty\Compiler;
 class StreamTest extends \PHPUnit_Framework_TestCase
 {
 
+    /**
+     * @param $tokens
+     *
+     * @return Stream
+     */
+    public function createStream($tokens)
+    {
+        $stream = new Stream();
+        foreach ($tokens as $token) {
+            $stream->push($token);
+        }
+        $stream->rewind();
+
+        return $stream;
+    }
+
     public function testStreamFunctions()
     {
-        // This can be done using integers because this part of Stream does not depend on the type of the data.
-        $stream = new Stream(array(1, 2, 3));
+        $tokens = array(
+            new Token(Token::IDENTIFIER, 1),
+            new Token(Token::IDENTIFIER, 2),
+            new Token(Token::IDENTIFIER, 3),
+        );
+        $stream = $this->createStream($tokens);
         $this->assertEquals(null, $stream->current());
-        $this->assertEquals(1, $stream->next());
-        $this->assertEquals(2, $stream->next());
-        $this->assertEquals(3, $stream->next());
-        $this->assertEquals(3, $stream->current());
+        $this->assertEquals(1, $stream->next()->getValue());
+        $this->assertEquals(2, $stream->next()->getValue());
+        $this->assertEquals(3, $stream->next()->getValue());
+        $this->assertEquals(3, $stream->current()->getValue());
     }
 
     public function testTestFunctions()
@@ -25,7 +45,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
             new Token(Token::IDENTIFIER, 'd'),
             new Token(Token::IDENTIFIER, 'e'),
         );
-        $stream = new Stream($tokens);
+        $stream = $this->createStream($tokens);
 
         $this->assertSame($tokens[0], $stream->expect(Token::IDENTIFIER, 'a'));
         $this->assertSame($tokens[1], $stream->expect(Token::IDENTIFIER, 'b'));
@@ -40,7 +60,8 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testThatFailedExpectationThrowsException()
     {
-        $stream = new Stream(array(new Token(Token::EOF)));
+        $tokens = array(new Token(Token::EOF));
+        $stream = $this->createStream($tokens);
         $stream->expect(Token::IDENTIFIER);
     }
 }

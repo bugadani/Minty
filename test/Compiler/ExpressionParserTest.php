@@ -72,17 +72,35 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
         $this->expressionParser = new ExpressionParser($this->env);
     }
 
+    /**
+     * @param $tokens
+     *
+     * @return Stream
+     */
+    public function createStream($tokens)
+    {
+        $stream = new Stream();
+        foreach ($tokens as $token) {
+            $stream->push($token);
+        }
+        $stream->rewind();
+
+        return $stream;
+    }
+
     public function testOperatorPrecedenceIsRespected()
     {
         // 5 * 6 + 7 = (5 * 6) + 7
-        $stream = new Stream(array(
-            new Token(Token::LITERAL, 5),
-            new Token(Token::OPERATOR, '*'),
-            new Token(Token::LITERAL, 6),
-            new Token(Token::OPERATOR, '+'),
-            new Token(Token::LITERAL, 7),
-            new Token(Token::EOF),
-        ));
+        $stream = $this->createStream(
+            array(
+                new Token(Token::LITERAL, 5),
+                new Token(Token::OPERATOR, '*'),
+                new Token(Token::LITERAL, 6),
+                new Token(Token::OPERATOR, '+'),
+                new Token(Token::LITERAL, 7),
+                new Token(Token::EOF),
+            )
+        );
 
         /** @var $multNode OperatorNode */
         /** @var $plusNode OperatorNode */
@@ -106,16 +124,18 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
     public function testOperatorPrecedenceCanBeOverriddenByParentheses()
     {
         // 5 * (6 + 7)
-        $stream = new Stream(array(
-            new Token(Token::LITERAL, 5),
-            new Token(Token::OPERATOR, '*'),
-            new Token(Token::PUNCTUATION, '('),
-            new Token(Token::LITERAL, 6),
-            new Token(Token::OPERATOR, '+'),
-            new Token(Token::LITERAL, 7),
-            new Token(Token::PUNCTUATION, ')'),
-            new Token(Token::EOF),
-        ));
+        $stream = $this->createStream(
+            array(
+                new Token(Token::LITERAL, 5),
+                new Token(Token::OPERATOR, '*'),
+                new Token(Token::PUNCTUATION, '('),
+                new Token(Token::LITERAL, 6),
+                new Token(Token::OPERATOR, '+'),
+                new Token(Token::LITERAL, 7),
+                new Token(Token::PUNCTUATION, ')'),
+                new Token(Token::EOF),
+            )
+        );
 
         /** @var $multNode OperatorNode */
         /** @var $plusNode OperatorNode */
@@ -140,37 +160,37 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
     {
         return array(
             array(
-                new Stream(array(
+                array(
                     new Token(Token::PUNCTUATION, '['),
                     new Token(Token::STRING, 'foo'),
                     new Token(Token::PUNCTUATION, ':'),
                     new Token(Token::STRING, 'bar'),
                     new Token(Token::PUNCTUATION, ']'),
                     new Token(Token::EOF)
-                ))
+                )
             ),
             array(
-                new Stream(array(
+                array(
                     new Token(Token::PUNCTUATION, '['),
                     new Token(Token::STRING, 'foo'),
                     new Token(Token::PUNCTUATION, '=>'),
                     new Token(Token::STRING, 'bar'),
                     new Token(Token::PUNCTUATION, ']'),
                     new Token(Token::EOF)
-                ))
+                )
             ),
             array(
-                new Stream(array(
+                array(
                     new Token(Token::PUNCTUATION, '['),
                     new Token(Token::STRING, 'foo'),
                     new Token(Token::PUNCTUATION, ','),
                     new Token(Token::STRING, 'bar'),
                     new Token(Token::PUNCTUATION, ']'),
                     new Token(Token::EOF)
-                ))
+                )
             ),
             array(
-                new Stream(array(
+                array(
                     new Token(Token::PUNCTUATION, '['),
                     new Token(Token::STRING, 'foo'),
                     new Token(Token::PUNCTUATION, '=>'),
@@ -178,7 +198,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
                     new Token(Token::PUNCTUATION, ','),
                     new Token(Token::PUNCTUATION, ']'),
                     new Token(Token::EOF)
-                ))
+                )
             )
         );
     }
@@ -190,13 +210,13 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertInstanceOf(
             '\\Minty\\Compiler\\Nodes\\ArrayNode',
-            $this->expressionParser->parse($stream)
+            $this->expressionParser->parse($this->createStream($stream))
         );
     }
 
     public function testParenthesisAfterIdentifierMakesAFunction()
     {
-        $stream = new Stream(array(
+        $stream = $this->createStream(array(
             new Token(Token::IDENTIFIER, 'function'),
             new Token(Token::PUNCTUATION, '('),
             new Token(Token::PUNCTUATION, ')'),
@@ -213,7 +233,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
 
     public function testArgumentsArePresentInFunctionNode()
     {
-        $stream = new Stream(array(
+        $stream = $this->createStream(array(
             new Token(Token::IDENTIFIER, 'function'),
             new Token(Token::PUNCTUATION, '('),
             new Token(Token::STRING, 'foo'),
@@ -240,7 +260,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
      */
     public function testTrailingCommaIsNotAllowedInArgumentList()
     {
-        $stream = new Stream(array(
+        $stream = $this->createStream(array(
             new Token(Token::IDENTIFIER, 'function'),
             new Token(Token::PUNCTUATION, '('),
             new Token(Token::STRING, 'foo'),
@@ -254,7 +274,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
 
     public function testSimpleVariables()
     {
-        $stream = new Stream(array(
+        $stream = $this->createStream(array(
             new Token(Token::VARIABLE, 'foo'),
             new Token(Token::EOF)
         ));
@@ -268,7 +288,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
 
     public function testSquareBracketsMakeArrayIndexing()
     {
-        $stream = new Stream(array(
+        $stream = $this->createStream(array(
             new Token(Token::VARIABLE, 'foo'),
             new Token(Token::PUNCTUATION, '['),
             new Token(Token::STRING, 'bar'),
@@ -295,7 +315,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
 
     public function testChainedArrayAccessIsSupported()
     {
-        $stream = new Stream(array(
+        $stream = $this->createStream(array(
             new Token(Token::VARIABLE, 'foo'),
             new Token(Token::PUNCTUATION, '['),
             new Token(Token::STRING, 'bar'),
@@ -349,7 +369,7 @@ class ExpressionParserTest extends \PHPUnit_Framework_TestCase
      */
     public function testArrayIndexingRequiresAnIndex()
     {
-        $stream = new Stream(array(
+        $stream = $this->createStream(array(
             new Token(Token::VARIABLE, 'foo'),
             new Token(Token::PUNCTUATION, '['),
             new Token(Token::PUNCTUATION, ']'),
