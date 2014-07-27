@@ -109,7 +109,7 @@ class Environment
     /**
      * @var bool
      */
-    private $errorTemplateLoaderLoaded = false;
+    private $errorTemplateLoaderLoaded;
 
     /**
      * @param AbstractTemplateLoader $loader
@@ -136,10 +136,14 @@ class Environment
         );
         $this->options   = array_merge($default_options, $options);
 
-        $this->addTemplateLoader($loader);
+        $this->loader          = $loader;
+        $this->chainLoaderUsed = $loader instanceof ChainLoader;
+
         if ($this->options['error_template'] !== '__compile_error_template') {
             //don't load the built-in error template loader
             $this->errorTemplateLoaderLoaded = true;
+        } else {
+            $this->errorTemplateLoaderLoaded = false;
         }
     }
 
@@ -149,17 +153,10 @@ class Environment
             $loader->setEnvironment($this);
         }
         if (!$this->chainLoaderUsed) {
-            if (!isset($this->loader)) {
-                $this->loader          = $loader;
-                $this->chainLoaderUsed = $loader instanceof ChainLoader;
-
-                return;
-            } else {
-                $oldLoader    = $this->loader;
-                $this->loader = new ChainLoader();
-                $this->loader->addLoader($oldLoader);
-                $this->chainLoaderUsed = true;
-            }
+            $chainLoader = new ChainLoader();
+            $chainLoader->addLoader($this->loader);
+            $this->loader          = $chainLoader;
+            $this->chainLoaderUsed = true;
         }
         $this->loader->addLoader($loader);
     }
@@ -435,7 +432,7 @@ class Environment
     {
         $cacheKey       = $this->loader->getCacheKey($template);
         $cacheNamespace = $this->options['cache_namespace'];
-        $cacheKey       = preg_replace('/[^\w\\/]+/', '_', $cacheKey);
+        $cacheKey       = preg_replace('#[^\w/]+#', '_', $cacheKey);
 
         return $cacheNamespace . '\\' . strtr($cacheKey, '/', '\\');
     }
