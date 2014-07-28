@@ -32,13 +32,11 @@ class Tokenizer
     );
 
     // State properties
-    /**
-     * @var Stream
-     */
-    private $tokens;
     private $line;
     private $parts;
     private $position;
+    private $tokenBuffer;
+    private $currentText;
 
     public function __construct(Environment $environment)
     {
@@ -113,7 +111,6 @@ class Tokenizer
     public function tokenize($template)
     {
         $this->line     = 1;
-        $this->tokens   = new Stream();
         $this->position = -1;
 
         $template = str_replace(array("\r\n", "\n\r", "\r"), "\n", $template);
@@ -121,33 +118,40 @@ class Tokenizer
         $flags       = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
         $this->parts = preg_split($this->tokenSplitPattern, $template, 0, $flags);
 
-        $currentText = '';
-        while (isset($this->parts[++$this->position])) {
-            switch ($this->parts[$this->position]) {
-                case $this->delimiters['comment'][0]:
-                    $this->pushTextToken($currentText);
-                    $currentText = '';
-                    $this->tokenizeComment();
-                    break;
+        $this->tokenBuffer = array();
+        $this->currentText = '';
 
-                case $this->delimiters['tag'][0]:
-                    $this->pushTextToken($currentText);
-                    $currentText = '';
-                    $this->tokenizeTag();
-                    break;
+        return new Stream($this);
+    }
 
-                default:
-                    $currentText .= $this->parts[$this->position];
-                    break;
+    public function nextToken()
+    {
+        while (empty($this->tokenBuffer)) {
+            if (isset($this->parts[++$this->position])) {
+                switch ($this->parts[$this->position]) {
+                    case $this->delimiters['comment'][0]:
+                        $this->pushTextToken($this->currentText);
+                        $this->currentText = '';
+                        $this->tokenizeComment();
+                        break;
+
+                    case $this->delimiters['tag'][0]:
+                        $this->pushTextToken($this->currentText);
+                        $this->currentText = '';
+                        $this->tokenizeTag();
+                        break;
+
+                    default:
+                        $this->currentText .= $this->parts[$this->position];
+                        break;
+                }
+            } else {
+                $this->pushTextToken($this->currentText);
+                $this->pushToken(Token::EOF);
             }
         }
 
-        $this->pushTextToken($currentText);
-        $this->pushToken(Token::EOF);
-
-        $this->tokens->rewind();
-
-        return $this->tokens;
+        return array_shift($this->tokenBuffer);
     }
 
     private function tokenizeComment()
@@ -293,10 +297,10 @@ class Tokenizer
         } elseif (in_array($part, $this->operators)) {
             $this->pushToken(Token::OPERATOR, $part);
         } elseif (is_numeric($part)) {
-            $number = (float) $part;
+            $number = (float)$part;
             //check whether the number can be represented as an integer
             if (ctype_digit($part) && $number <= PHP_INT_MAX) {
-                $number = (int) $part;
+                $number = (int)$part;
             }
             $this->pushToken(Token::LITERAL, $number);
         } else {
@@ -331,7 +335,7 @@ class Tokenizer
 
     public function pushToken($type, $value = null)
     {
-        $this->tokens->push(new Token($type, $value, $this->line));
+        $this->tokenBuffer[] = new Token($type, $value, $this->line);
     }
 
     public function pushTextToken($value)

@@ -13,16 +13,25 @@ use Minty\Compiler\Exceptions\SyntaxException;
 
 class Stream
 {
-    private $tokens = array(null);
+    /**
+     * @var Tokenizer
+     */
+    private $tokenizer;
 
-    public function rewind()
-    {
-        reset($this->tokens);
-    }
+    /**
+     * @var Token
+     */
+    private $current;
 
-    public function push(Token $token)
+    /**
+     * @var Token
+     */
+    private $next;
+
+    public function __construct(Tokenizer $tokenizer)
     {
-        $this->tokens[] = $token;
+        $this->tokenizer = $tokenizer;
+        $this->next();
     }
 
     /**
@@ -30,7 +39,10 @@ class Stream
      */
     public function next()
     {
-        return next($this->tokens);
+        $this->current = $this->next;
+        $this->next    = $this->tokenizer->nextToken();
+
+        return $this->current;
     }
 
     /**
@@ -38,7 +50,7 @@ class Stream
      */
     public function current()
     {
-        return current($this->tokens);
+        return $this->current;
     }
 
     /**
@@ -49,7 +61,7 @@ class Stream
      */
     public function expect($type, $value = null)
     {
-        next($this->tokens);
+        $this->next();
 
         return $this->expectCurrent($type, $value);
     }
@@ -63,7 +75,7 @@ class Stream
      */
     public function expectCurrent($type, $value = null)
     {
-        $token = current($this->tokens);
+        $token = $this->current;
         if ($token->test($type, $value)) {
             return $token;
         }
@@ -87,11 +99,10 @@ class Stream
      */
     public function nextTokenIf($type, $value = null)
     {
-        $token = next($this->tokens);
+        $token = $this->next;
         if ($token->test($type, $value)) {
-            return $token;
+            return $this->next();
         }
-        prev($this->tokens);
 
         return false;
     }
