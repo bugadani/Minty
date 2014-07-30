@@ -29,13 +29,14 @@ class DefineTag extends Tag
     public function parse(Parser $parser, Stream $stream)
     {
         $templateName = $stream->expect(Token::IDENTIFIER)->getValue();
-        $stream->expect(Token::EXPRESSION_END);
+        $stream->expect(Token::TAG_END);
 
         $parser->enterBlock($templateName);
         $parser->getCurrentClassNode()->addChild(
             $parser->parseBlock($stream, 'enddefine'),
             $templateName
         );
+        $stream->expect(Token::TAG_END);
         $parser->leaveBlock();
     }
 }

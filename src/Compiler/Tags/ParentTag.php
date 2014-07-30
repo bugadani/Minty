@@ -14,6 +14,7 @@ use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
 use Minty\Compiler\Tag;
 use Minty\Compiler\Tags\Helpers\MethodNodeHelper;
+use Minty\Compiler\Token;
 
 class ParentTag extends Tag
 {
@@ -36,6 +37,7 @@ class ParentTag extends Tag
     {
         $node = $this->helper->createRenderBlockNode($parser->getCurrentBlock());
         $node->getChild('expression')->addArgument(new DataNode(true));
+        $stream->expect(Token::TAG_END);
 
         return $node;
     }

@@ -233,31 +233,28 @@ class Tokenizer
         }
 
         if (is_string($this->tags[$tagName])) {
-            $this->pushToken(Token::TAG, $this->tags[$tagName]);
-        } else {
-            $this->pushToken(Token::TAG, $tagName);
+            $tagName = $this->tags[$tagName];
         }
+        $this->pushToken(Token::TAG_START, $tagName);
+
         //tokenize the tag expression if any
-        if ($expression === '') {
-            return;
-        }
-        $this->pushToken(Token::EXPRESSION_START);
+        if ($expression !== '') {
+            $flags = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
+            $parts = preg_split($this->expressionPartsPattern, $expression, 0, $flags);
 
-        $flags = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
-        $parts = preg_split($this->expressionPartsPattern, $expression, 0, $flags);
-
-        foreach ($parts as $part) {
-            //We can safely skip spaces
-            if ($part !== ' ') {
-                if (trim($part) === '') {
-                    //Whitespace strings only matter for line numbering
-                    $this->line += substr_count($part, "\n");
-                } else {
-                    $this->tokenizeExpressionPart($part);
+            foreach ($parts as $part) {
+                //We can safely skip spaces
+                if ($part !== ' ') {
+                    if (trim($part) === '') {
+                        //Whitespace strings only matter for line numbering
+                        $this->line += substr_count($part, "\n");
+                    } else {
+                        $this->tokenizeExpressionPart($part);
+                    }
                 }
             }
         }
-        $this->pushToken(Token::EXPRESSION_END);
+        $this->pushToken(Token::TAG_END, $tagName);
     }
 
     private function tokenizeRawBlock()

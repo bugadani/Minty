@@ -11,30 +11,28 @@ namespace Minty\Compiler;
 
 class Token
 {
-    const EXPRESSION_START = 0;
-    const EXPRESSION_END   = 1;
-    const LITERAL          = 2;
-    const STRING           = 3;
-    const IDENTIFIER       = 4;
-    const OPERATOR         = 5;
-    const PUNCTUATION      = 6;
-    const TEXT             = 7;
-    const TAG              = 8;
-    const VARIABLE         = 9;
-    const EOF              = 10;
+    const TAG_START   = 0;
+    const TAG_END     = 1;
+    const LITERAL     = 2;
+    const STRING      = 3;
+    const IDENTIFIER  = 4;
+    const OPERATOR    = 5;
+    const PUNCTUATION = 6;
+    const TEXT        = 7;
+    const VARIABLE    = 8;
+    const EOF         = 9;
 
     private static $strings = array(
-        self::EXPRESSION_START => 'EXPRESSION START',
-        self::EXPRESSION_END   => 'EXPRESSION END',
-        self::LITERAL          => 'LITERAL',
-        self::STRING           => 'STRING',
-        self::IDENTIFIER       => 'IDENTIFIER',
-        self::OPERATOR         => 'OPERATOR',
-        self::PUNCTUATION      => 'PUNCTUATION',
-        self::TEXT             => 'TEXT',
-        self::TAG              => 'TAG',
-        self::VARIABLE         => 'VARIABLE',
-        self::EOF              => 'EOF',
+        self::TAG_START   => 'TAG START',
+        self::TAG_END     => 'TAG END',
+        self::LITERAL     => 'LITERAL',
+        self::STRING      => 'STRING',
+        self::IDENTIFIER  => 'IDENTIFIER',
+        self::OPERATOR    => 'OPERATOR',
+        self::PUNCTUATION => 'PUNCTUATION',
+        self::TEXT        => 'TEXT',
+        self::VARIABLE    => 'VARIABLE',
+        self::EOF         => 'EOF',
     );
     private $type;
     private $value;

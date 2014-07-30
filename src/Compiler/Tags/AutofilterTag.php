@@ -61,12 +61,13 @@ class AutofilterTag extends Tag
                 break;
         }
         $node = new TagNode($this, array('strategy' => $strategy));
-        $stream->expect(Token::EXPRESSION_END);
+        $stream->expect(Token::TAG_END);
 
         $node->addChild(
             $parser->parseBlock($stream, 'endautofilter'),
             'body'
         );
+        $stream->expect(Token::TAG_END);
 
         return $node;
     }

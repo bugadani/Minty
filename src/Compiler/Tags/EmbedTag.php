@@ -74,6 +74,7 @@ class EmbedTag extends Tag
      * @param Parser $parser
      * @param Stream $stream
      * @param        $parentTemplate
+     *
      * @return ClassNode
      */
     private function parseClass(Parser $parser, Stream $stream, $parentTemplate)
@@ -92,6 +93,7 @@ class EmbedTag extends Tag
             $parser->parseBlock($stream, 'endembed'),
             ClassNode::MAIN_TEMPLATE_BLOCK
         );
+        $stream->expect(Token::TAG_END);
         $parser->setCurrentClassNode($oldClassNode);
 
         return $classNode->getClassName();
@@ -101,6 +103,7 @@ class EmbedTag extends Tag
      * @param Parser $parser
      * @param Stream $stream
      * @param        $environmentNode
+     *
      * @return Node
      */
     private function getContext(Parser $parser, Stream $stream, $environmentNode)

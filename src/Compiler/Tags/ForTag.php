@@ -147,8 +147,9 @@ class ForTag extends Tag
         $node->addChild($parser->parseExpression($stream), 'source');
         $node->addChild($parser->parseBlock($stream, array('else', 'endfor')), 'loop_body');
 
-        if ($stream->current()->test(Token::TAG, 'else')) {
+        if ($stream->next()->test(Token::TAG_END, 'else')) {
             $node->addChild($parser->parseBlock($stream, 'endfor'), 'else');
+            $stream->expect(Token::TAG_END);
         }
 
         return $node;

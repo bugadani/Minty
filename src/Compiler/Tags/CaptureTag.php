@@ -47,6 +47,7 @@ class CaptureTag extends Tag
         $node = new TagNode($this);
         $node->addChild($parser->parseExpression($stream), 'into');
         $node->addChild($parser->parseBlock($stream, 'endcapture'), 'body');
+        $stream->expect(Token::TAG_END);
 
         return $node;
     }

@@ -21,6 +21,11 @@ abstract class Tag
         return false;
     }
 
+    /**
+     * @param Parser $parser
+     * @param Stream $stream
+     * @return void|Node
+     */
     public function parse(Parser $parser, Stream $stream)
     {
     }

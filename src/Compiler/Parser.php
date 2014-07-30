@@ -33,8 +33,6 @@ class Parser
      */
     private $environment;
 
-    private $level = 0;
-
     /**
      * @var FileNode
      */
@@ -45,16 +43,15 @@ class Parser
      */
     private $classNode;
 
+    private $level = 0;
     private $block;
     private $blocks = array();
-    private $fallbackTagName;
 
     public function __construct(Environment $environment, ExpressionParser $expressionParser)
     {
         $this->expressionParser = $expressionParser;
         $this->environment      = $environment;
         $this->tags             = $environment->getTags();
-        $this->fallbackTagName  = $environment->getOption('fallback_tag');
     }
 
     /**
@@ -78,17 +75,17 @@ class Parser
                 );
                 break;
 
-            case Token::TAG:
+            case Token::TAG_START:
                 if (!isset($this->tags[$value])) {
                     throw new ParseException("Unknown {$value} tag", $token->getLine());
                 }
-                $stream->nextTokenIf(Token::EXPRESSION_START);
 
                 $node = $this->tags[$value]->parse($this, $stream);
                 if ($node instanceof Node) {
                     $node->addData('line', $token->getLine());
                     $root->addChild($node);
                 }
+
                 break;
 
             default:
@@ -134,7 +131,7 @@ class Parser
         return $this->fileNode;
     }
 
-    public function parseBlock(Stream $stream, $endTags, $type = Token::TAG)
+    public function parseBlock(Stream $stream, $endTags, $type = Token::TAG_START)
     {
         ++$this->level;
         $root  = new RootNode();
