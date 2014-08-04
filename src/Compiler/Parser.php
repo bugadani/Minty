@@ -19,11 +19,6 @@ use Minty\Environment;
 class Parser
 {
     /**
-     * @var Tag[]
-     */
-    private $tags;
-
-    /**
      * @var ExpressionParser
      */
     private $expressionParser;
@@ -51,7 +46,6 @@ class Parser
     {
         $this->expressionParser = $expressionParser;
         $this->environment      = $environment;
-        $this->tags             = $environment->getTags();
     }
 
     /**
@@ -76,11 +70,11 @@ class Parser
                 break;
 
             case Token::TAG_START:
-                if (!isset($this->tags[$value])) {
+                try {
+                    $node = $this->environment->getTag($value)->parse($this, $stream);
+                } catch (\OutOfBoundsException $e) {
                     throw new ParseException("Unknown {$value} tag", $token->getLine());
                 }
-
-                $node = $this->tags[$value]->parse($this, $stream);
                 if ($node instanceof Node) {
                     $node->addData('line', $token->getLine());
                     $root->addChild($node);

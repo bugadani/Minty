@@ -253,11 +253,25 @@ class Environment
     /**
      * @param $tag
      *
+     * @throws \OutOfBoundsException
      * @return Tag
      */
     public function getTag($tag)
     {
+        if(!isset($this->tags[$tag])) {
+            throw new \OutOfBoundsException("Tag {$tag} does not exist.");
+        }
         return $this->tags[$tag];
+    }
+
+    /**
+     * @param $tag
+     *
+     * @return bool
+     */
+    public function hasTag($tag)
+    {
+        return isset($this->tags[$tag]);
     }
 
     /**

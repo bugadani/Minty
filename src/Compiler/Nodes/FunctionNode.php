@@ -64,15 +64,14 @@ class FunctionNode extends IdentifierNode
 
     public function compile(Compiler $compiler)
     {
-        $environment = $compiler->getEnvironment();
-
         if ($this->getObject()) {
             $compiler
                 ->compileNode($this->getObject())
                 ->add('->' . $this->getData('name'))
                 ->compileArgumentList($this->arguments);
         } else {
-            $function = $environment->getFunction($this->getData('name'));
+            $environment = $compiler->getEnvironment();
+            $function    = $environment->getFunction($this->getData('name'));
 
             if ($function->getOption('needs_environment')) {
                 array_unshift($this->arguments, new TempVariableNode('environment'));

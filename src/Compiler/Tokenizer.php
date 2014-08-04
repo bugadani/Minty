@@ -15,9 +15,14 @@ use Minty\Environment;
 class Tokenizer
 {
     /**
-     * @var Tag[]
+     * @var Environment
      */
-    private $tags;
+    private $environment;
+
+    /**
+     * @var string[]
+     */
+    private $closingTags = array();
     private $operators;
     private $delimiters;
     private $expressionPartsPattern;
@@ -44,11 +49,11 @@ class Tokenizer
         $this->blockEndPrefix  = $environment->getOption('block_end_prefix');
         $this->operators       = $environment->getOperatorSymbols();
         $this->delimiters      = $environment->getOption('delimiters');
+        $this->environment = $environment;
 
-        $this->tags = $environment->getTags();
-        foreach ($this->tags as $name => $tag) {
+        foreach ($environment->getTags() as $name => $tag) {
             if ($tag->hasEndingTag()) {
-                $this->tags[$this->blockEndPrefix . $name] = 'end' . $name;
+                $this->closingTags[$this->blockEndPrefix . $name] = 'end' . $name;
             }
         }
 
@@ -227,14 +232,13 @@ class Tokenizer
         list(, $tagName, $expression) = $parts;
 
         //If the tag name is unknown, try to use the fallback
-        if (!isset($this->tags[$tagName])) {
+        if(isset($this->closingTags[$tagName])) {
+            $tagName = $this->closingTags[$tagName];
+        } elseif(!$this->environment->hasTag($tagName)) {
             $tagName    = $this->fallbackTagName;
             $expression = $tag;
         }
 
-        if (is_string($this->tags[$tagName])) {
-            $tagName = $this->tags[$tagName];
-        }
         $this->pushToken(Token::TAG_START, $tagName);
 
         //tokenize the tag expression if any
