@@ -79,7 +79,7 @@ class Stream
             return $this->current;
         }
         $value   = $this->current->getValue();
-        $message = "Unexpected { $this->current->getTypeString()}";
+        $message = "Unexpected {$this->current->getTypeString()}";
         if ($value === true) {
             $message .= ' (true)';
         } elseif ($value === false) {
