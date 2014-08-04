@@ -75,12 +75,11 @@ class Stream
      */
     public function expectCurrent($type, $value = null)
     {
-        $token = $this->current;
-        if ($token->test($type, $value)) {
-            return $token;
+        if ($this->current->test($type, $value)) {
+            return $this->current;
         }
-        $value   = $token->getValue();
-        $message = "Unexpected {$token->getTypeString()}";
+        $value   = $this->current->getValue();
+        $message = "Unexpected { $this->current->getTypeString()}";
         if ($value === true) {
             $message .= ' (true)';
         } elseif ($value === false) {
@@ -88,7 +87,7 @@ class Stream
         } elseif ($value !== '') {
             $message .= " ({$value})";
         }
-        throw new SyntaxException($message, $token->getLine());
+        throw new SyntaxException($message, $this->current->getLine());
     }
 
     /**
@@ -99,8 +98,7 @@ class Stream
      */
     public function nextTokenIf($type, $value = null)
     {
-        $token = $this->next;
-        if ($token->test($type, $value)) {
+        if ($this->next->test($type, $value)) {
             return $this->next();
         }
 
