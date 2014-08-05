@@ -1,0 +1,6 @@
+--TEST--
+Comment blocks
+--TEMPLATE--
+foo{# this is a comment #}bar
+--EXPECT--
+foobar

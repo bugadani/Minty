@@ -1,0 +1,6 @@
+--TEST--
+Raw blocks
+--TEMPLATE--
+foo{raw}{$foobar}{/raw}bar
+--EXPECT--
+foo{$foobar}bar

@@ -145,12 +145,10 @@ class Tokenizer
         if (isset($this->parts[++$this->position])) {
             switch ($this->parts[$this->position]) {
                 case $this->delimiters['comment'][0]:
-                    $this->pushTextToken();
                     $this->tokenizeComment();
                     break;
 
                 case $this->delimiters['tag'][0]:
-                    $this->pushTextToken();
                     $this->tokenizeTag();
                     break;
 
@@ -159,7 +157,6 @@ class Tokenizer
                     break;
             }
         } else {
-            $this->pushTextToken();
             $this->pushToken(Token::EOF);
         }
     }
@@ -284,7 +281,6 @@ class Tokenizer
                     //Check if the tag is closed
                     if (isset($this->parts[++$pos]) && $this->parts[$pos] === $tagClosingDelimiter) {
                         $this->position = $pos;
-                        $this->pushTextToken();
 
                         return;
                     }
@@ -340,15 +336,11 @@ class Tokenizer
 
     private function pushToken($type, $value = null)
     {
-        $this->tokenBuffer[] = new Token($type, $value, $this->line);
-    }
-
-    private function pushTextToken()
-    {
         if ($this->currentText !== '') {
-            $this->pushToken(Token::TEXT, $this->currentText);
+            $this->tokenBuffer[] = new Token(Token::TEXT, $this->currentText, $this->line);
             $this->line += substr_count($this->currentText, "\n");
             $this->currentText = '';
         }
+        $this->tokenBuffer[] = new Token($type, $value, $this->line);
     }
 }
