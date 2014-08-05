@@ -49,7 +49,7 @@ class Tokenizer
         $this->blockEndPrefix  = $environment->getOption('block_end_prefix');
         $this->operators       = $environment->getOperatorSymbols();
         $this->delimiters      = $environment->getOption('delimiters');
-        $this->environment = $environment;
+        $this->environment     = $environment;
 
         foreach ($environment->getTags() as $name => $tag) {
             if ($tag->hasEndingTag()) {
@@ -131,32 +131,37 @@ class Tokenizer
 
     public function nextToken()
     {
+        //Sometimes the next token is an empty text token that is skipped.
+        //This loop ensures that we always have a valid token to return.
         while (empty($this->tokenBuffer)) {
-            if (isset($this->parts[++$this->position])) {
-                switch ($this->parts[$this->position]) {
-                    case $this->delimiters['comment'][0]:
-                        $this->pushTextToken($this->currentText);
-                        $this->currentText = '';
-                        $this->tokenizeComment();
-                        break;
-
-                    case $this->delimiters['tag'][0]:
-                        $this->pushTextToken($this->currentText);
-                        $this->currentText = '';
-                        $this->tokenizeTag();
-                        break;
-
-                    default:
-                        $this->currentText .= $this->parts[$this->position];
-                        break;
-                }
-            } else {
-                $this->pushTextToken($this->currentText);
-                $this->pushToken(Token::EOF);
-            }
+            $this->getNextToken();
         }
 
         return array_shift($this->tokenBuffer);
+    }
+
+    private function getNextToken()
+    {
+        if (isset($this->parts[++$this->position])) {
+            switch ($this->parts[$this->position]) {
+                case $this->delimiters['comment'][0]:
+                    $this->pushTextToken();
+                    $this->tokenizeComment();
+                    break;
+
+                case $this->delimiters['tag'][0]:
+                    $this->pushTextToken();
+                    $this->tokenizeTag();
+                    break;
+
+                default:
+                    $this->currentText .= $this->parts[$this->position];
+                    break;
+            }
+        } else {
+            $this->pushTextToken();
+            $this->pushToken(Token::EOF);
+        }
     }
 
     private function tokenizeComment()
@@ -232,9 +237,9 @@ class Tokenizer
         list(, $tagName, $expression) = $parts;
 
         //If the tag name is unknown, try to use the fallback
-        if(isset($this->closingTags[$tagName])) {
+        if (isset($this->closingTags[$tagName])) {
             $tagName = $this->closingTags[$tagName];
-        } elseif(!$this->environment->hasTag($tagName)) {
+        } elseif (!$this->environment->hasTag($tagName)) {
             $tagName    = $this->fallbackTagName;
             $expression = $tag;
         }
@@ -263,7 +268,6 @@ class Tokenizer
 
     private function tokenizeRawBlock()
     {
-        $text                = '';
         $endRaw              = $this->blockEndPrefix . 'raw';
         $tagOpeningDelimiter = $this->delimiters['tag'][0];
         $tagClosingDelimiter = $this->delimiters['tag'][1];
@@ -280,13 +284,13 @@ class Tokenizer
                     //Check if the tag is closed
                     if (isset($this->parts[++$pos]) && $this->parts[$pos] === $tagClosingDelimiter) {
                         $this->position = $pos;
-                        $this->pushTextToken($text);
+                        $this->pushTextToken();
 
                         return;
                     }
                 }
             }
-            $text .= $this->parts[$this->position];
+            $this->currentText .= $this->parts[$this->position];
         }
         throw new SyntaxException('Unterminated raw block', $this->line);
     }
@@ -334,16 +338,17 @@ class Tokenizer
         }
     }
 
-    public function pushToken($type, $value = null)
+    private function pushToken($type, $value = null)
     {
         $this->tokenBuffer[] = new Token($type, $value, $this->line);
     }
 
-    public function pushTextToken($value)
+    private function pushTextToken()
     {
-        if ($value !== '') {
-            $this->pushToken(Token::TEXT, $value);
-            $this->line += substr_count($value, "\n");
+        if ($this->currentText !== '') {
+            $this->pushToken(Token::TEXT, $this->currentText);
+            $this->line += substr_count($this->currentText, "\n");
+            $this->currentText = '';
         }
     }
 }
