@@ -136,6 +136,9 @@ class Environment
         );
         $this->options   = array_merge($default_options, $options);
 
+        if ($loader instanceof iEnvironmentAware) {
+            $loader->setEnvironment($this);
+        }
         $this->loader          = $loader;
         $this->chainLoaderUsed = $loader instanceof ChainLoader;
 
