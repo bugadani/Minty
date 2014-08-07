@@ -14,28 +14,27 @@ use Minty\Environment;
 
 class Tokenizer
 {
-    /**
-     * @var Environment
-     */
-    private $environment;
-
-    /**
-     * @var string[]
-     */
-    private $closingTags = array();
-    private $operators;
-    private $delimiters;
-    private $expressionPartsPattern;
-    private $tokenSplitPattern;
-    private $tagEndSearchPattern;
-    private $rawBlockClosingTagPattern;
-    private $fallbackTagName;
-    private $punctuation = array(',', '[', ']', '(', ')', ':', '?', '=>');
-    private $literals = array(
+    //Constants
+    private static $literals = array(
         'null'  => null,
         'true'  => true,
         'false' => false
     );
+    private static $punctuation = array(',', '[', ']', '(', ')', ':', '?', '=>');
+
+    //Environment options
+    /**
+     * @var Environment
+     */
+    private static $environment;
+    private static $closingTags;
+    private static $operators;
+    private static $delimiters;
+    private static $expressionPartsPattern;
+    private static $tokenSplitPattern;
+    private static $tagEndSearchPattern;
+    private static $rawBlockClosingTagPattern;
+    private static $fallbackTagName;
 
     // State properties
     private $line;
@@ -45,38 +44,43 @@ class Tokenizer
     private $lastOffset;
     private $template;
     private $length;
+    private $delimiterLengths = array();
 
     public function __construct(Environment $environment)
     {
-        $this->fallbackTagName = $environment->getOption('fallback_tag');
-        $this->delimiters      = $environment->getOption('delimiters');
-        $this->operators       = $environment->getOperatorSymbols();
-        $this->environment     = $environment;
+        if (!self::$environment !== $environment) {
+            self::$environment     = $environment;
+            self::$fallbackTagName = $environment->getOption('fallback_tag');
+            self::$delimiters      = $environment->getOption('delimiters');
+            self::$operators       = $environment->getOperatorSymbols();
 
-        $blockEndPrefix = $environment->getOption('block_end_prefix');
-        foreach ($environment->getTags() as $name => $tag) {
-            if ($tag->hasEndingTag()) {
-                $this->closingTags[$blockEndPrefix . $name] = 'end' . $name;
+            $blockEndPrefix = $environment->getOption('block_end_prefix');
+            self::$closingTags = array();
+            foreach ($environment->getTags() as $name => $tag) {
+                if ($tag->hasEndingTag()) {
+                    self::$closingTags[$blockEndPrefix . $name] = 'end' . $name;
+                }
             }
-        }
 
-        $this->tagEndSearchPattern       = $this->getTagEndMatchingPattern();
-        $this->rawBlockClosingTagPattern = $this->getRawBlockClosingTagPattern($blockEndPrefix);
-        $this->tokenSplitPattern         = $this->getTokenSplitPattern();
-        $this->expressionPartsPattern    = $this->getExpressionPartsPattern();
+            self::$tagEndSearchPattern       = $this->getTagEndMatchingPattern();
+            self::$rawBlockClosingTagPattern = $this->getRawBlockClosingTagPattern($blockEndPrefix);
+            self::$tokenSplitPattern         = $this->getTokenSplitPattern();
+            self::$expressionPartsPattern    = $this->getExpressionPartsPattern();
+        }
     }
 
     private function getTagEndMatchingPattern()
     {
-        $string      = "'(?:\\\\.|[^'\\\\])*'";
-        $dq_string   = '"(?:\\\\.|[^"\\\\])*"';
+        $string              = "'(?:\\\\.|[^'\\\\])*'";
+        $dq_string           = '"(?:\\\\.|[^"\\\\])*"';
+        $tagOpeningDelimiter = self::$delimiters['tag'][1];
 
-        return "/^\\s*((?:{$string}|{$dq_string}|[^\"']+?)+?)\\s*({$this->delimiters['tag'][1]})/i";
+        return "/^\\s*((?:{$string}|{$dq_string}|[^\"']+?)+?)\\s*({$tagOpeningDelimiter})/i";
     }
 
     private function getRawBlockClosingTagPattern($blockEndPrefix)
     {
-        list($tagStartDelimiter, $tagEndDelimiter) = $this->delimiters['tag'];
+        list($tagStartDelimiter, $tagEndDelimiter) = self::$delimiters['tag'];
         $endRaw = preg_quote($blockEndPrefix, '/') . 'raw';
 
         return "/({$tagStartDelimiter}\\s*{$endRaw}\\s*({$tagEndDelimiter}))/i";
@@ -92,7 +96,7 @@ class Tokenizer
             '(?<!\w)\d+(?:\.\d+)?'              => 20 //number
         );
 
-        $symbols = array_merge($this->operators, $this->punctuation, array_keys($this->literals));
+        $symbols = array_merge(self::$operators, self::$punctuation, array_keys(self::$literals));
         foreach ($symbols as $symbol) {
             $length = strlen($symbol);
             if ($length === 1) {
@@ -116,9 +120,12 @@ class Tokenizer
 
     private function getTokenSplitPattern()
     {
-        foreach ($this->delimiters as $delimiters) {
+        foreach (self::$delimiters as $delimiters) {
             foreach ((array)$delimiters as $delimiter) {
-                $patternParts[preg_quote($delimiter, '/')] = strlen($delimiter);
+                $length = strlen($delimiter);
+
+                $patternParts[preg_quote($delimiter, '/')] = $length;
+                $this->delimiterLengths[$delimiter]        = $length;
             }
         }
 
@@ -138,7 +145,7 @@ class Tokenizer
         $this->template = $template;
         $this->length   = strlen($template);
 
-        preg_match_all($this->tokenSplitPattern, $template, $matches, PREG_OFFSET_CAPTURE);
+        preg_match_all(self::$tokenSplitPattern, $template, $matches, PREG_OFFSET_CAPTURE);
         $this->positions = $matches[1];
 
         $this->tokenBuffer = array();
@@ -162,6 +169,7 @@ class Tokenizer
         if (!isset($this->positions[++$this->cursor])) {
             if ($this->lastOffset !== $this->length) {
                 $this->pushTextToken($this->length - $this->lastOffset);
+                $this->lastOffset = $this->length;
             } else {
                 $this->pushToken(Token::EOF);
             }
@@ -169,14 +177,15 @@ class Tokenizer
             list($delimiter, $offset) = $this->positions[$this->cursor];
             if ($this->lastOffset !== $offset) {
                 $this->pushTextToken($offset - $this->lastOffset);
+                $this->lastOffset = $offset;
             }
-            $this->lastOffset += strlen($delimiter);
+            $this->lastOffset += $this->delimiterLengths[$delimiter];
             switch ($delimiter) {
-                case $this->delimiters['comment'][0]:
+                case self::$delimiters['comment'][0]:
                     $this->tokenizeComment();
                     break;
 
-                case $this->delimiters['tag'][0]:
+                case self::$delimiters['tag'][0]:
                     $this->tokenizeTag();
                     break;
             }
@@ -186,11 +195,10 @@ class Tokenizer
     private function tokenizeTag()
     {
         $template = substr($this->template, $this->lastOffset);
-        if (!preg_match($this->tagEndSearchPattern, $template, $match, PREG_OFFSET_CAPTURE)) {
+        if (!preg_match(self::$tagEndSearchPattern, $template, $match, PREG_OFFSET_CAPTURE)) {
             throw new SyntaxException('Unterminated tag', $this->line);
         }
-        $this->seek($this->lastOffset + $match[2][1]);
-        $this->lastOffset += $match[2][1] + strlen($match[2][0]);
+        $this->seek($match[2][1]);
 
         $tag = $match[1][0];
         if ($tag === 'raw') {
@@ -203,12 +211,11 @@ class Tokenizer
     private function tokenizeRawBlock()
     {
         $template = substr($this->template, $this->lastOffset);
-        if (!preg_match($this->rawBlockClosingTagPattern, $template, $match, PREG_OFFSET_CAPTURE)) {
+        if (!preg_match(self::$rawBlockClosingTagPattern, $template, $match, PREG_OFFSET_CAPTURE)) {
             throw new SyntaxException('Unterminated raw block', $this->line);
         }
         $this->pushTextToken($match[1][1]);
-        $this->lastOffset += strlen($match[1][0]);
-        $this->seek($match[2][1] + $match[1][1]);
+        $this->seek($match[2][1]);
     }
 
     /**
@@ -216,9 +223,18 @@ class Tokenizer
      */
     private function seek($offset)
     {
-        while (isset($this->positions[$this->cursor]) && $this->positions[$this->cursor][1] < $offset) {
+        $this->lastOffset += $offset;
+
+        if ($this->lastOffset >= $this->length) {
+            $this->cursor = count($this->positions) - 1;
+
+            return;
+        }
+
+        while ($this->positions[$this->cursor][1] < $this->lastOffset) {
             $this->cursor++;
         }
+        $this->lastOffset += $this->delimiterLengths[$this->positions[$this->cursor][0]];
     }
 
     private function processTag($tag)
@@ -228,10 +244,10 @@ class Tokenizer
         list(, $tagName, $expression) = $parts;
 
         //If the tag name is unknown, try to use the fallback
-        if (isset($this->closingTags[$tagName])) {
-            $tagName = $this->closingTags[$tagName];
-        } elseif (!$this->environment->hasTag($tagName)) {
-            $tagName    = $this->fallbackTagName;
+        if (isset(self::$closingTags[$tagName])) {
+            $tagName = self::$closingTags[$tagName];
+        } elseif (!self::$environment->hasTag($tagName)) {
+            $tagName    = self::$fallbackTagName;
             $expression = $tag;
         }
 
@@ -240,7 +256,7 @@ class Tokenizer
         //tokenize the tag expression if any
         if ($expression !== '') {
             $flags = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
-            $parts = preg_split($this->expressionPartsPattern, $expression, 0, $flags);
+            $parts = preg_split(self::$expressionPartsPattern, $expression, 0, $flags);
 
             foreach ($parts as $part) {
                 //We can safely skip spaces
@@ -259,9 +275,9 @@ class Tokenizer
 
     private function tokenizeExpressionPart($part)
     {
-        if (in_array($part, $this->punctuation)) {
+        if (in_array($part, self::$punctuation)) {
             $this->pushToken(Token::PUNCTUATION, $part);
-        } elseif (in_array($part, $this->operators)) {
+        } elseif (in_array($part, self::$operators)) {
             $this->pushToken(Token::OPERATOR, $part);
         } elseif (is_numeric($part)) {
             $number = (float)$part;
@@ -290,8 +306,8 @@ class Tokenizer
 
                 default:
                     $lowerCasePart = strtolower($part);
-                    if (array_key_exists($lowerCasePart, $this->literals)) {
-                        $this->pushToken(Token::LITERAL, $this->literals[$lowerCasePart]);
+                    if (array_key_exists($lowerCasePart, self::$literals)) {
+                        $this->pushToken(Token::LITERAL, self::$literals[$lowerCasePart]);
                     } else {
                         $this->pushToken(Token::IDENTIFIER, $part);
                     }
@@ -302,14 +318,14 @@ class Tokenizer
 
     private function tokenizeComment()
     {
-        $commentEndDelimiter = $this->delimiters['comment'][1];
+        $commentEndDelimiter = self::$delimiters['comment'][1];
         while (isset($this->positions[++$this->cursor])) {
             list($delimiter, $offset) = $this->positions[$this->cursor];
             if ($delimiter === $commentEndDelimiter) {
                 $length = $offset - $this->lastOffset;
 
                 $this->line += substr_count($this->template, "\n", $this->lastOffset, $length);
-                $this->lastOffset = $offset + strlen($commentEndDelimiter);
+                $this->lastOffset = $offset + $this->delimiterLengths[$commentEndDelimiter];
 
                 return;
             }
@@ -323,7 +339,6 @@ class Tokenizer
             $text = substr($this->template, $this->lastOffset, $length);
             $this->pushToken(Token::TEXT, $text);
             $this->line += substr_count($text, "\n");
-            $this->lastOffset += $length;
         }
     }
 
