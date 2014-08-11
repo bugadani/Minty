@@ -30,6 +30,7 @@ class Tokenizer
     private static $closingTags;
     private static $operators;
     private static $delimiters;
+    private static $delimiterLengths = array();
     private static $expressionPartsPattern;
     private static $tokenSplitPattern;
     private static $tagEndSearchPattern;
@@ -44,7 +45,6 @@ class Tokenizer
     private $lastOffset;
     private $template;
     private $length;
-    private $delimiterLengths = array();
 
     public function __construct(Environment $environment)
     {
@@ -54,7 +54,7 @@ class Tokenizer
             self::$delimiters      = $environment->getOption('delimiters');
             self::$operators       = $environment->getOperatorSymbols();
 
-            $blockEndPrefix = $environment->getOption('block_end_prefix');
+            $blockEndPrefix    = $environment->getOption('block_end_prefix');
             self::$closingTags = array();
             foreach ($environment->getTags() as $name => $tag) {
                 if ($tag->hasEndingTag()) {
@@ -125,7 +125,7 @@ class Tokenizer
                 $length = strlen($delimiter);
 
                 $patternParts[preg_quote($delimiter, '/')] = $length;
-                $this->delimiterLengths[$delimiter]        = $length;
+                self::$delimiterLengths[$delimiter]        = $length;
             }
         }
 
@@ -167,7 +167,7 @@ class Tokenizer
     private function getNextToken()
     {
         if (!isset($this->positions[++$this->cursor])) {
-            if ($this->lastOffset !== $this->length) {
+            if ($this->lastOffset < $this->length) {
                 $this->pushTextToken($this->length - $this->lastOffset);
                 $this->lastOffset = $this->length;
             } else {
@@ -175,11 +175,11 @@ class Tokenizer
             }
         } else {
             list($delimiter, $offset) = $this->positions[$this->cursor];
-            if ($this->lastOffset !== $offset) {
+            if ($this->lastOffset < $offset) {
                 $this->pushTextToken($offset - $this->lastOffset);
                 $this->lastOffset = $offset;
             }
-            $this->lastOffset += $this->delimiterLengths[$delimiter];
+            $this->lastOffset += self::$delimiterLengths[$delimiter];
             switch ($delimiter) {
                 case self::$delimiters['comment'][0]:
                     $this->tokenizeComment();
@@ -226,21 +226,23 @@ class Tokenizer
         $this->lastOffset += $offset;
 
         if ($this->lastOffset >= $this->length) {
+            //not much to do, set the cursor to the last element
             $this->cursor = count($this->positions) - 1;
+        } else {
+            //search for the first element where offset is >= lastOffset
+            while ($this->positions[$this->cursor][1] < $this->lastOffset) {
+                $this->cursor++;
+            }
 
-            return;
+            //increment lastOffset with the delimiters length
+            $this->lastOffset += self::$delimiterLengths[$this->positions[$this->cursor][0]];
         }
-
-        while ($this->positions[$this->cursor][1] < $this->lastOffset) {
-            $this->cursor++;
-        }
-        $this->lastOffset += $this->delimiterLengths[$this->positions[$this->cursor][0]];
     }
 
     private function processTag($tag)
     {
         //Try to find the tag name
-        preg_match('/(\S*)(\s.*|)$/ADs', $tag, $parts);
+        preg_match('/(\S*)(?:\s*(.*|))$/ADs', $tag, $parts);
         list(, $tagName, $expression) = $parts;
 
         //If the tag name is unknown, try to use the fallback
@@ -252,25 +254,33 @@ class Tokenizer
         }
 
         $this->pushToken(Token::TAG_START, $tagName);
+        $this->tokenizeTagExpression($expression);
+        $this->pushToken(Token::TAG_END, $tagName);
+    }
 
-        //tokenize the tag expression if any
-        if ($expression !== '') {
-            $flags = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
-            $parts = preg_split(self::$expressionPartsPattern, $expression, 0, $flags);
+    /**
+     * @param $expression
+     */
+    private function tokenizeTagExpression($expression)
+    {
+        if ($expression === '') {
+            return;
+        }
 
-            foreach ($parts as $part) {
-                //We can safely skip spaces
-                if ($part !== ' ') {
-                    if (trim($part) === '') {
-                        //Whitespace strings only matter for line numbering
-                        $this->line += substr_count($part, "\n");
-                    } else {
-                        $this->tokenizeExpressionPart($part);
-                    }
+        $flags = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
+        $parts = preg_split(self::$expressionPartsPattern, $expression, 0, $flags);
+
+        foreach ($parts as $part) {
+            //We can safely skip spaces
+            if ($part !== ' ') {
+                if (trim($part) === '') {
+                    //Whitespace strings only matter for line numbering
+                    $this->line += substr_count($part, "\n");
+                } else {
+                    $this->tokenizeExpressionPart($part);
                 }
             }
         }
-        $this->pushToken(Token::TAG_END, $tagName);
     }
 
     private function tokenizeExpressionPart($part)
@@ -325,7 +335,7 @@ class Tokenizer
                 $length = $offset - $this->lastOffset;
 
                 $this->line += substr_count($this->template, "\n", $this->lastOffset, $length);
-                $this->lastOffset = $offset + $this->delimiterLengths[$commentEndDelimiter];
+                $this->lastOffset = $offset + self::$delimiterLengths[$commentEndDelimiter];
 
                 return;
             }
@@ -335,11 +345,13 @@ class Tokenizer
 
     private function pushTextToken($length)
     {
-        if ($length > 0) {
-            $text = substr($this->template, $this->lastOffset, $length);
-            $this->pushToken(Token::TEXT, $text);
-            $this->line += substr_count($text, "\n");
+        if ($length === 0) {
+            return;
         }
+
+        $text = substr($this->template, $this->lastOffset, $length);
+        $this->pushToken(Token::TEXT, $text);
+        $this->line += substr_count($text, "\n");
     }
 
     private function pushToken($type, $value = null)
