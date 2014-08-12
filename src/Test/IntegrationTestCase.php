@@ -7,6 +7,9 @@ use Minty\TemplateLoaders\StringLoader;
 
 abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
 {
+    const TEST_FOR_RESULT    = 1;
+    const TEST_FOR_EXCEPTION = 2;
+
     private static $counter = 0;
 
     /**
@@ -41,6 +44,11 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
         unset($this->stringLoader);
     }
 
+    protected function runTestsFor()
+    {
+        return self::TEST_FOR_RESULT | self::TEST_FOR_EXCEPTION;
+    }
+
     abstract public function getTestDirectory();
 
     /**
@@ -61,7 +69,10 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
         );
         foreach ($iterator as $file) {
             if (substr($file, -5) === '.test') {
-                $tests[] = $this->parseDescriptor($directory, $file);
+                $test = $this->parseDescriptor($directory, $file);
+                if ($test) {
+                    $tests[] = $test;
+                }
             }
         }
 
@@ -126,6 +137,15 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
             throw new \RuntimeException("{$file} does not contain a EXPECT or EXCEPTION block");
         }
 
+        $testFor = $this->runTestsFor();
+        if ($expect && (($testFor & self::TEST_FOR_RESULT) === 0)) {
+            return false;
+        }
+
+        if ($exception && (($testFor & self::TEST_FOR_EXCEPTION) === 0)) {
+            return false;
+        }
+
         return array(
             $file,
             $test,
@@ -149,11 +169,10 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
         $exception
     ) {
         //global counter to provide random namespaces to avoid class name collision
-        $options = $this->optionsProperty->getValue($this->environment);
-
+        $options                    = $this->optionsProperty->getValue($this->environment);
         $options['cache_namespace'] = 'test_' . ++self::$counter;
-
         $this->optionsProperty->setValue($this->environment, $options);
+
         foreach ($templates as $name => $template) {
             $this->stringLoader->addTemplate($name, $template);
         }

@@ -21,6 +21,11 @@ class CoreIntegrationTest extends IntegrationTestCase
         return __DIR__ . '/fixtures';
     }
 
+    protected function runTestsFor()
+    {
+        return self::TEST_FOR_RESULT;
+    }
+
     public function getEnvironment(StringLoader $loader)
     {
         $env = new Environment($loader, array(

@@ -493,13 +493,17 @@ class Environment
                 $this->createContext($variables)
             );
         } catch (TemplatingException $e) {
+            $errorTemplate = $this->options['error_template'];
+            if($errorTemplate === false) {
+                throw $e;
+            }
             if (!$this->errorTemplateLoaderLoaded) {
                 $this->addTemplateLoader(
                     new ErrorTemplateLoader($this)
                 );
                 $this->errorTemplateLoaderLoaded = true;
             }
-            $object = $this->load($this->options['error_template']);
+            $object = $this->load($errorTemplate);
             $object->displayTemplate(
                 $this->createContext(
                     array(
