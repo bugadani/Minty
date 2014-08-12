@@ -79,13 +79,18 @@ class SwitchTag extends Tag
         $stream->nextTokenIf(Token::TEXT);
         $token = $stream->expect(Token::TAG_START, array('case', 'else'));
 
+        $hasDefault = false;
         while (!$token->test(Token::TAG_START, 'endswitch')) {
             $branch = $node->addChild(new RootNode());
 
             if ($token->test(Token::TAG_START, 'case')) {
                 $branch->addChild($parser->parseExpression($stream), 'condition');
             } elseif ($token->test(Token::TAG_START, 'else')) {
+                if($hasDefault) {
+                    throw new SyntaxException('Switch blocks may only contain at most one else tag.');
+                }
                 $stream->expect(Token::TAG_END);
+                $hasDefault = true;
             } else {
                 throw new SyntaxException('Switch expects a case or else tag.');
             }

@@ -1,0 +1,10 @@
+--TEST--
+This test covers that the switch block only accepts at most one else branch.
+--TEMPLATE--
+{ switch 3 }
+{ case 1 }some content
+{ else }this is ok so far
+{ else }this should trigger a syntax exception
+{ /switch }
+--EXCEPTION--
+Minty\Compiler\Exceptions\SyntaxException
