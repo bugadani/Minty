@@ -127,6 +127,8 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
         $expect    = $this->getBlock($testDescriptor, 'EXPECT');
         $exception = $this->getBlock($testDescriptor, 'EXCEPTION');
 
+        $exceptionMessage = null;
+
         if (!$test) {
             throw new \RuntimeException("{$file} does not contain a TEST block");
         }
@@ -142,17 +144,23 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
             return false;
         }
 
-        if ($exception && (($testFor & self::TEST_FOR_EXCEPTION) === 0)) {
-            return false;
-        }
+        if($exception) {
+            if (($testFor & self::TEST_FOR_EXCEPTION) === 0) {
+                return false;
+            }
 
+            if(strpos($exception, "\n")) {
+                list($exception, $exceptionMessage) = explode("\n", $exception, 2);
+            }
+        }
         return array(
             $file,
             $test,
             $templates,
             $this->getBlock($testDescriptor, 'DATA'),
             $expect,
-            $exception
+            $exception,
+            $exceptionMessage
         );
     }
 
@@ -166,7 +174,8 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
         $templates,
         $data,
         $expectation,
-        $exception
+        $exception,
+        $exceptionMessage
     ) {
         //global counter to provide random namespaces to avoid class name collision
         $options                    = $this->optionsProperty->getValue($this->environment);
@@ -196,6 +205,10 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
                 $this->assertInstanceOf($exception, $e);
             } else {
                 throw $e;
+            }
+
+            if($exceptionMessage) {
+                $this->assertRegExp("={$exceptionMessage}$=AD", $e->getMessage());
             }
         }
     }

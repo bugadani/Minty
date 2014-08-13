@@ -8,3 +8,4 @@ This test covers that the switch block only accepts at most one else branch.
 { /switch }
 --EXCEPTION--
 Minty\Compiler\Exceptions\SyntaxException
+Switch blocks may only contain one else tag in line 4

@@ -3,4 +3,4 @@ Test that non-associative binary operators throw exceptions
 --TEMPLATE--
 { 5 is divisible by 2 is divisible by 3 ? 'foo' : 'bar' }
 --EXPECT--
-<h1>Failed to compile index</h1><h2>Error message:</h2><p>Binary operator 'is divisible by' is not associative. found in line 1</p><h2>Template source:</h2><pre><code><ol start="1">    <li>            <b>{ 5 is divisible by 2 is divisible by 3 ? 'foo' : 'bar' }</b>        </li></ol></code></pre>
+<h1>Failed to compile index</h1><h2>Error message:</h2><p>Binary operator 'is divisible by' is not associative in line 1</p><h2>Template source:</h2><pre><code><ol start="1">    <li>            <b>{ 5 is divisible by 2 is divisible by 3 ? 'foo' : 'bar' }</b>        </li></ol></code></pre>

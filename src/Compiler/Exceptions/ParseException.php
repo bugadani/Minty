@@ -13,6 +13,6 @@ class ParseException extends TemplatingException
 {
     public function __construct($message, $line = 0)
     {
-        parent::__construct("{$message} found in line {$line}", $line);
+        parent::__construct("{$message} in line {$line}", $line);
     }
 }

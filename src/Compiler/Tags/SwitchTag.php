@@ -87,7 +87,7 @@ class SwitchTag extends Tag
                 $branch->addChild($parser->parseExpression($stream), 'condition');
             } elseif ($token->test(Token::TAG_START, 'else')) {
                 if($hasDefault) {
-                    throw new SyntaxException('Switch blocks may only contain at most one else tag.');
+                    throw new SyntaxException('Switch blocks may only contain one else tag', $token->getLine());
                 }
                 $stream->expect(Token::TAG_END);
                 $hasDefault = true;
