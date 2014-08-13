@@ -1,0 +1,8 @@
+--TEST--
+Test that blocks cannot be redefined with the define tag
+--TEMPLATE--
+{define foo}{/define}
+{define foo}{/define}
+--EXCEPTION--
+Minty\Compiler\Exceptions\ParseException
+Block foo is already defined in line 2

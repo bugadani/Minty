@@ -9,6 +9,7 @@
 
 namespace Minty\Compiler\Tags;
 
+use Minty\Compiler\Exceptions\ParseException;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
 use Minty\Compiler\Tag;
@@ -39,11 +40,17 @@ class BlockTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $templateName = $stream->expect(Token::IDENTIFIER)->getValue();
+        $templateNameToken = $stream->expect(Token::IDENTIFIER);
+        $templateName = $templateNameToken->getValue();
         $stream->expect(Token::TAG_END);
 
+        $classNode = $parser->getCurrentClassNode();
+        if($classNode->hasChild($templateName)) {
+            throw new ParseException("Block {$templateName} is already defined", $templateNameToken->getLine());
+        }
+
         $parser->enterBlock($templateName);
-        $parser->getCurrentClassNode()->addChild(
+        $classNode->addChild(
             $parser->parseBlock($stream, 'endblock'),
             $templateName
         );
