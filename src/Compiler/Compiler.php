@@ -56,17 +56,17 @@ class Compiler
 
     public function compileString($string)
     {
-        $string = strtr($string, array('"' => '\"', '$' => '\$'));
+        $string = strtr($string, ['"' => '\"', '$' => '\$']);
 
         return $this->add('"' . $string . '"');
     }
 
     public function compileArray(array $array, $writeKeys = true)
     {
-        $this->add('array(');
+        $this->add('[');
         $this->internalCompileList($array, $writeKeys);
 
-        return $this->add(')');
+        return $this->add(']');
     }
 
     public function compileArgumentList(array $arguments)

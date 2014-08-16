@@ -39,7 +39,7 @@ class AutofilterTag extends Tag
         if ($stream->nextTokenIf(Token::IDENTIFIER)) {
             $token = $stream->expectCurrent(
                 Token::IDENTIFIER,
-                array('off', 'on', 'auto', 'disabled', 'enabled')
+                ['off', 'on', 'auto', 'disabled', 'enabled']
             );
         } else {
             $token = $stream->expect(Token::STRING);
@@ -60,7 +60,7 @@ class AutofilterTag extends Tag
                 $strategy = $token->getValue();
                 break;
         }
-        $node = new TagNode($this, array('strategy' => $strategy));
+        $node = new TagNode($this, ['strategy' => $strategy]);
         $stream->expect(Token::TAG_END);
 
         $node->addChild(

@@ -61,7 +61,7 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
     public function getTests()
     {
         $directory = realpath($this->getTestDirectory());
-        $tests     = array();
+        $tests     = [];
 
         $iterator = new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator($directory),
@@ -81,7 +81,7 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
 
     private function getBlock($string, $block)
     {
-        $matches = array();
+        $matches = [];
         if (!preg_match("/^--{$block}--\n(.*?)\n(?:--(?:[A-Z]+)--|\\Z)/ms", $string, $matches)) {
             return false;
         }
@@ -91,13 +91,13 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
 
     private function getTemplateBlocks($string)
     {
-        $matches = array();
+        $matches = [];
         $pattern = "/^--TEMPLATE(?:\\s*(.*?))?--\n(.*?)\n(?=--.+?--|\\Z)/ms";
         if (!preg_match_all($pattern, $string, $matches, PREG_SET_ORDER)) {
             return false;
         }
 
-        $templates = array();
+        $templates = [];
         foreach ($matches as $match) {
             if ($match[1] === '') {
                 $match[1] = 'index';
@@ -116,10 +116,10 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
 
         $testDescriptor = strtr(
             $testDescriptor,
-            array(
+            [
                 "\r\n" => "\n",
                 "\n\r" => "\n"
-            )
+            ]
         );
 
         $test      = $this->getBlock($testDescriptor, 'TEST');
@@ -144,16 +144,17 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
             return false;
         }
 
-        if($exception) {
+        if ($exception) {
             if (($testFor & self::TEST_FOR_EXCEPTION) === 0) {
                 return false;
             }
 
-            if(strpos($exception, "\n")) {
+            if (strpos($exception, "\n")) {
                 list($exception, $exceptionMessage) = explode("\n", $exception, 2);
             }
         }
-        return array(
+
+        return [
             $file,
             $test,
             $templates,
@@ -161,7 +162,7 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
             $expect,
             $exception,
             $exceptionMessage
-        );
+        ];
     }
 
     /**
@@ -189,7 +190,7 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
         if ($data) {
             eval('$data = ' . $data . ';');
         } else {
-            $data = array();
+            $data = [];
         }
 
         try {
@@ -207,7 +208,7 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
                 throw $e;
             }
 
-            if($exceptionMessage) {
+            if ($exceptionMessage) {
                 $this->assertRegExp("={$exceptionMessage}$=AD", $e->getMessage());
             }
         }

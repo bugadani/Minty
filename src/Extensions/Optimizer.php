@@ -23,9 +23,9 @@ class Optimizer extends Extension
 
     public function getNodeVisitors()
     {
-        return array(
+        return [
             new ForLoopOptimizer(),
             new EnvironmentVariableOptimizer()
-        );
+        ];
     }
 }

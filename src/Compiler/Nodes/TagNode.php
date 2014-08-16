@@ -24,7 +24,7 @@ class TagNode extends Node
      * @param Tag   $tag
      * @param array $data
      */
-    public function __construct(Tag $tag, array $data = array())
+    public function __construct(Tag $tag, array $data = [])
     {
         $this->tag = $tag;
         $this->setData($data);

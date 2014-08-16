@@ -27,10 +27,10 @@ class ExceptionIntegrationTest extends IntegrationTestCase
 
     public function getEnvironment(StringLoader $loader)
     {
-        $env = new Environment($loader, array(
+        $env = new Environment($loader, [
             'fallback_tag'   => 'print',
             'error_template' => false
-        ));
+        ]);
         $env->addExtension(new Core());
 
         return $env;

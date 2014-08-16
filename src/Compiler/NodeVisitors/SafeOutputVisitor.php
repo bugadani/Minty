@@ -33,7 +33,7 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
     private $functionLevel = 0;
     private $isSafe;
     private $autofilter;
-    private $autofilterStack = array();
+    private $autofilterStack = [];
     private $defaultAutofilterStrategy;
     private $extension;
 
@@ -214,9 +214,9 @@ class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
             $for = $this->defaultAutofilterStrategy;
         }
         $node->addChild(
-            new FunctionNode('filter_' . $for, array(
+            new FunctionNode('filter_' . $for, [
                 $node->getChild('expression')
-            )),
+            ]),
             'expression'
         );
     }

@@ -18,7 +18,7 @@ class EvenOperator extends Operator
 
     public function operators()
     {
-        return array('is not odd', 'is even');
+        return ['is not odd', 'is even'];
     }
 
     public function compile(Compiler $compiler, OperatorNode $node)

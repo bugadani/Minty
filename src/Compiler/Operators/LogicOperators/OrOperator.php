@@ -16,7 +16,7 @@ class OrOperator extends SimpleBinaryOperator
 
     public function operators()
     {
-        return array('||', 'or');
+        return ['||', 'or'];
     }
 
     public function compileOperator()

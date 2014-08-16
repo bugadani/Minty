@@ -17,7 +17,7 @@ class NotDivisibleByOperator extends DivisibleByOperator
 
     public function operators()
     {
-        return array('not divisible by', 'is not divisible by');
+        return ['not divisible by', 'is not divisible by'];
     }
 
     public function compile(Compiler $compiler, OperatorNode $node)

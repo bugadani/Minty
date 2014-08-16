@@ -46,6 +46,7 @@ class DisplayTag extends Tag
     /**
      * @param Parser $parser
      * @param Stream $stream
+     *
      * @return Node
      */
     private function getContext(Parser $parser, Stream $stream)

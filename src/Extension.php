@@ -23,7 +23,7 @@ abstract class Extension
      */
     public function getFunctions()
     {
-        return array();
+        return [];
     }
 
     /**
@@ -31,7 +31,7 @@ abstract class Extension
      */
     public function getBinaryOperators()
     {
-        return array();
+        return [];
     }
 
     /**
@@ -39,7 +39,7 @@ abstract class Extension
      */
     public function getPrefixUnaryOperators()
     {
-        return array();
+        return [];
     }
 
     /**
@@ -47,7 +47,7 @@ abstract class Extension
      */
     public function getPostfixUnaryOperators()
     {
-        return array();
+        return [];
     }
 
     /**
@@ -55,7 +55,7 @@ abstract class Extension
      */
     public function getTags()
     {
-        return array();
+        return [];
     }
 
     /**
@@ -63,6 +63,6 @@ abstract class Extension
      */
     public function getNodeVisitors()
     {
-        return array();
+        return [];
     }
 }

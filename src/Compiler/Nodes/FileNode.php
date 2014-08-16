@@ -28,6 +28,7 @@ class FileNode extends RootNode
 
     /**
      * @param $templateName
+     *
      * @return ClassNode
      */
     public function addClass($templateName)

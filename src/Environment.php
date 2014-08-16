@@ -44,7 +44,7 @@ class Environment
     /**
      * @var Tag[]
      */
-    private $tags = array();
+    private $tags = [];
 
     /**
      * @var OperatorCollection
@@ -64,7 +64,7 @@ class Environment
     /**
      * @var TemplateFunction[]
      */
-    private $functions = array();
+    private $functions = [];
 
     /**
      * @var array
@@ -74,17 +74,17 @@ class Environment
     /**
      * @var Extension[]
      */
-    private $extensions = array();
+    private $extensions = [];
 
     /**
      * @var FunctionCompiler[]
      */
-    private $functionCompilers = array();
+    private $functionCompilers = [];
 
     /**
      * @var NodeVisitor[]
      */
-    private $nodeVisitors = array();
+    private $nodeVisitors = [];
 
     /**
      * @var NodeTreeTraverser
@@ -99,7 +99,7 @@ class Environment
     /**
      * @var Template[]
      */
-    private $loadedTemplates = array();
+    private $loadedTemplates = [];
 
     /**
      * @var bool
@@ -115,25 +115,25 @@ class Environment
      * @param AbstractTemplateLoader $loader
      * @param array                  $options
      */
-    public function __construct(AbstractTemplateLoader $loader, array $options = array())
+    public function __construct(AbstractTemplateLoader $loader, array $options = [])
     {
-        $default_options = array(
+        $default_options = [
             'autofilter'                  => 1,
             'block_end_prefix'            => '/',
             'cache'                       => false,
             'cache_namespace'             => '',
             'debug'                       => false,
             'default_autofilter_strategy' => 'html',
-            'delimiters'                  => array(
-                'tag'     => array('{', '}'),
-                'comment' => array('{#', '#}')
-            ),
+            'delimiters'                  => [
+                'tag'     => ['{', '}'],
+                'comment' => ['{#', '#}']
+            ],
             'error_template'              => '__compile_error_template',
             'fallback_tag'                => 'print',
-            'global_variables'            => array(),
+            'global_variables'            => [],
             'strict_mode'                 => true,
             'template_base_class'         => 'Minty\\Template'
-        );
+        ];
         $this->options   = array_merge($default_options, $options);
 
         if ($loader instanceof iEnvironmentAware) {
@@ -261,9 +261,10 @@ class Environment
      */
     public function getTag($tag)
     {
-        if(!isset($this->tags[$tag])) {
+        if (!isset($this->tags[$tag])) {
             throw new \OutOfBoundsException("Tag {$tag} does not exist.");
         }
+
         return $this->tags[$tag];
     }
 
@@ -472,7 +473,7 @@ class Environment
         return $this->loadedTemplates[$template];
     }
 
-    public function createContext($variables = array())
+    public function createContext($variables = [])
     {
         if ($variables instanceof Context) {
             return $variables;
@@ -485,7 +486,7 @@ class Environment
         return $context;
     }
 
-    public function render($template, $variables = array())
+    public function render($template, $variables = [])
     {
         try {
             $object = $this->load($template);
@@ -494,7 +495,7 @@ class Environment
             );
         } catch (TemplatingException $e) {
             $errorTemplate = $this->options['error_template'];
-            if($errorTemplate === false) {
+            if ($errorTemplate === false) {
                 throw $e;
             }
             if (!$this->errorTemplateLoaderLoaded) {
@@ -506,10 +507,10 @@ class Environment
             $object = $this->load($errorTemplate);
             $object->displayTemplate(
                 $this->createContext(
-                    array(
+                    [
                         'templateName' => $template,
                         'exception'    => $e
-                    )
+                    ]
                 )
             );
         }

@@ -11,7 +11,7 @@ namespace Minty\Compiler;
 
 class OperatorCollection
 {
-    private $operators = array();
+    private $operators = [];
 
     public function exists(Operator $operator)
     {

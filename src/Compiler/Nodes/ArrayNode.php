@@ -27,7 +27,7 @@ class ArrayNode extends Node
 
     public function compile(Compiler $compiler)
     {
-        $compiler->add('array(');
+        $compiler->add('[');
         for ($i = 0; $i < $this->itemCount; ++$i) {
             if ($i !== 0) {
                 $compiler->add(', ');
@@ -38,6 +38,6 @@ class ArrayNode extends Node
             }
             $compiler->compileNode($this->getChild('value_' . $i));
         }
-        $compiler->add(')');
+        $compiler->add(']');
     }
 }

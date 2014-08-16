@@ -40,7 +40,7 @@ class Parser
 
     private $level = 0;
     private $block;
-    private $blocks = array();
+    private $blocks = [];
 
     public function __construct(Environment $environment, ExpressionParser $expressionParser)
     {
@@ -63,9 +63,7 @@ class Parser
         switch ($token->getType()) {
             case Token::TEXT:
                 $root->addChild(
-                    new PrintNode(array(
-                        'data' => $value
-                    ))
+                    new PrintNode(['data' => $value])
                 );
                 break;
 

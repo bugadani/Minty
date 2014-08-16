@@ -39,7 +39,7 @@ class ForTag extends Tag
                 ->indent();
 
             if ($node->getData('create_stack')) {
-                $compiler->indented('$stack = array();');
+                $compiler->indented('$stack = [];');
             }
 
             $compiler
@@ -123,14 +123,14 @@ class ForTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $node = new TagNode($this, array(
+        $node = new TagNode($this, [
             'save_temp_var' => true,
             'create_stack'  => true
-        ));
+        ]);
 
         $i       = 0;
         $loopVar = $stream->expect(Token::VARIABLE)->getValue();
-        if ($stream->nextTokenIf(Token::PUNCTUATION, array(':', '=>'))) {
+        if ($stream->nextTokenIf(Token::PUNCTUATION, [':', '=>'])) {
             $node->addChild(new VariableNode($loopVar), 'loop_key');
             $loopVar = $stream->expect(Token::VARIABLE)->getValue();
         }
@@ -145,7 +145,7 @@ class ForTag extends Tag
         $stream->expectCurrent(Token::OPERATOR, 'in');
 
         $node->addChild($parser->parseExpression($stream), 'source');
-        $node->addChild($parser->parseBlock($stream, array('else', 'endfor')), 'loop_body');
+        $node->addChild($parser->parseBlock($stream, ['else', 'endfor']), 'loop_body');
 
         if ($stream->next()->test(Token::TAG_END, 'else')) {
             $node->addChild($parser->parseBlock($stream, 'endfor'), 'else');

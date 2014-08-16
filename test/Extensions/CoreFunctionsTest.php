@@ -29,51 +29,51 @@ class CoreFunctionsTest extends \PHPUnit_Framework_TestCase
 
     public function functionProvider()
     {
-        return array(
-            array('abs'),
-            array('attributes'),
-            array('batch'),
-            array('capitalize'),
-            array('cycle'),
-            array('date_format'),
-            array('extract'),
-            array('first'),
-            array('format'),
-            array('is_int'),
-            array('is_numeric'),
-            array('is_string'),
-            array('join'),
-            array('json_encode'),
-            array('keys'),
-            array('last'),
-            array('length'),
-            array('link_to'),
-            array('lower'),
-            array('ltrim'),
-            array('max'),
-            array('merge'),
-            array('min'),
-            array('pluck'),
-            array('random'),
-            array('regexp_replace'),
-            array('replace'),
-            array('reverse'),
-            array('rtrim'),
-            array('shuffle'),
-            array('slice'),
-            array('sort'),
-            array('source'),
-            array('spacify'),
-            array('split'),
-            array('striptags'),
-            array('title_case'),
-            array('trim'),
-            array('truncate'),
-            array('upper'),
-            array('url_encode'),
-            array('without'),
-            array('wordwrap')
-        );
+        return [
+            ['abs'],
+            ['attributes'],
+            ['batch'],
+            ['capitalize'],
+            ['cycle'],
+            ['date_format'],
+            ['extract'],
+            ['first'],
+            ['format'],
+            ['is_int'],
+            ['is_numeric'],
+            ['is_string'],
+            ['join'],
+            ['json_encode'],
+            ['keys'],
+            ['last'],
+            ['length'],
+            ['link_to'],
+            ['lower'],
+            ['ltrim'],
+            ['max'],
+            ['merge'],
+            ['min'],
+            ['pluck'],
+            ['random'],
+            ['regexp_replace'],
+            ['replace'],
+            ['reverse'],
+            ['rtrim'],
+            ['shuffle'],
+            ['slice'],
+            ['sort'],
+            ['source'],
+            ['spacify'],
+            ['split'],
+            ['striptags'],
+            ['title_case'],
+            ['trim'],
+            ['truncate'],
+            ['upper'],
+            ['url_encode'],
+            ['without'],
+            ['wordwrap']
+        ];
     }
 
     /**
@@ -86,239 +86,239 @@ class CoreFunctionsTest extends \PHPUnit_Framework_TestCase
 
     public function returnValueProvider()
     {
-        return array(
-            array(
+        return [
+            [
                 'attributes',
-                array(array('foo' => 'bar', 'baz' => 'foobar')),
+                [['foo' => 'bar', 'baz' => 'foobar']],
                 ' foo="bar" baz="foobar"'
-            ),
-            array(
+            ],
+            [
                 'batch',
-                array(array(1, 2, 3, 4), 2),
-                array(array(0 => 1, 1 => 2), array(2 => 3, 3 => 4))
-            ),
-            array(
+                [[1, 2, 3, 4], 2],
+                [[0 => 1, 1 => 2], [2 => 3, 3 => 4]]
+            ],
+            [
                 'batch',
-                array(array(1, 2, 3, 4), 2, false),
-                array(array(1, 2), array(3, 4))
-            ),
-            array(
+                [[1, 2, 3, 4], 2, false],
+                [[1, 2], [3, 4]]
+            ],
+            [
                 'batch',
-                array(array(1, 2, 3, 4), 3),
-                array(array(1, 2, 3), array(3 => 4))
-            ),
-            array(
+                [[1, 2, 3, 4], 3],
+                [[1, 2, 3], [3 => 4]]
+            ],
+            [
                 'batch',
-                array(array(1, 2, 3, 4), 3, false, 'no item'),
-                array(array(1, 2, 3), array(4, 'no item', 'no item'))
-            ),
-            array(
+                [[1, 2, 3, 4], 3, false, 'no item'],
+                [[1, 2, 3], [4, 'no item', 'no item']]
+            ],
+            [
                 'date_format',
-                array('1990-08-09', 'd m Y'),
+                ['1990-08-09', 'd m Y'],
                 '09 08 1990'
-            ),
-            array(
+            ],
+            [
                 'first',
-                array('foo'),
+                ['foo'],
                 'f'
-            ),
-            array(
+            ],
+            [
                 'first',
-                array('foo', 2),
+                ['foo', 2],
                 'fo'
-            ),
-            array(
+            ],
+            [
                 'first',
-                array(array('foo', 'bar')),
-                array('foo')
-            ),
-            array(
+                [['foo', 'bar']],
+                ['foo']
+            ],
+            [
                 'first',
-                array(array('foo', 'bar'), 2),
-                array('foo', 'bar')
-            ),
-            array(
+                [['foo', 'bar'], 2],
+                ['foo', 'bar']
+            ],
+            [
                 'join',
-                array(array('foo', 'bar'), 'glue'),
+                [['foo', 'bar'], 'glue'],
                 'foogluebar'
-            ),
-            array(
+            ],
+            [
                 'last',
-                array('foo'),
+                ['foo'],
                 'o'
-            ),
-            array(
+            ],
+            [
                 'last',
-                array('foo', 2),
+                ['foo', 2],
                 'oo'
-            ),
-            array(
+            ],
+            [
                 'last',
-                array(array('foo', 'bar')),
-                array('bar')
-            ),
-            array(
+                [['foo', 'bar']],
+                ['bar']
+            ],
+            [
                 'last',
-                array(array('foo', 'bar'), 2),
-                array('foo', 'bar')
-            ),
-            array(
+                [['foo', 'bar'], 2],
+                ['foo', 'bar']
+            ],
+            [
                 'length',
-                array('foo'),
+                ['foo'],
                 3
-            ),
-            array(
+            ],
+            [
                 'length',
-                array(array('foo', 'bar')),
+                [['foo', 'bar']],
                 2
-            ),
-            array(
+            ],
+            [
                 'link_to',
-                array('label', 'foourl'),
+                ['label', 'foourl'],
                 '<a href="foourl">label</a>'
-            ),
-            array(
+            ],
+            [
                 'link_to',
-                array('label', 'foourl', array('class' => 'bar')),
+                ['label', 'foourl', ['class' => 'bar']],
                 '<a class="bar" href="foourl">label</a>'
-            ),
-            array(
+            ],
+            [
                 'pluck',
-                array(
-                    array(
-                        array('a' => 'foo', 'b' => 'bar'),
-                        array('a' => 'foobar', 'b' => 'baz')
-                    ),
+                [
+                    [
+                        ['a' => 'foo', 'b' => 'bar'],
+                        ['a' => 'foobar', 'b' => 'baz']
+                    ],
                     'a'
-                ),
-                array('foo', 'foobar')
-            ),
-            array(
+                ],
+                ['foo', 'foobar']
+            ],
+            [
                 'regexp_replace',
-                array('string', '/in/', 'on'),
+                ['string', '/in/', 'on'],
                 'strong'
-            ),
-            array(
+            ],
+            [
                 'replace',
-                array('string', 'in', 'on'),
+                ['string', 'in', 'on'],
                 'strong'
-            ),
-            array(
+            ],
+            [
                 'reverse',
-                array('string'),
+                ['string'],
                 'gnirts'
-            ),
-            array(
+            ],
+            [
                 'reverse',
-                array(array(1, 2, 3)),
-                array(3, 2, 1)
-            ),
-            array(
+                [[1, 2, 3]],
+                [3, 2, 1]
+            ],
+            [
                 'slice',
-                array('string', 2, 3),
+                ['string', 2, 3],
                 'rin'
-            ),
-            array(
+            ],
+            [
                 'slice',
-                array('string', 2),
+                ['string', 2],
                 'ring'
-            ),
-            array(
+            ],
+            [
                 'slice',
-                array(array(1, 2, 3), 1),
-                array(2, 3)
-            ),
-            array(
+                [[1, 2, 3], 1],
+                [2, 3]
+            ],
+            [
                 'slice',
-                array(array(1, 2, 3), 1, 1),
-                array(2)
-            ),
-            array(
+                [[1, 2, 3], 1, 1],
+                [2]
+            ],
+            [
                 'slice',
-                array(array(1, 2, 3), 1, 1, true),
-                array(1 => 2)
-            ),
-            array(
+                [[1, 2, 3], 1, 1, true],
+                [1 => 2]
+            ],
+            [
                 'sort',
-                array(array(3, 1, 2)),
-                array(1, 2, 3)
-            ),
-            array(
+                [[3, 1, 2]],
+                [1, 2, 3]
+            ],
+            [
                 'sort',
-                array(array(3, 1, 2), true),
-                array(3, 2, 1)
-            ),
-            array(
+                [[3, 1, 2], true],
+                [3, 2, 1]
+            ],
+            [
                 'spacify',
-                array('string'),
+                ['string'],
                 's t r i n g'
-            ),
-            array(
+            ],
+            [
                 'spacify',
-                array('string', '.'),
+                ['string', '.'],
                 's.t.r.i.n.g'
-            ),
-            array(
+            ],
+            [
                 'split',
-                array('string'),
-                array('s', 't', 'r', 'i', 'n', 'g')
-            ),
-            array(
+                ['string'],
+                ['s', 't', 'r', 'i', 'n', 'g']
+            ],
+            [
                 'split',
-                array('string', '', 2),
-                array('st', 'ri', 'ng')
-            ),
-            array(
+                ['string', '', 2],
+                ['st', 'ri', 'ng']
+            ],
+            [
                 'split',
-                array('s t r i n g', ' '),
-                array('s', 't', 'r', 'i', 'n', 'g')
-            ),
-            array(
+                ['s t r i n g', ' '],
+                ['s', 't', 'r', 'i', 'n', 'g']
+            ],
+            [
                 'split',
-                array('s t r i n g', ' ', 2),
-                array('s', 't')
-            ),
-            array(
+                ['s t r i n g', ' ', 2],
+                ['s', 't']
+            ],
+            [
                 'truncate',
-                array('123456', 3),
+                ['123456', 3],
                 '123...'
-            ),
-            array(
+            ],
+            [
                 'truncate',
-                array('123456', 3, '\\'),
+                ['123456', 3, '\\'],
                 '123\\'
-            ),
-            array(
+            ],
+            [
                 'url_encode',
-                array(array('foo' => 'bar', 'bar' => 'baz')),
+                [['foo' => 'bar', 'bar' => 'baz']],
                 'foo=bar&bar=baz'
-            ),
-            array(
+            ],
+            [
                 'url_encode',
-                array(' '),
+                [' '],
                 '%20'
-            ),
-            array(
+            ],
+            [
                 'without',
-                array('string', 'in'),
+                ['string', 'in'],
                 'strg'
-            ),
-            array(
+            ],
+            [
                 'without',
-                array('string', array('in', 'st')),
+                ['string', ['in', 'st']],
                 'rg'
-            ),
-            array(
+            ],
+            [
                 'without',
-                array(array(1, 2, 3), 3),
-                array(1, 2)
-            ),
-            array(
+                [[1, 2, 3], 3],
+                [1, 2]
+            ],
+            [
                 'without',
-                array(array(1, 2, 3), array(2, 3)),
-                array(1)
-            )
-        );
+                [[1, 2, 3], [2, 3]],
+                [1]
+            ]
+        ];
     }
 
     /**
@@ -335,7 +335,7 @@ class CoreFunctionsTest extends \PHPUnit_Framework_TestCase
 
     public function testCycle()
     {
-        $array = array(1, 2, 3);
+        $array = [1, 2, 3];
         $this->assertEquals(1, template_function_cycle($array));
         $this->assertEquals(2, template_function_cycle($array));
         $this->assertEquals(3, template_function_cycle($array));
@@ -344,7 +344,7 @@ class CoreFunctionsTest extends \PHPUnit_Framework_TestCase
 
     public function testExtract()
     {
-        $array   = array('foo' => 'bar', 'bar' => 'baz');
+        $array   = ['foo' => 'bar', 'bar' => 'baz'];
         $context = new Context($this->env);
         template_function_extract($context, $array, 'foo');
 

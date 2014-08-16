@@ -16,7 +16,7 @@ class EqualsOperator extends SimpleBinaryOperator
 
     public function operators()
     {
-        return array('=', 'is', 'equals');
+        return ['=', 'is', 'equals'];
     }
 
     public function compileOperator()

@@ -36,15 +36,12 @@ class EmbedTag extends Tag
     public function compile(Compiler $compiler, TagNode $node)
     {
         $compiler
-            ->indented('$embedded = new ' . $node->getData('template'))
+            ->indented('(new ' . $node->getData('template'))
             ->add('(')
             ->compileNode($node->getChild('environment'))
+            ->add('))->displayTemplate(')
+            ->compileNode($node->getChild('context'))
             ->add(');');
-
-        $compiler
-            ->indented('')
-            ->compileNode($node->getChild('display'))
-            ->add(';');
     }
 
     public function parse(Parser $parser, Stream $stream)
@@ -54,18 +51,13 @@ class EmbedTag extends Tag
 
         $parentTemplate = $parser->parseExpression($stream);
 
-        $functionNode = new FunctionNode('displayTemplate');
-        $functionNode->setObject(new TempVariableNode('embedded'));
-        $functionNode->addArgument(
-            $this->getContext($parser, $stream, $environmentNode)
-        );
-
-        $node = new TagNode($this, array(
+        $contextNode = $this->getContext($parser, $stream, $environmentNode);
+        $node        = new TagNode($this, [
             'template' => $this->parseClass($parser, $stream, $parentTemplate)
-        ));
+        ]);
 
         $node->addChild($environmentNode, 'environment');
-        $node->addChild($functionNode, 'display');
+        $node->addChild($contextNode, 'context');
 
         return $node;
     }

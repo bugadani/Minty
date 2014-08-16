@@ -15,17 +15,17 @@ class OperatorCollectionTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->mockOperator = $this->getMockBuilder('\\Minty\\Compiler\\Operator')
-            ->setMethods(array('operators'))
-            ->setConstructorArgs(array(1))
+            ->setMethods(['operators'])
+            ->setConstructorArgs([1])
             ->getMockForAbstractClass();
 
         $this->mockOperator->expects($this->any())
             ->method('operators')
-            ->will($this->returnValue(array('+', '-')));
+            ->will($this->returnValue(['+', '-']));
 
         $this->otherOperator = $this->getMockBuilder('\\Minty\\Compiler\\Operator')
-            ->setMethods(array('operators'))
-            ->setConstructorArgs(array(1))
+            ->setMethods(['operators'])
+            ->setConstructorArgs([1])
             ->getMockForAbstractClass();
 
         $this->otherOperator->expects($this->any())
@@ -48,7 +48,7 @@ class OperatorCollectionTest extends \PHPUnit_Framework_TestCase
 
     public function testAllSymbolsAreAdded()
     {
-        $this->assertEquals(array('+', '-', '*'), $this->collection->getSymbols());
+        $this->assertEquals(['+', '-', '*'], $this->collection->getSymbols());
 
         $this->assertTrue($this->collection->isOperator('+'));
         $this->assertTrue($this->collection->isOperator('-'));

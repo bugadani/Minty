@@ -19,7 +19,7 @@ class StringLoader extends AbstractTemplateLoader implements iEnvironmentAware
      * @var Environment
      */
     private $environment;
-    private $templates = array();
+    private $templates = [];
 
     public function setEnvironment(Environment $environment)
     {

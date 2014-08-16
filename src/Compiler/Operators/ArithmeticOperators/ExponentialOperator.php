@@ -16,7 +16,7 @@ class ExponentialOperator extends FunctionOperator
 
     public function operators()
     {
-        return array('^', '**');
+        return ['^', '**'];
     }
 
     protected function getFunctionName()

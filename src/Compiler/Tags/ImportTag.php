@@ -43,9 +43,7 @@ class ImportTag extends Tag
             $stream->expectCurrent(Token::IDENTIFIER, 'from');
         }
 
-        $arguments = array(
-            $parser->parseExpression($stream)
-        );
+        $arguments = [$parser->parseExpression($stream)];
         if (isset($blocks)) {
             $arguments[] = $blocks;
         }

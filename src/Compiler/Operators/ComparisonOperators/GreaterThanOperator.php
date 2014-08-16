@@ -16,7 +16,7 @@ class GreaterThanOperator extends SimpleBinaryOperator
 
     public function operators()
     {
-        return array('>', 'is greater than');
+        return ['>', 'is greater than'];
     }
 
     public function compileOperator()

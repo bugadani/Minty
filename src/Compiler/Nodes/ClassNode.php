@@ -112,7 +112,7 @@ class ClassNode extends Node
         $compiler->indent();
 
         $blockNames = array_keys($this->getChildren());
-        $blockNames = array_diff($blockNames, array(self::MAIN_TEMPLATE_BLOCK));
+        $blockNames = array_diff($blockNames, [self::MAIN_TEMPLATE_BLOCK]);
         $compiler->indented('$blocks = ')
             ->compileArray($blockNames, false)
             ->add(';');

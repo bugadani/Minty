@@ -72,12 +72,12 @@ class SwitchTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $node = new TagNode($this, array(
+        $node = new TagNode($this, [
             'tested' => $parser->parseExpression($stream)
-        ));
+        ]);
 
         $stream->nextTokenIf(Token::TEXT);
-        $token = $stream->expect(Token::TAG_START, array('case', 'else'));
+        $token = $stream->expect(Token::TAG_START, ['case', 'else']);
 
         $hasDefault = false;
         while (!$token->test(Token::TAG_START, 'endswitch')) {
@@ -86,8 +86,11 @@ class SwitchTag extends Tag
             if ($token->test(Token::TAG_START, 'case')) {
                 $branch->addChild($parser->parseExpression($stream), 'condition');
             } elseif ($token->test(Token::TAG_START, 'else')) {
-                if($hasDefault) {
-                    throw new SyntaxException('Switch blocks may only contain one else tag', $token->getLine());
+                if ($hasDefault) {
+                    throw new SyntaxException(
+                        'Switch blocks may only contain one else tag',
+                        $token->getLine()
+                    );
                 }
                 $stream->expect(Token::TAG_END);
                 $hasDefault = true;
@@ -95,7 +98,7 @@ class SwitchTag extends Tag
                 throw new SyntaxException('Switch expects a case or else tag.');
             }
 
-            $body = $parser->parseBlock($stream, array('else', 'case', 'endswitch'));
+            $body = $parser->parseBlock($stream, ['else', 'case', 'endswitch']);
             $branch->addChild($body, 'body');
             $token = $stream->current();
         }

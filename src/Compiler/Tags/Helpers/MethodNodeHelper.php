@@ -18,7 +18,7 @@ use Minty\Compiler\Nodes\VariableNode;
 
 class MethodNodeHelper
 {
-    public function createMethodCallNode($object, $function, array $arguments = array())
+    public function createMethodCallNode($object, $function, array $arguments = [])
     {
         $functionNode = new FunctionNode($function, $arguments);
         $functionNode->setObject($object);
@@ -30,13 +30,13 @@ class MethodNodeHelper
     {
         return new ExpressionNode(
             $this->createMethodCallNode(
-            new VariableNode('_self'),
-            'renderBlock',
-            array(
-                new IdentifierNode($templateName),
-                $contextNode ? : new TempVariableNode('context')
-            )
-        ));
+                new VariableNode('_self'),
+                'renderBlock',
+                [
+                    new IdentifierNode($templateName),
+                    $contextNode ? : new TempVariableNode('context')
+                ]
+            ));
     }
 
     public function createRenderFunctionNode($templateName, $contextNode)
@@ -45,10 +45,10 @@ class MethodNodeHelper
             $this->createMethodCallNode(
                 new TempVariableNode('environment'),
                 'render',
-                array(
+                [
                     $templateName,
                     $contextNode
-                )
+                ]
             )
         );
     }

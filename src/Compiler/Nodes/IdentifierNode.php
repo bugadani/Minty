@@ -16,9 +16,7 @@ class IdentifierNode extends Node
 {
     public function __construct($name)
     {
-        parent::__construct(
-            array('name' => $name)
-        );
+        parent::__construct(['name' => $name]);
     }
 
     public function compile(Compiler $compiler)

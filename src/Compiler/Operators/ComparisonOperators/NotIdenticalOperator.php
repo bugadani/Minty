@@ -16,7 +16,7 @@ class NotIdenticalOperator extends SimpleBinaryOperator
 
     public function operators()
     {
-        return array('!==', 'is not identical', 'is not same as');
+        return ['!==', 'is not identical', 'is not same as'];
     }
 
     public function compileOperator()

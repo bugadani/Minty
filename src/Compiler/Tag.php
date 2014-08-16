@@ -24,6 +24,7 @@ abstract class Tag
     /**
      * @param Parser $parser
      * @param Stream $stream
+     *
      * @return void|Node
      */
     public function parse(Parser $parser, Stream $stream)

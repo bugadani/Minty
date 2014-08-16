@@ -22,7 +22,7 @@ class FunctionNode extends IdentifierNode
      */
     private $object;
 
-    public function __construct($functionName, array $arguments = array())
+    public function __construct($functionName, array $arguments = [])
     {
         parent::__construct($functionName);
         $this->setArguments($arguments);

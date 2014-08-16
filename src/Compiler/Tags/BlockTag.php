@@ -41,12 +41,15 @@ class BlockTag extends Tag
     public function parse(Parser $parser, Stream $stream)
     {
         $templateNameToken = $stream->expect(Token::IDENTIFIER);
-        $templateName = $templateNameToken->getValue();
+        $templateName      = $templateNameToken->getValue();
         $stream->expect(Token::TAG_END);
 
         $classNode = $parser->getCurrentClassNode();
-        if($classNode->hasChild($templateName)) {
-            throw new ParseException("Block {$templateName} is already defined", $templateNameToken->getLine());
+        if ($classNode->hasChild($templateName)) {
+            throw new ParseException(
+                "Block {$templateName} is already defined",
+                $templateNameToken->getLine()
+            );
         }
 
         $parser->enterBlock($templateName);

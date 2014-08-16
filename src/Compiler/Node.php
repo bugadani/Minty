@@ -19,9 +19,9 @@ abstract class Node
     /**
      * @var Node[]
      */
-    private $children = array();
+    private $children = [];
 
-    public function __construct(array $data = array())
+    public function __construct(array $data = [])
     {
         $this->data = $data;
     }

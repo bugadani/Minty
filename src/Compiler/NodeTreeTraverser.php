@@ -14,12 +14,12 @@ class NodeTreeTraverser
     /**
      * @var NodeVisitor[]
      */
-    private $visitors = array();
+    private $visitors = [];
 
     /**
      * @param NodeVisitor[] $visitors
      */
-    public function __construct(array $visitors = array())
+    public function __construct(array $visitors = [])
     {
         foreach ($visitors as $visitor) {
             $this->addVisitor($visitor);
@@ -30,7 +30,7 @@ class NodeTreeTraverser
     {
         $priority = $visitor->getPriority();
         if (!isset($this->visitors[$priority])) {
-            $this->visitors[$priority] = array();
+            $this->visitors[$priority] = [];
         }
         $this->visitors[$priority][] = $visitor;
     }

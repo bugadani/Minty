@@ -15,12 +15,12 @@ use Minty\Environment;
 class Tokenizer
 {
     //Constants
-    private static $literals = array(
+    private static $literals = [
         'null'  => null,
         'true'  => true,
         'false' => false
-    );
-    private static $punctuation = array(',', '[', ']', '(', ')', ':', '?', '=>');
+    ];
+    private static $punctuation = [',', '[', ']', '(', ')', ':', '?', '=>'];
 
     //Environment options
     /**
@@ -30,7 +30,7 @@ class Tokenizer
     private static $closingTags;
     private static $operators;
     private static $delimiters;
-    private static $delimiterLengths = array();
+    private static $delimiterLengths = [];
     private static $expressionPartsPattern;
     private static $tokenSplitPattern;
     private static $tagEndSearchPattern;
@@ -55,7 +55,7 @@ class Tokenizer
             self::$operators       = $environment->getOperatorSymbols();
 
             $blockEndPrefix    = $environment->getOption('block_end_prefix');
-            self::$closingTags = array();
+            self::$closingTags = [];
             foreach ($environment->getTags() as $name => $tag) {
                 if ($tag->hasEndingTag()) {
                     self::$closingTags[$blockEndPrefix . $name] = 'end' . $name;
@@ -89,12 +89,12 @@ class Tokenizer
     private function getExpressionPartsPattern()
     {
         $signs    = ' ';
-        $patterns = array(
+        $patterns = [
             '(?:\$[a-zA-Z_]+|:)[a-zA-Z_\-0-9]+' => 33, //variable ($) or short-string (:)
             '"(?:\\\\.|[^"\\\\])*"'             => 21, //double quoted string
             "'(?:\\\\.|[^'\\\\])*'"             => 21, //single quoted string
             '(?<!\w)\d+(?:\.\d+)?'              => 20 //number
-        );
+        ];
 
         $symbols = array_merge(self::$operators, self::$punctuation, array_keys(self::$literals));
         foreach ($symbols as $symbol) {
@@ -141,14 +141,14 @@ class Tokenizer
         $this->cursor     = -1;
         $this->lastOffset = 0;
 
-        $template       = str_replace(array("\r\n", "\n\r", "\r"), "\n", $template);
+        $template       = str_replace(["\r\n", "\n\r", "\r"], "\n", $template);
         $this->template = $template;
         $this->length   = strlen($template);
 
         preg_match_all(self::$tokenSplitPattern, $template, $matches, PREG_OFFSET_CAPTURE);
         $this->positions = $matches[1];
 
-        $this->tokenBuffer = array();
+        $this->tokenBuffer = [];
 
         return new Stream($this);
     }
@@ -301,7 +301,7 @@ class Tokenizer
                 case '"':
                 case "'":
                     //strip backslashes from double-slashes and escaped string delimiters
-                    $part = strtr($part, array('\\' . $part[0] => $part[0], '\\\\' => '\\'));
+                    $part = strtr($part, ['\\' . $part[0] => $part[0], '\\\\' => '\\']);
                     $this->pushToken(Token::STRING, substr($part, 1, -1));
                     $this->line += substr_count($part, "\n");
                     break;

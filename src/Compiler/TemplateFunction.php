@@ -40,7 +40,7 @@ class TemplateFunction
      *
      * @throws \InvalidArgumentException
      */
-    public function __construct($name, $callback = null, array $options = array())
+    public function __construct($name, $callback = null, array $options = [])
     {
         $this->name = $name;
         if ($callback === null) {
@@ -50,12 +50,12 @@ class TemplateFunction
             throw new \InvalidArgumentException("\$callback for function {$name} must be a callable value");
         }
         $this->callback = $callback;
-        $defaults       = array(
+        $defaults       = [
             'is_safe'           => false,
             'compiler'          => __NAMESPACE__ . '\\FunctionCompiler',
             'needs_context'     => false,
             'needs_environment' => false
-        );
+        ];
         $this->options  = array_merge($defaults, $options);
     }
 

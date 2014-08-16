@@ -31,7 +31,7 @@ abstract class Template
     /**
      * @var array
      */
-    private $blocks = array();
+    private $blocks = [];
 
     /**
      * @var string
@@ -55,7 +55,7 @@ abstract class Template
             $this->extension = '';
         }
         foreach ($blocks as $block) {
-            $this->blocks[$block] = array($this, 'block_' . $block);
+            $this->blocks[$block] = [$this, 'block_' . $block];
         }
     }
 
@@ -73,7 +73,7 @@ abstract class Template
             if (isset($this->blocks[$block])) {
                 throw new TemplatingException("Block {$block} is already present in template {$this->templateName}");
             }
-            $this->blocks[$block] = array($sourceTemplate, 'block_' . $targetBlockName);
+            $this->blocks[$block] = [$sourceTemplate, 'block_' . $targetBlockName];
         }
     }
 
@@ -134,7 +134,7 @@ abstract class Template
             }
         }
         if ($blockPresent) {
-            call_user_func($base->blocks[$blockName], $context);
+            $base->blocks[$blockName]($context);
         } else {
             throw new \RuntimeException("Block {$blockName} was not found.");
         }

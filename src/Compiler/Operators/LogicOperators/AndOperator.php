@@ -16,7 +16,7 @@ class AndOperator extends SimpleBinaryOperator
 
     public function operators()
     {
-        return array('&&', 'and');
+        return ['&&', 'and'];
     }
 
     public function compileOperator()

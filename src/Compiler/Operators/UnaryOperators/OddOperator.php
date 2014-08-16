@@ -18,7 +18,7 @@ class OddOperator extends Operator
 
     public function operators()
     {
-        return array('is odd', 'is not even');
+        return ['is odd', 'is not even'];
     }
 
     public function compile(Compiler $compiler, OperatorNode $node)

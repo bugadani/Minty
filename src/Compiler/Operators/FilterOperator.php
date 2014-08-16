@@ -34,7 +34,7 @@ class FilterOperator extends Operator
             array_unshift($arguments, $data);
             $filter->setArguments($arguments);
         } elseif ($filter instanceof IdentifierNode && !$filter instanceof VariableNode) {
-            $filter = new FunctionNode($filter->getData('name'), array($data));
+            $filter = new FunctionNode($filter->getData('name'), [$data]);
         } else {
             throw new ParseException('Invalid filter node.');
         }

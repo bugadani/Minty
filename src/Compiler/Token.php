@@ -22,7 +22,7 @@ class Token
     const VARIABLE    = 8;
     const EOF         = 9;
 
-    private static $strings = array(
+    private static $strings = [
         self::TAG_START   => 'TAG START',
         self::TAG_END     => 'TAG END',
         self::LITERAL     => 'LITERAL',
@@ -33,7 +33,7 @@ class Token
         self::TEXT        => 'TEXT',
         self::VARIABLE    => 'VARIABLE',
         self::EOF         => 'EOF',
-    );
+    ];
     private $type;
     private $value;
     private $line;
@@ -57,7 +57,7 @@ class Token
             return true;
         }
         if (is_callable($value)) {
-            return call_user_func($value, $this->value);
+            return $value($this->value);
         }
 
         return false;

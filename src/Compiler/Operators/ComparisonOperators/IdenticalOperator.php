@@ -16,7 +16,7 @@ class IdenticalOperator extends SimpleBinaryOperator
 
     public function operators()
     {
-        return array('==', 'is identical', 'is same as');
+        return ['==', 'is identical', 'is same as'];
     }
 
     public function compileOperator()

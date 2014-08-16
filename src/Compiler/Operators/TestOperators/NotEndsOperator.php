@@ -17,7 +17,7 @@ class NotEndsOperator extends EndsOperator
 
     public function operators()
     {
-        return array('not ends with', 'does not end with');
+        return ['not ends with', 'does not end with'];
     }
 
     public function compile(Compiler $compiler, OperatorNode $node)

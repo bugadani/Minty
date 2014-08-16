@@ -17,7 +17,7 @@ class NotStartsOperator extends StartsOperator
 
     public function operators()
     {
-        return array('does not start with', 'not starts with');
+        return ['does not start with', 'not starts with'];
     }
 
     public function compile(Compiler $compiler, OperatorNode $node)

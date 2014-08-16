@@ -17,7 +17,7 @@ class NotMatchesOperator extends MatchesOperator
 
     public function operators()
     {
-        return array('does not match', 'is not like', 'not matches');
+        return ['does not match', 'is not like', 'not matches'];
     }
 
     public function compile(Compiler $compiler, OperatorNode $node)

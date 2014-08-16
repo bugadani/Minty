@@ -14,7 +14,7 @@ class Context
     private $strictMode;
     private $variables;
 
-    public function __construct(Environment $environment, $variables = array())
+    public function __construct(Environment $environment, $variables = [])
     {
         $this->variables  = $this->ensureArray($variables);
         $this->strictMode = $environment->getOption('strict_mode');
@@ -116,7 +116,7 @@ class Context
         if (is_array($variables)) {
             //do nothing
         } elseif ($variables === null) {
-            $variables = array();
+            $variables = [];
         } elseif (method_exists($variables, 'toArray')) {
             $variables = $variables->toArray();
         } elseif ($variables instanceof \Traversable) {

@@ -17,12 +17,12 @@ class ChainLoader extends AbstractTemplateLoader
     /**
      * @var AbstractTemplateLoader[]
      */
-    private $loaders = array();
+    private $loaders = [];
 
     /**
      * @var AbstractTemplateLoader[]
      */
-    private $templateMap = array();
+    private $templateMap = [];
 
     public function addLoader(AbstractTemplateLoader $loader)
     {

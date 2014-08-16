@@ -16,8 +16,8 @@ use Minty\Compiler\Tags\ForTag;
 
 class ForLoopOptimizer extends NodeVisitor
 {
-    private $stack = array();
-    private $counterStack = array();
+    private $stack = [];
+    private $counterStack = [];
     private $counter = 0;
 
     public function getPriority()

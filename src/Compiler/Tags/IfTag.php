@@ -75,7 +75,7 @@ class IfTag extends Tag
                 $branchNode->addChild($condition, 'condition');
             }
 
-            $body = $parser->parseBlock($stream, array('else', 'elseif', 'endif'));
+            $body = $parser->parseBlock($stream, ['else', 'elseif', 'endif']);
             $branchNode->addChild($body, 'body');
 
             $tagName = $stream->current()->getValue();

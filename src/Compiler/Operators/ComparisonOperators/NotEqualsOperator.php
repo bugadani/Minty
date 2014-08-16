@@ -16,7 +16,7 @@ class NotEqualsOperator extends SimpleBinaryOperator
 
     public function operators()
     {
-        return array('!=', '<>', 'is not', 'does not equal');
+        return ['!=', '<>', 'is not', 'does not equal'];
     }
 
     public function compileOperator()

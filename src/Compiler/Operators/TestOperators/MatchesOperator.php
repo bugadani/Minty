@@ -16,7 +16,7 @@ class MatchesOperator extends FunctionOperator
 
     public function operators()
     {
-        return array('matches', 'is like');
+        return ['matches', 'is like'];
     }
 
     protected function getFunctionName()
