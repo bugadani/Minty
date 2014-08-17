@@ -465,7 +465,14 @@ class Environment
         if (!isset($this->loadedTemplates[$template])) {
             $this->compileIfNeeded($template);
 
-            $class                            = $this->getTemplateClassName($template);
+            $class = $this->getTemplateClassName($template);
+            //Load the compiled and cached template when it is not done by an autoloader
+            if (!class_exists($class) && $this->getOption('cache')) {
+                require_once $this->getCachePath(
+                    $this->loader->getCacheKey($template)
+                );
+            }
+
             $this->loadedTemplates[$template] = new $class($this);
         }
 
