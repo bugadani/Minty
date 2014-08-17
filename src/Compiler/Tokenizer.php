@@ -48,25 +48,33 @@ class Tokenizer
 
     public function __construct(Environment $environment)
     {
-        if (!self::$environment !== $environment) {
-            self::$environment     = $environment;
-            self::$fallbackTagName = $environment->getOption('fallback_tag');
-            self::$delimiters      = $environment->getOption('delimiters');
-            self::$operators       = $environment->getOperatorSymbols();
-
-            $blockEndPrefix    = $environment->getOption('block_end_prefix');
-            self::$closingTags = [];
-            foreach ($environment->getTags() as $name => $tag) {
-                if ($tag->hasEndingTag()) {
-                    self::$closingTags[$blockEndPrefix . $name] = 'end' . $name;
-                }
-            }
-
-            self::$tagEndSearchPattern       = $this->getTagEndMatchingPattern();
-            self::$rawBlockClosingTagPattern = $this->getRawBlockClosingTagPattern($blockEndPrefix);
-            self::$tokenSplitPattern         = $this->getTokenSplitPattern();
-            self::$expressionPartsPattern    = $this->getExpressionPartsPattern();
+        if (self::$environment === $environment) {
+            return;
         }
+
+        self::$environment     = $environment;
+        self::$fallbackTagName = $environment->getOption('fallback_tag');
+        self::$delimiters      = $environment->getOption('delimiters');
+        self::$operators       = $environment->getOperatorSymbols();
+
+        $blockEndPrefix    = $environment->getOption('block_end_prefix');
+
+        $iterator = new \CallbackFilterIterator(
+            new \ArrayIterator($environment->getTags()),
+            function (Tag $tag) {
+                return $tag->hasEndingTag();
+            }
+        );
+
+        self::$closingTags = [];
+        foreach ($iterator as $name => $tag) {
+            self::$closingTags[$blockEndPrefix . $name] = 'end' . $name;
+        }
+
+        self::$tagEndSearchPattern       = $this->getTagEndMatchingPattern();
+        self::$rawBlockClosingTagPattern = $this->getRawBlockClosingTagPattern($blockEndPrefix);
+        self::$tokenSplitPattern         = $this->getTokenSplitPattern();
+        self::$expressionPartsPattern    = $this->getExpressionPartsPattern();
     }
 
     private function getTagEndMatchingPattern()
@@ -96,8 +104,12 @@ class Tokenizer
             '(?<!\w)\d+(?:\.\d+)?'              => 20 //number
         ];
 
-        $symbols = array_merge(self::$operators, self::$punctuation, array_keys(self::$literals));
-        foreach ($symbols as $symbol) {
+        $iterator = new \AppendIterator();
+        $iterator->append(new \ArrayIterator(self::$operators));
+        $iterator->append(new \ArrayIterator(self::$punctuation));
+        $iterator->append(new \ArrayIterator(array_keys(self::$literals)));
+
+        foreach ($iterator as $symbol) {
             $length = strlen($symbol);
             if ($length === 1) {
                 $signs .= $symbol;
@@ -267,18 +279,21 @@ class Tokenizer
             return;
         }
 
-        $flags = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
-        $parts = preg_split(self::$expressionPartsPattern, $expression, 0, $flags);
-
-        foreach ($parts as $part) {
-            //We can safely skip spaces
-            if ($part !== ' ') {
-                if (trim($part) === '') {
-                    //Whitespace strings only matter for line numbering
-                    $this->line += substr_count($part, "\n");
-                } else {
-                    $this->tokenizeExpressionPart($part);
-                }
+        $flags    = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
+        $iterator = new \CallbackFilterIterator(
+            new \ArrayIterator(
+                preg_split(self::$expressionPartsPattern, $expression, 0, $flags)
+            ),
+            function ($value) {
+                return $value !== ' ';
+            }
+        );
+        foreach ($iterator as $part) {
+            if (trim($part) === '') {
+                //Whitespace strings only matter for line numbering
+                $this->line += substr_count($part, "\n");
+            } else {
+                $this->tokenizeExpressionPart($part);
             }
         }
     }

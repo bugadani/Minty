@@ -195,10 +195,13 @@ class Environment
     public function addExtension(Extension $extension)
     {
         $this->extensions[$extension->getExtensionName()] = $extension;
-        foreach ($extension->getFunctions() as $function) {
-            $function->setExtension($extension);
-            $this->addFunction($function);
-        }
+        array_map(
+            function (TemplateFunction $function) use ($extension) {
+                $function->setExtension($extension);
+                $this->addFunction($function);
+            },
+            $extension->getFunctions()
+        );
     }
 
     /**
@@ -355,12 +358,8 @@ class Environment
             $this->unaryPrefixOperators->addOperators($ext->getPrefixUnaryOperators());
             $this->unaryPostfixOperators->addOperators($ext->getPostfixUnaryOperators());
 
-            foreach ($ext->getNodeVisitors() as $visitor) {
-                $this->addNodeVisitor($visitor);
-            }
-            foreach ($ext->getTags() as $tag) {
-                $this->addTag($tag);
-            }
+            array_map([$this, 'addNodeVisitor'], $ext->getNodeVisitors());
+            array_map([$this, 'addTag'], $ext->getTags());
         }
 
         $this->tokenizer         = new Tokenizer($this);

@@ -59,7 +59,7 @@ abstract class Extension
     }
 
     /**
-     * @return NodeVisitor
+     * @return NodeVisitor[]
      */
     public function getNodeVisitors()
     {

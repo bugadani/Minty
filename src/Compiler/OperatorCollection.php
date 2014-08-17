@@ -11,6 +11,9 @@ namespace Minty\Compiler;
 
 class OperatorCollection
 {
+    /**
+     * @var Operator[]
+     */
     private $operators = [];
 
     public function exists(Operator $operator)
@@ -23,9 +26,7 @@ class OperatorCollection
      */
     public function addOperators(array $operators)
     {
-        foreach ($operators as $operator) {
-            $this->addOperator($operator);
-        }
+        array_map([$this, 'addOperator'], $operators);
     }
 
     /**
@@ -34,15 +35,17 @@ class OperatorCollection
     public function addOperator(Operator $operator)
     {
         $symbol = $operator->operators();
-        if (is_array($symbol)) {
-            foreach ($symbol as $opSymbol) {
-                $this->operators[$opSymbol] = $operator;
-            }
-        } else {
-            $this->operators[$symbol] = $operator;
+        foreach ((array) $symbol as $opSymbol) {
+            $this->operators[$opSymbol] = $operator;
         }
     }
 
+    /**
+     * Returns whether $operator is an operator symbol.
+     * @param $operator
+     *
+     * @return bool
+     */
     public function isOperator($operator)
     {
         return isset($this->operators[$operator]);

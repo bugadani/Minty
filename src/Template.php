@@ -48,12 +48,9 @@ abstract class Template
         $this->environment  = $environment;
         $this->templateName = $template;
 
-        $dot = strrpos($template, '.');
-        if ($dot !== false) {
-            $this->extension = substr($template, $dot + 1);
-        } else {
-            $this->extension = '';
-        }
+        $dot             = strrpos($template, '.');
+        $this->extension = $dot ? substr($template, $dot + 1) : '';
+
         foreach ($blocks as $block) {
             $this->blocks[$block] = [$this, 'block_' . $block];
         }
