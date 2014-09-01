@@ -126,14 +126,9 @@ abstract class Template
         }
         $blockPresent = isset($base->blocks[$blockName]);
         if ($parentBlock || !$blockPresent) {
-            if ($this->renderParentBlock($base, $blockName, $context)) {
-                return;
-            }
-        }
-        if ($blockPresent) {
-            $base->blocks[$blockName]($context);
+            $this->renderParentBlock($base, $blockName, $context);
         } else {
-            throw new \RuntimeException("Block {$blockName} was not found.");
+            $base->blocks[$blockName]($context);
         }
     }
 
@@ -155,6 +150,7 @@ abstract class Template
      * @param          $blockName
      * @param Context  $context
      *
+     * @throws \RuntimeException
      * @return bool
      */
     private function renderParentBlock(Template $parent, $blockName, Context $context)
@@ -168,6 +164,6 @@ abstract class Template
             }
         }
 
-        return false;
+        throw new \RuntimeException("Block {$blockName} was not found.");
     }
 }

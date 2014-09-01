@@ -1,0 +1,13 @@
+--TEST--
+Test that parent throws exception when the block is missing.
+--TEMPLATE--
+{ extends 'parent' }
+Child
+{ block foo }foo{ display bar }{ /block }
+{ block bar }{ parent }{ /block }
+--TEMPLATE parent--
+Parent
+{ block foo }{ /block }
+--EXCEPTION--
+RuntimeException
+Block bar was not found.
