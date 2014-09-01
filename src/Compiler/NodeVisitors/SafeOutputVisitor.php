@@ -21,9 +21,9 @@ use Minty\Compiler\Operators\FilterOperator;
 use Minty\Compiler\Tags\AutofilterTag;
 use Minty\Compiler\Tags\PrintTag;
 use Minty\Environment;
-use Minty\iEnvironmentAware;
+use Minty\EnvironmentAwareInterface;
 
-class SafeOutputVisitor extends NodeVisitor implements iEnvironmentAware
+class SafeOutputVisitor extends NodeVisitor implements EnvironmentAwareInterface
 {
     /**
      * @var Environment

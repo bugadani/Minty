@@ -136,7 +136,7 @@ class Environment
         ];
         $this->options   = array_merge($default_options, $options);
 
-        if ($loader instanceof iEnvironmentAware) {
+        if ($loader instanceof EnvironmentAwareInterface) {
             $loader->setEnvironment($this);
         }
         $this->loader          = $loader;
@@ -152,7 +152,7 @@ class Environment
 
     public function addTemplateLoader(AbstractTemplateLoader $loader)
     {
-        if ($loader instanceof iEnvironmentAware) {
+        if ($loader instanceof EnvironmentAwareInterface) {
             $loader->setEnvironment($this);
         }
         if (!$this->chainLoaderUsed) {
@@ -305,7 +305,7 @@ class Environment
 
     public function addNodeVisitor(NodeVisitor $visitor)
     {
-        if ($visitor instanceof iEnvironmentAware) {
+        if ($visitor instanceof EnvironmentAwareInterface) {
             $visitor->setEnvironment($this);
         }
         $this->nodeVisitors[] = $visitor;

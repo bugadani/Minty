@@ -11,9 +11,9 @@ namespace Minty\TemplateLoaders;
 
 use Minty\AbstractTemplateLoader;
 use Minty\Environment;
-use Minty\iEnvironmentAware;
+use Minty\EnvironmentAwareInterface;
 
-class FileLoader extends AbstractTemplateLoader implements iEnvironmentAware
+class FileLoader extends AbstractTemplateLoader implements EnvironmentAwareInterface
 {
     /**
      * @var Environment

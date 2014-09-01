@@ -9,8 +9,8 @@
 
 namespace Minty\Extensions;
 
-use Minty\Compiler\NodeVisitors\EnvironmentVariableOptimizer;
 use Minty\Compiler\NodeVisitors\ForLoopOptimizer;
+use Minty\Compiler\NodeVisitors\UnusedVariableOptimizer;
 use Minty\Extension;
 
 class Optimizer extends Extension
@@ -25,7 +25,7 @@ class Optimizer extends Extension
     {
         return [
             new ForLoopOptimizer(),
-            new EnvironmentVariableOptimizer()
+            new UnusedVariableOptimizer()
         ];
     }
 }

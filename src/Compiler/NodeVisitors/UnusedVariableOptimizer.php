@@ -19,9 +19,9 @@ use Minty\Compiler\Nodes\TempVariableNode;
 use Minty\Compiler\NodeVisitor;
 use Minty\Compiler\Operators\FilterOperator;
 use Minty\Environment;
-use Minty\iEnvironmentAware;
+use Minty\EnvironmentAwareInterface;
 
-class EnvironmentVariableOptimizer extends NodeVisitor implements iEnvironmentAware
+class UnusedVariableOptimizer extends NodeVisitor implements EnvironmentAwareInterface
 {
     /**
      * @var ClassNode

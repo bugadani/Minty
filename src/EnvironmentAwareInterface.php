@@ -9,7 +9,7 @@
 
 namespace Minty;
 
-interface iEnvironmentAware
+interface EnvironmentAwareInterface
 {
     public function setEnvironment(Environment $environment);
 }
