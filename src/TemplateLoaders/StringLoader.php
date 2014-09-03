@@ -9,11 +9,11 @@
 
 namespace Minty\TemplateLoaders;
 
-use Minty\AbstractTemplateLoader;
 use Minty\Environment;
 use Minty\EnvironmentAwareInterface;
+use Minty\TemplateLoaderInterface;
 
-class StringLoader extends AbstractTemplateLoader implements EnvironmentAwareInterface
+class StringLoader implements TemplateLoaderInterface, EnvironmentAwareInterface
 {
     /**
      * @var Environment

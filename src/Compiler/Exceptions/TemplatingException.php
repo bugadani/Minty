@@ -13,9 +13,9 @@ class TemplatingException extends \RuntimeException
 {
     private $sourceLine;
 
-    public function __construct($message, $sourceLine = 0)
+    public function __construct($message, $sourceLine = 0, $previous = null)
     {
-        parent::__construct($message);
+        parent::__construct($message, 0, $previous);
         $this->sourceLine = $sourceLine;
     }
 

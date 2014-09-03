@@ -59,7 +59,7 @@ class Tokenizer
 
         $blockEndPrefix    = $environment->getOption('block_end_prefix');
 
-        $iterator = new \CallbackFilterIterator(
+        $blockTags = new \CallbackFilterIterator(
             new \ArrayIterator($environment->getTags()),
             function (Tag $tag) {
                 return $tag->hasEndingTag();
@@ -67,7 +67,7 @@ class Tokenizer
         );
 
         self::$closingTags = [];
-        foreach ($iterator as $name => $tag) {
+        foreach ($blockTags as $name => $tag) {
             self::$closingTags[$blockEndPrefix . $name] = 'end' . $name;
         }
 

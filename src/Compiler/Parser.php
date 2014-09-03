@@ -71,7 +71,7 @@ class Parser
                 try {
                     $node = $this->environment->getTag($value)->parse($this, $stream);
                 } catch (\OutOfBoundsException $e) {
-                    throw new ParseException("Unknown {$value} tag", $token->getLine());
+                    throw new ParseException("Unknown {$value} tag", $token->getLine(), $e);
                 }
                 if ($node instanceof Node) {
                     $node->addData('line', $token->getLine());

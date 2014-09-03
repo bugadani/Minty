@@ -92,7 +92,7 @@ class Environment
     private $nodeTreeTraverser;
 
     /**
-     * @var AbstractTemplateLoader|ChainLoader
+     * @var TemplateLoaderInterface|ChainLoader
      */
     private $loader;
 
@@ -114,10 +114,10 @@ class Environment
     private $classMap = [];
 
     /**
-     * @param AbstractTemplateLoader $loader
+     * @param TemplateLoaderInterface $loader
      * @param array                  $options
      */
-    public function __construct(AbstractTemplateLoader $loader, array $options = [])
+    public function __construct(TemplateLoaderInterface $loader, array $options = [])
     {
         $default_options = [
             'autofilter'                  => 1,
@@ -170,7 +170,7 @@ class Environment
         );
     }
 
-    public function addTemplateLoader(AbstractTemplateLoader $loader)
+    public function addTemplateLoader(TemplateLoaderInterface $loader)
     {
         if ($loader instanceof EnvironmentAwareInterface) {
             $loader->setEnvironment($this);
@@ -416,11 +416,9 @@ class Environment
     private function compileIfNeeded($template)
     {
         $cacheEnabled = $this->options['cache'];
-        if ($cacheEnabled) {
-            if ($this->loader->isCacheFresh($template)) {
-                //The template is already compiled and up to date
-                return;
-            }
+        if ($cacheEnabled && $this->loader->isCacheFresh($template)) {
+            //The template is already compiled and up to date
+            return;
         }
 
         $compiled = $this->compileTemplate($template);
@@ -428,7 +426,7 @@ class Environment
         if ($cacheEnabled) {
             $this->saveCompiledTemplate($compiled, $template);
         } else {
-            eval('?>' . $compiled);
+            evalCode($compiled);
         }
     }
 
@@ -501,11 +499,8 @@ class Environment
             return $variables;
         }
 
-        //Add the globals first so locals can override them
-        $context = new Context($this, $this->options['global_variables']);
-        $context->add($variables);
-
-        return $context;
+        //Local variables take precedence over globals
+        return new Context($this, $variables + $this->options['global_variables']);
     }
 
     public function render($template, $variables = [])
@@ -542,4 +537,9 @@ class Environment
 function includeFile($file)
 {
     include $file;
+}
+
+function evalCode($code)
+{
+    eval('?>' . $code);
 }

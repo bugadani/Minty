@@ -9,22 +9,22 @@
 
 namespace Minty\TemplateLoaders;
 
-use Minty\AbstractTemplateLoader;
 use Minty\Compiler\Exceptions\TemplateNotFoundException;
+use Minty\TemplateLoaderInterface;
 
-class ChainLoader extends AbstractTemplateLoader
+class ChainLoader implements TemplateLoaderInterface
 {
     /**
-     * @var AbstractTemplateLoader[]
+     * @var TemplateLoaderInterface[]
      */
     private $loaders = [];
 
     /**
-     * @var AbstractTemplateLoader[]
+     * @var TemplateLoaderInterface[]
      */
     private $templateMap = [];
 
-    public function addLoader(AbstractTemplateLoader $loader)
+    public function addLoader(TemplateLoaderInterface $loader)
     {
         $this->loaders[] = $loader;
     }
