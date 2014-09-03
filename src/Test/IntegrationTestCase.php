@@ -61,22 +61,23 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
     public function getTests()
     {
         $directory = realpath($this->getTestDirectory());
-        $tests     = [];
 
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($directory),
-            \RecursiveIteratorIterator::LEAVES_ONLY
-        );
-        foreach ($iterator as $file) {
-            if (substr($file, -5) === '.test') {
-                $test = $this->parseDescriptor($directory, $file);
-                if ($test) {
-                    $tests[] = $test;
-                }
+        $iterator = new \CallbackFilterIterator(
+            new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($directory),
+                \RecursiveIteratorIterator::LEAVES_ONLY
+            ),
+            function (\SplFileInfo $file) {
+                return $file->getExtension() === 'test';
             }
+        );
+
+        $tests = [];
+        foreach ($iterator as $file) {
+            $tests[] = $this->parseDescriptor($directory, $file);
         }
 
-        return $tests;
+        return array_filter($tests);
     }
 
     private function getBlock($string, $block)
@@ -215,7 +216,7 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
                 $this->assertRegExp("={$exceptionMessage}$=AD", $e->getMessage());
             }
         }
-        if($exception && !isset($exceptionCaught)) {
+        if ($exception && !isset($exceptionCaught)) {
             $this->fail("Test case {$file} ({$description}) has failed to throw {$exception}.");
         }
     }
