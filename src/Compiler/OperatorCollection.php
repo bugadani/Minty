@@ -35,13 +35,14 @@ class OperatorCollection
     public function addOperator(Operator $operator)
     {
         $symbol = $operator->operators();
-        foreach ((array) $symbol as $opSymbol) {
+        foreach ((array)$symbol as $opSymbol) {
             $this->operators[$opSymbol] = $operator;
         }
     }
 
     /**
      * Returns whether $operator is an operator symbol.
+     *
      * @param $operator
      *
      * @return bool

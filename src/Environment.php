@@ -115,7 +115,7 @@ class Environment
 
     /**
      * @param TemplateLoaderInterface $loader
-     * @param array                  $options
+     * @param array                   $options
      */
     public function __construct(TemplateLoaderInterface $loader, array $options = [])
     {

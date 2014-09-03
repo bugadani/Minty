@@ -57,7 +57,7 @@ class Tokenizer
         self::$delimiters      = $environment->getOption('delimiters');
         self::$operators       = $environment->getOperatorSymbols();
 
-        $blockEndPrefix    = $environment->getOption('block_end_prefix');
+        $blockEndPrefix = $environment->getOption('block_end_prefix');
 
         $blockTags = new \CallbackFilterIterator(
             new \ArrayIterator($environment->getTags()),
