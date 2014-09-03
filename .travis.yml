@@ -13,4 +13,4 @@ matrix:
 before_script:
   - composer --prefer-source --dev install
 
-script: phpunit --coverage-text
+script: phpunit --coverage-text test
