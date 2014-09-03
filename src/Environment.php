@@ -111,6 +111,8 @@ class Environment
      */
     private $errorTemplateLoaderLoaded;
 
+    private $classMap = [];
+
     /**
      * @param AbstractTemplateLoader $loader
      * @param array                  $options
@@ -148,6 +150,24 @@ class Environment
         } else {
             $this->errorTemplateLoaderLoaded = false;
         }
+
+        spl_autoload_register(
+            function ($className) {
+                if (!isset($this->classMap[$className])) {
+                    return;
+                }
+
+                $template = $this->classMap[$className];
+                $this->compileIfNeeded($template);
+                if ($this->options['cache']) {
+                    includeFile(
+                        $this->getCachePath(
+                            $this->loader->getCacheKey($template)
+                        )
+                    );
+                }
+            }
+        );
     }
 
     public function addTemplateLoader(AbstractTemplateLoader $loader)
@@ -451,7 +471,11 @@ class Environment
         $cacheNamespace = $this->options['cache_namespace'];
         $cacheKey       = preg_replace('#[^\w/]+#', '_', $cacheKey);
 
-        return $cacheNamespace . '\\' . strtr($cacheKey, '/', '\\');
+        $className = $cacheNamespace . '\\' . strtr($cacheKey, '/', '\\');
+
+        $this->classMap[$className] = $template;
+
+        return $className;
     }
 
     /**
@@ -463,15 +487,7 @@ class Environment
     {
         $template = $this->findFirstExistingTemplate($template);
         if (!isset($this->loadedTemplates[$template])) {
-            $this->compileIfNeeded($template);
-
             $class = $this->getTemplateClassName($template);
-            //Load the compiled and cached template when it is not done by an autoloader
-            if (!class_exists($class) && $this->getOption('cache')) {
-                require_once $this->getCachePath(
-                    $this->loader->getCacheKey($template)
-                );
-            }
 
             $this->loadedTemplates[$template] = new $class($this);
         }
@@ -521,4 +537,9 @@ class Environment
             );
         }
     }
+}
+
+function includeFile($file)
+{
+    include $file;
 }
