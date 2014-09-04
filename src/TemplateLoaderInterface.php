@@ -11,11 +11,31 @@ namespace Minty;
 
 interface TemplateLoaderInterface
 {
+    /**
+     * @param $template
+     *
+     * @return bool
+     */
     public function isCacheFresh($template);
 
+    /**
+     * @param $template
+     *
+     * @return bool
+     */
     public function exists($template);
 
+    /**
+     * @param $template
+     *
+     * @return string
+     */
     public function load($template);
 
+    /**
+     * @param $template
+     *
+     * @return string
+     */
     public function getCacheKey($template);
 }

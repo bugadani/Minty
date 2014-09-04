@@ -19,8 +19,15 @@ class StringLoader implements TemplateLoaderInterface, EnvironmentAwareInterface
      * @var Environment
      */
     private $environment;
+
+    /**
+     * @var string[]
+     */
     private $templates = [];
 
+    /**
+     * @inheritdoc
+     */
     public function setEnvironment(Environment $environment)
     {
         $this->environment = $environment;
@@ -31,6 +38,9 @@ class StringLoader implements TemplateLoaderInterface, EnvironmentAwareInterface
         $this->templates[$name] = $template;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function isCacheFresh($template)
     {
         $cachePath = $this->environment->getCachePath(
@@ -40,16 +50,25 @@ class StringLoader implements TemplateLoaderInterface, EnvironmentAwareInterface
         return is_file($cachePath);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function exists($template)
     {
         return isset($this->templates[$template]);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function load($template)
     {
         return $this->templates[$template];
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getCacheKey($template)
     {
         //embedded templates are not present in the loader so they can't have a hashed suffix

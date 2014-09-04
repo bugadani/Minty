@@ -28,6 +28,9 @@ class FileLoader implements TemplateLoaderInterface, EnvironmentAwareInterface
         $this->extension = $extension;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function setEnvironment(Environment $environment)
     {
         $this->environment = $environment;
@@ -38,6 +41,9 @@ class FileLoader implements TemplateLoaderInterface, EnvironmentAwareInterface
         return "{$this->root}/{$template}.{$this->extension}";
     }
 
+    /**
+     * @inheritdoc
+     */
     public function isCacheFresh($template)
     {
         $cachePath = $this->environment->getCachePath(
@@ -51,16 +57,25 @@ class FileLoader implements TemplateLoaderInterface, EnvironmentAwareInterface
         return filemtime($this->getPath($template)) < filemtime($cachePath);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function exists($template)
     {
         return is_file($this->getPath($template));
     }
 
+    /**
+     * @inheritdoc
+     */
     public function load($template)
     {
         return file_get_contents($this->getPath($template));
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getCacheKey($template)
     {
         return dirname($template) . '/template_' . basename($template);

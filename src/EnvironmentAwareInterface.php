@@ -11,5 +11,8 @@ namespace Minty;
 
 interface EnvironmentAwareInterface
 {
+    /**
+     * @param Environment $environment
+     */
     public function setEnvironment(Environment $environment);
 }

@@ -24,11 +24,17 @@ class ChainLoader implements TemplateLoaderInterface
      */
     private $templateMap = [];
 
+    /**
+     * @param TemplateLoaderInterface $loader
+     */
     public function addLoader(TemplateLoaderInterface $loader)
     {
         $this->loaders[] = $loader;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function isCacheFresh($template)
     {
         if (!$this->exists($template)) {
@@ -38,6 +44,9 @@ class ChainLoader implements TemplateLoaderInterface
         return $this->templateMap[$template]->isCacheFresh($template);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function exists($template)
     {
         if (isset($this->templateMap[$template])) {
@@ -55,6 +64,9 @@ class ChainLoader implements TemplateLoaderInterface
         return false;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function load($template)
     {
         if (!$this->exists($template)) {
@@ -64,6 +76,9 @@ class ChainLoader implements TemplateLoaderInterface
         return $this->templateMap[$template]->load($template);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getCacheKey($template)
     {
         if (!$this->exists($template)) {

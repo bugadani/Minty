@@ -14,6 +14,9 @@ use Minty\Environment;
 class ErrorTemplateLoader extends StringLoader
 {
 
+    /**
+     * @inheritdoc
+     */
     public function setEnvironment(Environment $environment)
     {
         parent::setEnvironment($environment);
