@@ -194,6 +194,10 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
             $data = [];
         }
 
+        if ($exception) {
+            $this->setExpectedException($exception, $exceptionMessage);
+        }
+
         try {
             ob_start();
             $this->environment->render('index', $data);
@@ -207,17 +211,7 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
             }
         } catch (\Exception $e) {
             ob_end_clean();
-            if (!$exception) {
-                throw $e;
-            }
-            $exceptionCaught = true;
-            $this->assertInstanceOf($exception, $e);
-            if ($exceptionMessage) {
-                $this->assertRegExp("={$exceptionMessage}$=AD", $e->getMessage());
-            }
-        }
-        if ($exception && !isset($exceptionCaught)) {
-            $this->fail("Test case {$file} ({$description}) has failed to throw {$exception}.");
+            throw $e;
         }
     }
 }
