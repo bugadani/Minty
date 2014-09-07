@@ -21,9 +21,10 @@ To list an array of scalar values or object, use the `as` keyword to bind them t
 Example:
 
     {$array: [:foo, :bar, :baz]}
-    {list $array as :foobar using 'some template'}
+    {list $array as $foobar using 'some template'}
 
 The above example will display `some template` with variable `$foobar` set to each of the array elements.
+Please note that the `as` keyword only accepts simple variable names and not arbitrary expressions.
 
 See also:
 

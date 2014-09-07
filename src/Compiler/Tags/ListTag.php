@@ -43,7 +43,7 @@ class ListTag extends Tag
         if ($stream->current()->test(Token::IDENTIFIER, 'as')) {
             $node->addData(
                 'key',
-                $stream->expect(Token::STRING)->getValue()
+                $stream->expect(Token::VARIABLE)->getValue()
             );
 
             $stream->next();
@@ -58,7 +58,6 @@ class ListTag extends Tag
             'expression'
         );
         $node->addChild($source, 'source');
-
 
         return $node;
     }

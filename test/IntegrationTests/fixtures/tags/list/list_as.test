@@ -1,7 +1,7 @@
 --TEST--
 Test list tag with the as keyword
 --TEMPLATE--
-{ list $bar as :foobar using 'foo' }
+{ list $bar as $foobar using 'foo' }
 --TEMPLATE foo--
 { $foobar }
 --DATA--
