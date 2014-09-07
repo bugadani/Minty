@@ -38,10 +38,18 @@ class ListTag extends Tag
     public function parse(Parser $parser, Stream $stream)
     {
         $source = $parser->parseExpression($stream);
+        $node   = new TagNode($this);
 
+        if ($stream->current()->test(Token::IDENTIFIER, 'as')) {
+            $node->addData(
+                'key',
+                $stream->expect(Token::STRING)->getValue()
+            );
+
+            $stream->next();
+        }
         $stream->expectCurrent(Token::IDENTIFIER, 'using');
 
-        $node = new TagNode($this);
         $node->addChild(
             $this->helper->createRenderFunctionNode(
                 $parser->parseExpression($stream),
@@ -50,6 +58,7 @@ class ListTag extends Tag
             'expression'
         );
         $node->addChild($source, 'source');
+
 
         return $node;
     }
@@ -60,7 +69,13 @@ class ListTag extends Tag
             ->indented('foreach (')
             ->compileNode($node->getChild('source'))
             ->add(' as $element) {')
-            ->indent()
+            ->indent();
+
+        if ($node->hasData('key')) {
+            $compiler->indented('$element = ["%s" => $element];', $node->getData('key'));
+        }
+
+        $compiler
             ->compileNode($node->getChild('expression'))
             ->outdent()
             ->indented('}');

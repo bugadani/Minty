@@ -16,6 +16,14 @@ Like `include` and `embed`, `list` accepts any expression as template name. If a
 as template the first template that exists will be displayed.
 
 Note: `list` requires that `source` be an array of arrays because the elements of `source` will be used as the context of `template`.
+To list an array of scalar values or object, use the `as` keyword to bind them to a specific variable name.
+
+Example:
+
+    {$array: [:foo, :bar, :baz]}
+    {list $array as :foobar using 'some template'}
+
+The above example will display `some template` with variable `$foobar` set to each of the array elements.
 
 See also:
 
