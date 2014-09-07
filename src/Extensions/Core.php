@@ -84,6 +84,7 @@ use Minty\Compiler\Tags\ParentTag;
 use Minty\Compiler\Tags\PrintTag;
 use Minty\Compiler\Tags\SetTag;
 use Minty\Compiler\Tags\SwitchTag;
+use Minty\Compiler\Tags\UnsetTag;
 use Minty\Compiler\TemplateFunction;
 use Minty\Context;
 use Minty\Environment;
@@ -198,7 +199,8 @@ class Core extends Extension
             new ParentTag($methodHelper),
             new PrintTag(),
             new SetTag(),
-            new SwitchTag()
+            new SwitchTag(),
+            new UnsetTag()
         ];
     }
 

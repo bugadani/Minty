@@ -1,0 +1,10 @@
+--TEST--
+Test that multiple variables can be unset
+--TEMPLATE--
+{ $foo: 'bar' }{ $bar: 'baz' }{ unset $foo, $bar }
+{ $foo is set ? 'ko' : 'ok' }
+{ $bar is set ? 'ko' : 'ok' }
+--EXPECT--
+
+ok
+ok

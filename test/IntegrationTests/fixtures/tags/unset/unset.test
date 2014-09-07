@@ -1,0 +1,9 @@
+--TEST--
+Test that a variable can be unset
+--TEMPLATE--
+{ $foo: 'bar' }
+{ unset $foo }
+{ $foo }
+--EXCEPTION--
+\OutOfBoundsException
+Variable foo is not set.
