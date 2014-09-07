@@ -206,7 +206,7 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
                 );
             }
         } catch (\Exception $e) {
-            ob_clean();
+            ob_end_clean();
             if (!$exception) {
                 throw $e;
             }
