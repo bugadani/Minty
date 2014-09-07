@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ASUS T100
- * Date: 2014.06.14.
- * Time: 21:46
- */
 
 namespace Minty\IntegrationTests;
 
