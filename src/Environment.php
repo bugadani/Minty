@@ -92,7 +92,7 @@ class Environment
     private $nodeTreeTraverser;
 
     /**
-     * @var TemplateLoaderInterface|ChainLoader
+     * @var TemplateLoaderInterface
      */
     private $loader;
 
@@ -151,23 +151,7 @@ class Environment
             $this->errorTemplateLoaderLoaded = false;
         }
 
-        spl_autoload_register(
-            function ($className) {
-                if (!isset($this->classMap[$className])) {
-                    return;
-                }
-
-                $template = $this->classMap[$className];
-                $this->compileIfNeeded($template);
-                if ($this->options['cache']) {
-                    includeFile(
-                        $this->getCachePath(
-                            $this->loader->getCacheKey($template)
-                        )
-                    );
-                }
-            }
-        );
+        spl_autoload_register([$this, 'autoloadTemplate']);
     }
 
     public function addTemplateLoader(TemplateLoaderInterface $loader)
@@ -413,20 +397,28 @@ class Environment
         return $this->compiler->compile($node);
     }
 
-    private function compileIfNeeded($template)
+    private function autoloadTemplate($className)
     {
-        $cacheEnabled = $this->options['cache'];
-        if ($cacheEnabled && $this->loader->isCacheFresh($template)) {
-            //The template is already compiled and up to date
+        if (!isset($this->classMap[$className])) {
             return;
         }
 
-        $compiled = $this->compileTemplate($template);
+        $template = $this->classMap[$className];
+
+        $cacheEnabled = $this->options['cache'];
 
         if ($cacheEnabled) {
-            $this->saveCompiledTemplate($compiled, $template);
+            if (!$this->loader->isCacheFresh($template)) {
+                $compiled = $this->compileTemplate($template);
+                $this->saveCompiledTemplate($compiled, $template);
+            }
+            includeFile(
+                $this->getCachePath(
+                    $this->loader->getCacheKey($template)
+                )
+            );
         } else {
-            evalCode($compiled);
+            evalCode($this->compileTemplate($template));
         }
     }
 
