@@ -78,3 +78,18 @@ Logic operators
  * `or` or `||`: `a || b` results in `true` if either `a` and `b` are true.
  * `!`: negates the logic value of the expression that follows
  * `xor`: `a xor b` results in `true` if `a` or `b` is true but not both.
+
+Other operators
+--------
+
+### The ternary operators
+Minty support the C-like ternary operator (`?:`). Just like in PHP, both the full and the short forms are supported.
+
+Examples:
+    { $foo|length = 3 ? 'Length is 3' : 'Length is not 3' }
+
+    { $bool: false }
+    { $bool ?: 'some string' }{# prints 'some string' #}
+
+Minty supports a variation of the ternary operator similar to the null coalescing operator found in C#.
+The operator `??` evaluates the left hand side expression using `isset()` and returns either the left side if it is set (i.e. the variable exists and it is not null), or the right hand side.

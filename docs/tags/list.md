@@ -15,6 +15,9 @@ For example:
 Like `include` and `embed`, `list` accepts any expression as template name. If an array is passed
 as template the first template that exists will be displayed.
 
+Displaying a list of scalars or objects
+--------
+
 Note: `list` requires that `source` be an array of arrays because the elements of `source` will be used as the context of `template`.
 To list an array of scalar values or object, use the `as` keyword to bind them to a specific variable name.
 

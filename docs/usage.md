@@ -25,6 +25,14 @@ and it is used to display templates.
 
 For details on the available environment options, please see [this page](environment_options.md).
 
+Registering global variables
+--------
+
+Sometimes it is necessary to register certain variables to be accessible in every template. This
+can be done by using `addGlobalVariable`.
+
+    $env->addGlobalVariable('variableName', 'variableValue');
+
 Displaying templates
 --------
 
@@ -33,11 +41,3 @@ After setting up a suitable Environment for your project, you can use `render` t
     $env->render('index.tpl', ['some' => 'variables', 'passed' => 'to the template']);
 
 This will automatically load and display `index.tpl`.
-
-Registering global variables
---------
-
-Sometimes it is necessary to register certain variables to be accessible in every template. This
-can be done by using `addGlobalVariable`.
-
-    $env->addGlobalVariable('variableName', 'variableValue');

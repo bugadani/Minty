@@ -10,6 +10,7 @@
 namespace Minty\Compiler\Tags;
 
 use Minty\Compiler\Compiler;
+use Minty\Compiler\Exceptions\SyntaxException;
 use Minty\Compiler\Nodes\RootNode;
 use Minty\Compiler\Nodes\TagNode;
 use Minty\Compiler\Parser;
@@ -68,6 +69,7 @@ class IfTag extends Tag
         $node      = new TagNode($this);
         $condition = $parser->parseExpression($stream);
 
+        $hasElse = false;
         do {
             $branchNode = $node->addChild(new RootNode());
 
@@ -78,9 +80,17 @@ class IfTag extends Tag
             $body = $parser->parseBlock($stream, ['else', 'elseif', 'endif']);
             $branchNode->addChild($body, 'body');
 
-            $tagName = $stream->current()->getValue();
+            $token = $stream->current();
+            $tagName = $token->getValue();
             if ($tagName === 'else') {
+                if ($hasElse) {
+                    throw new SyntaxException(
+                        'If blocks may only contain one else tag',
+                        $token->getLine()
+                    );
+                }
                 $condition = null;
+                $hasElse = true;
                 $stream->expect(Token::TAG_END);
             } elseif ($tagName === 'elseif') {
                 $condition = $parser->parseExpression($stream);
