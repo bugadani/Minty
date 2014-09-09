@@ -36,7 +36,8 @@ class MethodNodeHelper
                     new IdentifierNode($templateName),
                     $contextNode ? : new TempVariableNode('context')
                 ]
-            ));
+            )
+        );
     }
 
     public function createRenderFunctionNode($templateName, $contextNode)

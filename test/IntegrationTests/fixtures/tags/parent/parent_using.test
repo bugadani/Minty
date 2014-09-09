@@ -1,0 +1,14 @@
+--TEST--
+Test that parent tag can pass a different context to the parent block
+--TEMPLATE--
+{ extends 'parent' }
+Child
+{ block foo }{ parent using [:foo => 'bar'] }{ /block }
+--TEMPLATE parent--
+Parent
+{ block foo }{ $foo }{ /block }
+--DATA--
+['foo' => 'foo']
+--EXPECT--
+Parent
+bar

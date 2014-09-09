@@ -47,7 +47,7 @@ class DisplayTag extends Tag
      * @param Parser $parser
      * @param Stream $stream
      *
-     * @return Node
+     * @return Node|null
      */
     private function getContext(Parser $parser, Stream $stream)
     {
@@ -55,10 +55,10 @@ class DisplayTag extends Tag
             $contextNode = new FunctionNode('createContext');
             $contextNode->addArgument($parser->parseExpression($stream));
             $contextNode->setObject(new TempVariableNode('environment'));
-        } else {
-            $contextNode = new TempVariableNode('context');
+
+            return $contextNode;
         }
 
-        return $contextNode;
+        return null;
     }
 }
