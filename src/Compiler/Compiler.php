@@ -56,9 +56,16 @@ class Compiler
 
     public function compileString($string)
     {
-        $string = strtr($string, ['"' => '\"', '$' => '\$']);
+        $string = strtr(
+            $string,
+            [
+                "'"  => "\'",
+                '\n' => "\n",
+                '\t' => "\t"
+            ]
+        );
 
-        return $this->add('"' . $string . '"');
+        return $this->add("'{$string}'");
     }
 
     public function compileArray(array $array, $writeKeys = true)
@@ -135,10 +142,9 @@ class Compiler
 
     public function outdent()
     {
-        if ($this->indentation === 0) {
+        if ($this->indentation-- === 0) {
             throw new BadMethodCallException('Cannot outdent more.');
         }
-        $this->indentation--;
 
         return $this;
     }
