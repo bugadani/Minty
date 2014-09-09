@@ -1,0 +1,6 @@
+--TEST--
+Empty raw blocks
+--TEMPLATE--
+foo{raw}{/raw}bar
+--EXPECT--
+foobar

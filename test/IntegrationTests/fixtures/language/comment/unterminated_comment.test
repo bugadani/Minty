@@ -1,0 +1,7 @@
+--TEST--
+Unterminated comment
+--TEMPLATE--
+foo{# this is
+--EXCEPTION--
+Minty\Compiler\Exceptions\SyntaxException
+Unterminated comment in line 1
