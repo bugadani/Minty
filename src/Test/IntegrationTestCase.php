@@ -198,6 +198,7 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
             $this->setExpectedException($exception, $exceptionMessage);
         }
 
+        $obLevel = ob_get_level();
         try {
             ob_start();
             $this->environment->render('index', $data);
@@ -210,7 +211,9 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
                 );
             }
         } catch (\Exception $e) {
-            ob_end_clean();
+            if (ob_get_level() !== $obLevel) {
+                ob_end_clean();
+            }
             throw $e;
         }
     }
