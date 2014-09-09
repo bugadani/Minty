@@ -12,7 +12,6 @@ namespace Minty\Compiler\NodeVisitors;
 use Minty\Compiler\Node;
 use Minty\Compiler\Nodes\ClassNode;
 use Minty\Compiler\Nodes\FunctionNode;
-use Minty\Compiler\Nodes\IdentifierNode;
 use Minty\Compiler\Nodes\OperatorNode;
 use Minty\Compiler\Nodes\TagNode;
 use Minty\Compiler\Nodes\VariableNode;
@@ -148,8 +147,11 @@ class SafeOutputVisitor extends NodeVisitor implements EnvironmentAwareInterface
         return true;
     }
 
-    private function isFunctionSafe(IdentifierNode $function)
+    private function isFunctionSafe(Node $function)
     {
+        if (!$this->environment->hasFunction($function->getData('name'))) {
+            return false;
+        }
         $safeFor = $this->environment
             ->getFunction($function->getData('name'))
             ->getOption('is_safe');

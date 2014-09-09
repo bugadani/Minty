@@ -1,0 +1,11 @@
+--TEST--
+Test that the extends tag throws an exception outside the main scope.
+--TEMPLATE--
+{ block foo }
+{ extends 'parent' }
+{ /block }
+--TEMPLATE parent--
+Parent
+--EXCEPTION--
+Minty\Compiler\Exceptions\ParseException
+Extends tags must be placed in the main scope. Unexpected extends tag

@@ -1,0 +1,7 @@
+--TEST--
+Test that the filter operator does not accept literals.
+--TEMPLATE--
+{ 'foo'|:string }
+--EXCEPTION--
+Minty\Compiler\Exceptions\ParseException
+Invalid filter node.
