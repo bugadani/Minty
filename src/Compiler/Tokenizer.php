@@ -140,9 +140,8 @@ class Tokenizer
             if ($this->lastOffset < $this->length) {
                 $this->pushTextToken($this->length - $this->lastOffset);
                 $this->lastOffset = $this->length;
-            } else {
-                $this->pushToken(Token::EOF);
             }
+            $this->pushToken(Token::EOF);
         } else {
             list($delimiter, $offset) = $this->positions[$this->cursor];
             if ($this->lastOffset < $offset) {

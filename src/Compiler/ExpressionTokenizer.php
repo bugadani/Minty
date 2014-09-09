@@ -14,12 +14,16 @@ use Minty\Environment;
 class ExpressionTokenizer
 {
     //Constants
-    private static $literals = [
-        'null'  => null,
-        'true'  => true,
-        'false' => false
+    private static $punctuation = [
+        ','  => ',',
+        '['  => '[',
+        ']'  => ']',
+        '('  => '(',
+        ')'  => ')',
+        ':'  => ':',
+        '?'  => '?',
+        '=>' => '=>'
     ];
-    private static $punctuation = [',', '[', ']', '(', ')', ':', '?', '=>'];
 
     //Environment options
     /**
@@ -34,14 +38,15 @@ class ExpressionTokenizer
 
     public function __construct(Environment $environment)
     {
-        if (self::$environment === $environment) {
-            return;
+        if (self::$environment !== $environment) {
+            self::$environment = $environment;
+            self::$operators   = array_combine(
+                $environment->getOperatorSymbols(),
+                $environment->getOperatorSymbols()
+            );
+
+            self::$expressionPartsPattern = $this->getExpressionPartsPattern();
         }
-
-        self::$environment = $environment;
-        self::$operators   = $environment->getOperatorSymbols();
-
-        self::$expressionPartsPattern = $this->getExpressionPartsPattern();
     }
 
     private function getExpressionPartsPattern()
@@ -57,7 +62,6 @@ class ExpressionTokenizer
         $iterator = new \AppendIterator();
         $iterator->append(new \ArrayIterator(self::$operators));
         $iterator->append(new \ArrayIterator(self::$punctuation));
-        $iterator->append(new \ArrayIterator(array_keys(self::$literals)));
 
         foreach ($iterator as $symbol) {
             $length = strlen($symbol);
@@ -101,16 +105,23 @@ class ExpressionTokenizer
                     preg_split(self::$expressionPartsPattern, $expression, 0, $flags)
                 ),
                 function ($value) {
-                    return $value !== ' ';
+                    //skip spaces
+                    if ($value === ' ') {
+                        return false;
+                    }
+
+                    //skip whitespaces but count newlines
+                    if (rtrim($value) === '') {
+                        $this->line += substr_count($value, "\n");
+
+                        return false;
+                    }
+
+                    return true;
                 }
             );
             foreach ($iterator as $part) {
-                if (trim($part) === '') {
-                    //Whitespace strings only matter for line numbering
-                    $this->line += substr_count($part, "\n");
-                } else {
-                    $this->tokenizeExpressionPart($part);
-                }
+                $this->tokenizeExpressionPart($part);
             }
         }
         $this->line = 0;
@@ -120,9 +131,9 @@ class ExpressionTokenizer
 
     private function tokenizeExpressionPart($part)
     {
-        if (in_array($part, self::$punctuation)) {
+        if (isset(self::$punctuation[$part])) {
             $this->pushToken(Token::PUNCTUATION, $part);
-        } elseif (in_array($part, self::$operators)) {
+        } elseif (isset(self::$operators[$part])) {
             $this->pushToken(Token::OPERATOR, $part);
         } elseif (is_numeric($part)) {
             $number = (float)$part;
@@ -150,11 +161,22 @@ class ExpressionTokenizer
                     break;
 
                 default:
-                    $lowerCasePart = strtolower($part);
-                    if (array_key_exists($lowerCasePart, self::$literals)) {
-                        $this->pushToken(Token::LITERAL, self::$literals[$lowerCasePart]);
-                    } else {
-                        $this->pushToken(Token::IDENTIFIER, $part);
+                    switch (strtolower($part)) {
+                        case 'null':
+                            $this->pushToken(Token::LITERAL, null);
+                            break;
+
+                        case 'true':
+                            $this->pushToken(Token::LITERAL, true);
+                            break;
+
+                        case 'false':
+                            $this->pushToken(Token::LITERAL, false);
+                            break;
+
+                        default:
+                            $this->pushToken(Token::IDENTIFIER, $part);
+                            break;
                     }
                     break;
             }
