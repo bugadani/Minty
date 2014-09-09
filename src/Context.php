@@ -20,14 +20,6 @@ class Context
         $this->strictMode = $environment->getOption('strict_mode');
     }
 
-    public function add($variables)
-    {
-        $this->variables = array_merge(
-            $this->variables,
-            $this->ensureArray($variables)
-        );
-    }
-
     public function __set($key, $value)
     {
         $this->variables[$key] = $value;
@@ -122,7 +114,7 @@ class Context
         } elseif ($variables instanceof \Traversable) {
             $variables = iterator_to_array($variables);
         } else {
-            throw new \InvalidArgumentException('Context::add() expects an array as parameter.');
+            throw new \InvalidArgumentException('Context::__construct() expects an array as parameter.');
         }
 
         return $variables;
