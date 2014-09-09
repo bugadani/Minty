@@ -83,7 +83,7 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
     private function getBlock($string, $block)
     {
         $matches = [];
-        if (!preg_match("/^--{$block}--\n(.*?)\n(?:--(?:[A-Z]+)--|\\Z)/ms", $string, $matches)) {
+        if (!preg_match("/^--{$block}--\n(.*?)(?:\n--(?:[A-Z]+)--|\\Z)/ms", $string, $matches)) {
             return false;
         }
 
@@ -136,7 +136,7 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
         if (!$templates) {
             throw new \RuntimeException("{$file} does not contain a TEMPLATE block");
         }
-        if (!$expect && !$exception) {
+        if ($expect === false && $exception === false) {
             throw new \RuntimeException("{$file} does not contain a EXPECT or EXCEPTION block");
         }
 

@@ -1,0 +1,12 @@
+--TEST--
+This test asserts that switch blocks throw an exception when content is outside case or else branches.
+--TEMPLATE--
+{ switch 2 }
+foo
+{ case 1 }not ok
+{ case 2 }ok
+{ else }not ok
+{ /switch }
+--EXCEPTION--
+Minty\Compiler\Exceptions\SyntaxException
+Switch expects a case or else tag.

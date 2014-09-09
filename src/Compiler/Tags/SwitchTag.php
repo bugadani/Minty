@@ -76,11 +76,18 @@ class SwitchTag extends Tag
             'tested' => $parser->parseExpression($stream)
         ]);
 
-        $stream->nextTokenIf(Token::TEXT);
-        $token = $stream->expect(Token::TAG_START, ['case', 'else']);
-
+        try {
+            $stream->nextTokenIf(Token::TEXT, 'ctype_space');
+            $token = $stream->expect(Token::TAG_START, ['case', 'else']);
+        } catch (SyntaxException $e) {
+            throw new SyntaxException(
+                'Switch expects a case or else tag.',
+                $stream->current()->getLine(), $e
+            );
+        }
         $hasDefault = false;
-        while (!$token->test(Token::TAG_START, 'endswitch')) {
+
+        do {
             $branch = $node->addChild(new RootNode());
 
             if ($token->test(Token::TAG_START, 'case')) {
@@ -94,14 +101,13 @@ class SwitchTag extends Tag
                 }
                 $stream->expect(Token::TAG_END);
                 $hasDefault = true;
-            } else {
-                throw new SyntaxException('Switch expects a case or else tag.');
             }
 
             $body = $parser->parseBlock($stream, ['else', 'case', 'endswitch']);
             $branch->addChild($body, 'body');
             $token = $stream->current();
-        }
+        } while (!$token->test(Token::TAG_START, 'endswitch'));
+
         $stream->expect(Token::TAG_END);
 
         return $node;

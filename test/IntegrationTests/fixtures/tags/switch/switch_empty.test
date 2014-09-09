@@ -1,0 +1,8 @@
+--TEST--
+This test covers switch blocks without any branches
+--TEMPLATE--
+{ switch 3 }
+{ /switch }
+--EXCEPTION--
+Minty\Compiler\Exceptions\SyntaxException
+Switch expects a case or else tag.
