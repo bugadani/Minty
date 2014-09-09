@@ -318,12 +318,13 @@ class Core extends Extension
 /* Helper functions */
 
 /**
- * @param $data
+ * @param        $data
+ * @param string $message
  *
- * @return array
  * @throws \InvalidArgumentException
+ * @return array
  */
-function traversableToArray($data)
+function traversableToArray($data, $message = 'Expected an array or traversable object.')
 {
     if ($data instanceof \Traversable) {
         return iterator_to_array($data);
@@ -336,10 +337,8 @@ function traversableToArray($data)
             return $data;
         }
     }
-    throw new \InvalidArgumentException('Expected an array or traversable object.');
+    throw new \InvalidArgumentException($message);
 }
-
-/* Template functions */
 
 /* Template functions */
 
@@ -428,11 +427,11 @@ function template_function_in($needle, $haystack)
     if (is_string($haystack)) {
         return strpos($haystack, $needle) !== false;
     }
-    if ($haystack instanceof \Traversable) {
-        $haystack = iterator_to_array($haystack);
-    } elseif (!is_array($haystack)) {
-        throw new \InvalidArgumentException('The in keyword expects an array, a string or a Traversable instance');
-    }
+
+    $haystack = traversableToArray(
+        $haystack,
+        'The in keyword expects an array, a string or a Traversable instance'
+    );
 
     return in_array($needle, $haystack);
 }
@@ -476,9 +475,10 @@ function template_function_match($string, $pattern)
 
 function template_function_pluck($array, $key)
 {
-    if (!is_array($array) && !$array instanceof \Traversable) {
-        throw new \InvalidArgumentException('Pluck expects a two-dimensional array as the first argument.');
-    }
+    $array  = traversableToArray(
+        $array,
+        'Pluck expects a two-dimensional array as the first argument.'
+    );
     $return = [];
 
     foreach ($array as $element) {
@@ -619,14 +619,11 @@ function template_function_truncate($string, $length, $ellipsis = '...')
 
 function template_function_urlEncode($data)
 {
-    if ($data instanceof \Traversable) {
-        $data = iterator_to_array($data);
-    }
-    if (is_array($data)) {
-        return http_build_query($data, '', '&');
+    if (is_string($data)) {
+        return rawurlencode($data);
     }
 
-    return rawurlencode($data);
+    return http_build_query(traversableToArray($data), '', '&');
 }
 
 /**
@@ -645,28 +642,17 @@ function template_function_widont($string)
 
 function template_function_without($data, $without)
 {
-    if (is_string($data)) {
-        if (!is_string($without) && !is_array($without)) {
-            if (!$without instanceof \Traversable) {
-                throw new \InvalidArgumentException('Without expects string or array arguments.');
-            }
-            $without = iterator_to_array($without);
-        }
+    if (is_scalar($without)) {
+        $without = [$without];
+    } else {
+        $without = traversableToArray($without, 'Without expects string or array arguments.');
+    }
 
+    if (is_string($data)) {
         return str_replace($without, '', $data);
     }
-    if ($data instanceof \Traversable) {
-        $data = iterator_to_array($data);
-    } elseif (!is_array($data)) {
-        throw new \InvalidArgumentException('Without expects string or array arguments.');
-    }
-    if (!is_array($without)) {
-        if ($without instanceof \Traversable) {
-            $without = iterator_to_array($without);
-        } else {
-            $without = [$without];
-        }
-    }
+
+    $data = traversableToArray($data, 'Without expects string or array arguments.');
 
     return array_diff($data, $without);
 }
