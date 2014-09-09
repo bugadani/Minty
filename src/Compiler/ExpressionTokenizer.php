@@ -53,10 +53,11 @@ class ExpressionTokenizer
     {
         $signs    = ' ';
         $patterns = [
-            '(?:\$[a-zA-Z_]+|:)[a-zA-Z_\-0-9]+' => 33, //variable ($) or short-string (:)
-            '"(?:\\\\.|[^"\\\\])*"'             => 21, //double quoted string
-            "'(?:\\\\.|[^'\\\\])*'"             => 21, //single quoted string
-            '(?<!\w)\d+(?:\.\d+)?'              => 20 //number
+            '\$[a-zA-Z_]+[a-zA-Z_0-9]+' => 25, //$variable
+            ':[a-zA-Z_\-0-9]+'          => 16, //:short-string
+            '"(?:\\\\.|[^"\\\\])*"'     => 21, //double quoted string
+            "'(?:\\\\.|[^'\\\\])*'"     => 21, //single quoted string
+            '(?<!\w)\d+(?:\.\d+)?'      => 20  //number
         ];
 
         $iterator = new \AppendIterator();
