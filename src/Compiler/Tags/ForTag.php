@@ -84,19 +84,16 @@ class ForTag extends Tag
                 ->add(') {')
                 ->indent();
         } else {
+            $arguments = [];
+            for ($i = 0; $i < $variables; ++$i) {
+                $arguments[] = $node->getChild('loop_variable_' . $i);
+            }
             $compiler
                 ->add('$loopVariable) {')
                 ->indent()
-                ->indented('list(');
-
-            for ($i = 0; $i < $variables; ++$i) {
-                if ($i > 0) {
-                    $compiler->add(', ');
-                }
-                $compiler->compileNode($node->getChild('loop_variable_' . $i));
-            }
-
-            $compiler->add(') = $loopVariable;');
+                ->indented('list')
+                ->compileArgumentList($arguments)
+                ->add(' = $loopVariable;');
         }
         $compiler
             ->compileNode($node->getChild('loop_body'))
@@ -128,17 +125,19 @@ class ForTag extends Tag
             'create_stack'  => true
         ]);
 
-        $i       = 0;
-        $loopVar = $stream->expect(Token::VARIABLE)->getValue();
+        $loopVar = $this->parseVariableNode($stream);
         if ($stream->nextTokenIf(Token::PUNCTUATION, [':', '=>'])) {
-            $node->addChild(new VariableNode($loopVar), 'loop_key');
-            $loopVar = $stream->expect(Token::VARIABLE)->getValue();
+            $node->addChild($loopVar, 'loop_key');
+            $loopVar = $this->parseVariableNode($stream);
         }
-        $node->addChild(new VariableNode($loopVar), 'loop_variable_' . $i++);
+        $node->addChild($loopVar, 'loop_variable_0');
 
+        $i = 1;
         while ($stream->nextTokenIf(Token::PUNCTUATION, ',')) {
-            $loopVar = $stream->expect(Token::VARIABLE)->getValue();
-            $node->addChild(new VariableNode($loopVar), 'loop_variable_' . $i++);
+            $node->addChild(
+                $this->parseVariableNode($stream),
+                'loop_variable_' . $i++
+            );
         }
         $node->addData('variables', $i);
 
@@ -153,5 +152,19 @@ class ForTag extends Tag
         }
 
         return $node;
+    }
+
+    /**
+     * @param Stream $stream
+     *
+     * @return VariableNode
+     */
+    private function parseVariableNode(Stream $stream)
+    {
+        return new VariableNode(
+            $stream
+                ->expect(Token::VARIABLE)
+                ->getValue()
+        );
     }
 }

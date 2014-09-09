@@ -37,11 +37,9 @@ class UnsetTag extends Tag
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        foreach ($node->getChildren() as $child) {
-            $compiler
-                ->indented('unset(')
-                ->compileNode($child)
-                ->add(');');
-        }
+        $compiler
+            ->indented('unset')
+            ->compileArgumentList($node->getChildren())
+            ->add(';');
     }
 }

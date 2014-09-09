@@ -28,12 +28,11 @@ class PrintTag extends Tag
     {
         $expression = $parser->parseExpression($stream);
         if ($stream->current()->test(Token::PUNCTUATION, ':')) {
-            $node = new TagNode(
-                $parser->getEnvironment()->getTag('set')
-            );
+            $node = new TagNode($parser->getEnvironment()->getTag('set'), [
+                    'variables' => 1
+                ]);
             $node->addChild($parser->parseExpression($stream), 'value_0');
             $node->addChild($expression, 'expression_0');
-            $node->addData('variables', 1);
         } else {
             $node = new TagNode($this);
             $node->addChild($expression, 'expression');
