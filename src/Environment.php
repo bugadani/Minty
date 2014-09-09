@@ -461,8 +461,10 @@ class Environment
         $cacheNamespace = $this->options['cache_namespace'];
         $cacheKey       = preg_replace('#[^\w/]+#', '_', $cacheKey);
 
-        $className = $cacheNamespace . '\\' . strtr($cacheKey, '/', '\\');
-
+        $className = strtr($cacheKey, '/', '\\');
+        if (!empty($cacheNamespace)) {
+            $className = $cacheNamespace . '\\' . $className;
+        }
         $this->classMap[$className] = $template;
 
         return $className;
