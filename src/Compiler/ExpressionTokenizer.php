@@ -57,11 +57,18 @@ class ExpressionTokenizer
             ':[a-zA-Z_\-0-9]+'          => 16, //:short-string
             '"(?:\\\\.|[^"\\\\])*"'     => 21, //double quoted string
             "'(?:\\\\.|[^'\\\\])*'"     => 21, //single quoted string
-            '(?<!\w)\d+(?:\.\d+)?'      => 20  //number
+            '(?<!\w)\d+(?:\.\d+)?'      => 20 //number
         ];
 
         $iterator = new \AppendIterator();
-        $iterator->append(new \ArrayIterator(self::$operators));
+        $iterator->append(
+            new \CallbackFilterIterator(
+                new \ArrayIterator(self::$operators),
+                function ($operator) {
+                    return !ctype_alpha($operator);
+                }
+            )
+        );
         $iterator->append(new \ArrayIterator(self::$punctuation));
 
         foreach ($iterator as $symbol) {
@@ -69,7 +76,7 @@ class ExpressionTokenizer
             if ($length === 1) {
                 $signs .= $symbol;
             } else {
-                if (preg_match('/^[a-zA-Z\ ]+$/', $symbol)) {
+                if (strpos($symbol, ' ') !== false) {
                     $symbol = "(?<=^|\\W){$symbol}(?=[\\s()\\[\\]]|$)";
                 } else {
                     $symbol = preg_quote($symbol, '/');
