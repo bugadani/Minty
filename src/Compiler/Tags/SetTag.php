@@ -30,12 +30,9 @@ class SetTag extends Tag
         $variables = 0;
 
         do {
-            $variable = $parser->parseExpression($stream);
+            $node->addChild($parser->parseExpression($stream), 'expression_' . $variables);
             $stream->expectCurrent(Token::PUNCTUATION, ':');
-            $value = $parser->parseExpression($stream);
-
-            $node->addChild($variable, 'expression_' . $variables);
-            $node->addChild($value, 'value_' . $variables);
+            $node->addChild($parser->parseExpression($stream), 'value_' . $variables);
 
             $variables++;
         } while ($stream->current()->test(Token::PUNCTUATION, ','));
