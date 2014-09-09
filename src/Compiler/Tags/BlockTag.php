@@ -10,6 +10,7 @@
 namespace Minty\Compiler\Tags;
 
 use Minty\Compiler\Exceptions\ParseException;
+use Minty\Compiler\Nodes\TempVariableNode;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
 use Minty\Compiler\Tag;
@@ -60,6 +61,6 @@ class BlockTag extends Tag
         $stream->expect(Token::TAG_END);
         $parser->leaveBlock();
 
-        return $this->helper->createRenderBlockNode($templateName);
+        return $this->helper->createRenderBlockNode($templateName, new TempVariableNode('context'));
     }
 }

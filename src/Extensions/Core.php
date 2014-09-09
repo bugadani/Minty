@@ -189,7 +189,7 @@ class Core extends Extension
             new DisplayTag($methodHelper),
             new ElseIfTag(),
             new ElseTag(),
-            new EmbedTag(),
+            new EmbedTag($methodHelper),
             new ExtendsTag(),
             new ForTag(),
             new IfTag(),

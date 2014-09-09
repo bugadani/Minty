@@ -9,9 +9,6 @@
 
 namespace Minty\Compiler\Tags;
 
-use Minty\Compiler\Node;
-use Minty\Compiler\Nodes\FunctionNode;
-use Minty\Compiler\Nodes\TempVariableNode;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
 use Minty\Compiler\Tag;
@@ -39,26 +36,11 @@ class DisplayTag extends Tag
     {
         return $this->helper->createRenderBlockNode(
             $stream->expect(Token::IDENTIFIER)->getValue(),
-            $this->getContext($parser, $stream)
+            $this->helper->createContext(
+                $stream->next()->test(Token::IDENTIFIER, 'using'),
+                $stream,
+                $parser
+            )
         );
-    }
-
-    /**
-     * @param Parser $parser
-     * @param Stream $stream
-     *
-     * @return Node|null
-     */
-    private function getContext(Parser $parser, Stream $stream)
-    {
-        if ($stream->next()->test(Token::IDENTIFIER, 'using')) {
-            $contextNode = new FunctionNode('createContext');
-            $contextNode->addArgument($parser->parseExpression($stream));
-            $contextNode->setObject(new TempVariableNode('environment'));
-
-            return $contextNode;
-        }
-
-        return null;
     }
 }

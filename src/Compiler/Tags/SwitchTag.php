@@ -11,7 +11,6 @@ namespace Minty\Compiler\Tags;
 
 use Minty\Compiler\Compiler;
 use Minty\Compiler\Exceptions\SyntaxException;
-use Minty\Compiler\Node;
 use Minty\Compiler\Nodes\RootNode;
 use Minty\Compiler\Nodes\TagNode;
 use Minty\Compiler\Parser;
@@ -32,22 +31,6 @@ class SwitchTag extends Tag
         return 'switch';
     }
 
-    /**
-     * @param Compiler $compiler
-     * @param Node     $branch
-     */
-    private function compileCaseLabel(Compiler $compiler, Node $branch)
-    {
-        if (!$branch->hasChild('condition')) {
-            $compiler->indented('default:');
-        } else {
-            $compiler
-                ->indented('case ')
-                ->compileNode($branch->getChild('condition'))
-                ->add(':');
-        }
-    }
-
     public function compile(Compiler $compiler, TagNode $node)
     {
         $compiler
@@ -58,7 +41,14 @@ class SwitchTag extends Tag
             ->indent();
 
         foreach ($node->getChildren() as $branch) {
-            $this->compileCaseLabel($compiler, $branch);
+            if (!$branch->hasChild('condition')) {
+                $compiler->indented('default:');
+            } else {
+                $compiler
+                    ->indented('case ')
+                    ->compileNode($branch->getChild('condition'))
+                    ->add(':');
+            }
             $compiler
                 ->indent()
                 ->compileNode($branch->getChild('body'))

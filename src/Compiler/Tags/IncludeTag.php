@@ -9,8 +9,6 @@
 
 namespace Minty\Compiler\Tags;
 
-use Minty\Compiler\Node;
-use Minty\Compiler\Nodes\TempVariableNode;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
 use Minty\Compiler\Tag;
@@ -38,22 +36,11 @@ class IncludeTag extends Tag
     {
         return $this->helper->createRenderFunctionNode(
             $parser->parseExpression($stream),
-            $this->getContext($parser, $stream)
+            $this->helper->createContext(
+                $stream->current()->test(Token::IDENTIFIER, 'using'),
+                $stream,
+                $parser
+            )
         );
-    }
-
-    /**
-     * @param Parser $parser
-     * @param Stream $stream
-     *
-     * @return Node
-     */
-    private function getContext(Parser $parser, Stream $stream)
-    {
-        if ($stream->current()->test(Token::IDENTIFIER, 'using')) {
-            return $parser->parseExpression($stream);
-        }
-
-        return new TempVariableNode('context');
     }
 }

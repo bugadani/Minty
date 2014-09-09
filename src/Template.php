@@ -151,7 +151,6 @@ abstract class Template
      * @param Context  $context
      *
      * @throws \RuntimeException
-     * @return bool
      */
     private function renderParentBlock(Template $parent, $blockName, Context $context)
     {
@@ -160,7 +159,7 @@ abstract class Template
             if (isset($parent->blocks[$blockName])) {
                 call_user_func($parent->blocks[$blockName], $context);
 
-                return true;
+                return;
             }
         }
 

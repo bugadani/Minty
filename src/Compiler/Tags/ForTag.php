@@ -136,13 +136,13 @@ class ForTag extends Tag
         }
         $node->addChild(new VariableNode($loopVar), 'loop_variable_' . $i++);
 
-        while ($stream->next()->test(Token::PUNCTUATION, ',')) {
+        while ($stream->nextTokenIf(Token::PUNCTUATION, ',')) {
             $loopVar = $stream->expect(Token::VARIABLE)->getValue();
             $node->addChild(new VariableNode($loopVar), 'loop_variable_' . $i++);
         }
         $node->addData('variables', $i);
 
-        $stream->expectCurrent(Token::OPERATOR, 'in');
+        $stream->expect(Token::OPERATOR, 'in');
 
         $node->addChild($parser->parseExpression($stream), 'source');
         $node->addChild($parser->parseBlock($stream, ['else', 'endfor']), 'loop_body');

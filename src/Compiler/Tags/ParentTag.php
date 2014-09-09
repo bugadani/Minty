@@ -9,10 +9,7 @@
 
 namespace Minty\Compiler\Tags;
 
-use Minty\Compiler\Node;
 use Minty\Compiler\Nodes\DataNode;
-use Minty\Compiler\Nodes\FunctionNode;
-use Minty\Compiler\Nodes\TempVariableNode;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
 use Minty\Compiler\Tag;
@@ -40,29 +37,14 @@ class ParentTag extends Tag
     {
         $node = $this->helper->createRenderBlockNode(
             $parser->getCurrentBlock(),
-            $this->getContext($parser, $stream)
+            $this->helper->createContext(
+                $stream->next()->test(Token::IDENTIFIER, 'using'),
+                $stream,
+                $parser
+            )
         );
         $node->getChild('expression')->addArgument(new DataNode(true));
 
         return $node;
-    }
-
-    /**
-     * @param Parser $parser
-     * @param Stream $stream
-     *
-     * @return Node|null
-     */
-    private function getContext(Parser $parser, Stream $stream)
-    {
-        if ($stream->next()->test(Token::IDENTIFIER, 'using')) {
-            $contextNode = new FunctionNode('createContext');
-            $contextNode->addArgument($parser->parseExpression($stream));
-            $contextNode->setObject(new TempVariableNode('environment'));
-
-            return $contextNode;
-        }
-
-        return null;
     }
 }

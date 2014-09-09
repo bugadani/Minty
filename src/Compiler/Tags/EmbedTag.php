@@ -10,18 +10,26 @@
 namespace Minty\Compiler\Tags;
 
 use Minty\Compiler\Compiler;
-use Minty\Compiler\Node;
 use Minty\Compiler\Nodes\ClassNode;
-use Minty\Compiler\Nodes\FunctionNode;
 use Minty\Compiler\Nodes\TagNode;
 use Minty\Compiler\Nodes\TempVariableNode;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
 use Minty\Compiler\Tag;
+use Minty\Compiler\Tags\Helpers\MethodNodeHelper;
 use Minty\Compiler\Token;
 
 class EmbedTag extends Tag
 {
+    /**
+     * @var MethodNodeHelper
+     */
+    private $helper;
+
+    public function __construct(MethodNodeHelper $helper)
+    {
+        $this->helper = $helper;
+    }
 
     public function hasEndingTag()
     {
@@ -51,8 +59,13 @@ class EmbedTag extends Tag
 
         $parentTemplate = $parser->parseExpression($stream);
 
-        $contextNode = $this->getContext($parser, $stream, $environmentNode);
-        $node        = new TagNode($this, [
+        $contextNode = $this->helper->createContext(
+            $stream->current()->test(Token::IDENTIFIER, 'using'),
+            $stream,
+            $parser
+        );
+
+        $node = new TagNode($this, [
             'template' => $this->parseClass($parser, $stream, $parentTemplate)
         ]);
 
@@ -89,25 +102,5 @@ class EmbedTag extends Tag
         $parser->setCurrentClassNode($oldClassNode);
 
         return $classNode->getClassName();
-    }
-
-    /**
-     * @param Parser $parser
-     * @param Stream $stream
-     * @param        $environmentNode
-     *
-     * @return Node
-     */
-    private function getContext(Parser $parser, Stream $stream, $environmentNode)
-    {
-        if ($stream->current()->test(Token::IDENTIFIER, 'using')) {
-            $contextNode = new FunctionNode('createContext');
-            $contextNode->addArgument($parser->parseExpression($stream));
-            $contextNode->setObject($environmentNode);
-        } else {
-            $contextNode = new TempVariableNode('context');
-        }
-
-        return $contextNode;
     }
 }

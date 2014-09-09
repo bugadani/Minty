@@ -171,7 +171,7 @@ class Environment
     private function createTemplateCache($cache)
     {
         if ($cache) {
-            if($cache instanceof TemplateCacheInterface) {
+            if ($cache instanceof TemplateCacheInterface) {
                 $this->templateCache = $cache;
             }
             $this->templateCache = new FileSystemCache($this->options['cache']);
@@ -501,13 +501,9 @@ class Environment
     {
         $template = $this->findFirstExistingTemplate($template);
         if (!isset($this->loadedTemplates[$template])) {
-            try {
-                $class = $this->getTemplateClassName($template);
+            $class = $this->getTemplateClassName($template);
 
-                $this->loadedTemplates[$template] = new $class($this);
-            } catch (\Exception $e) {
-                throw $e;
-            }
+            $this->loadedTemplates[$template] = new $class($this);
         }
 
         return $this->loadedTemplates[$template];
