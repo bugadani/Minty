@@ -23,32 +23,34 @@ class ErrorTemplateLoader extends StringLoader
         $this->addTemplate(
             '__compile_error_template',
             $this->getCompileErrorTemplate(
+                $environment->getOption('delimiters'),
                 $environment->getOption('block_end_prefix')
             )
         );
     }
 
-    private function getCompileErrorTemplate($closingTagPrefix)
+    private function getCompileErrorTemplate(array $delimiters, $closingTagPrefix)
     {
-        $source = "{block error}
-{ \$firstLine: max(\$exception.getSourceLine() - 2, 1) }
-{ \$highlightedLine: \$exception.getSourceLine() - \$firstLine }
-<h1>Failed to compile { \$templateName }</h1>
+        list($tagOpen, $tagClose) = $delimiters['tag'];
+        $source = "{$tagOpen}block error{$tagClose}
+{$tagOpen} \$firstLine: max(\$exception.getSourceLine() - 2, 1) {$tagClose}
+{$tagOpen} \$highlightedLine: \$exception.getSourceLine() - \$firstLine {$tagClose}
+<h1>Failed to compile {$tagOpen} \$templateName {$tagClose}</h1>
 <h2>Error message:</h2>
-<p>{ \$exception.getMessage() }</p>
+<p>{$tagOpen} \$exception.getMessage() {$tagClose}</p>
 <h2>Template source:</h2>
 <pre><code><ol start=\"{ \$firstLine }\">
-{ for \$lineNo: \$line in \$templateName|source|split('\\n')|slice(\$firstLine - 1, 7) }
+{$tagOpen} for \$lineNo: \$line in \$templateName|source|split('\\n')|slice(\$firstLine - 1, 7) {$tagClose}
     <li>
-    { if \$lineNo = \$highlightedLine }
-        <b>{\$line}</b>
-    { else }
-        { \$line }
-    { {$closingTagPrefix}if }
+    {$tagOpen} if \$lineNo = \$highlightedLine {$tagClose}
+        <b>{$tagOpen}\$line{$tagClose}</b>
+    {$tagOpen} else }
+        {$tagOpen} \$line {$tagClose}
+    {$tagOpen} {$closingTagPrefix}if {$tagClose}
     </li>
-{ {$closingTagPrefix}for }
+{$tagOpen} {$closingTagPrefix}for {$tagClose}
 </ol></code></pre>
-{ {$closingTagPrefix}block }";
+{$tagOpen} {$closingTagPrefix}block {$tagClose}";
 
         return strtr($source, ["\r\n" => '', "\r" => '', "\n" => '']);
     }
