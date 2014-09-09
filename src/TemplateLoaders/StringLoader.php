@@ -43,11 +43,9 @@ class StringLoader implements TemplateLoaderInterface, EnvironmentAwareInterface
      */
     public function isCacheFresh($template)
     {
-        $cachePath = $this->environment->getCachePath(
-            $this->getCacheKey($template)
-        );
-
-        return is_file($cachePath);
+        return $this->environment
+            ->getTemplateCache()
+            ->exists($this->getCacheKey($template));
     }
 
     /**

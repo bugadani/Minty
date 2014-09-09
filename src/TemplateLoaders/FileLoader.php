@@ -46,15 +46,11 @@ class FileLoader implements TemplateLoaderInterface, EnvironmentAwareInterface
      */
     public function isCacheFresh($template)
     {
-        $cachePath = $this->environment->getCachePath(
-            $this->getCacheKey($template)
-        );
+        $cacheTime = $this->environment
+            ->getTemplateCache()
+            ->getCreatedTime($this->getCacheKey($template));
 
-        if (!is_file($cachePath)) {
-            return false;
-        }
-
-        return filemtime($this->getPath($template)) < filemtime($cachePath);
+        return filemtime($this->getPath($template)) < $cacheTime;
     }
 
     /**

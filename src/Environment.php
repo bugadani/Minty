@@ -20,6 +20,7 @@ use Minty\Compiler\NodeVisitor;
 use Minty\Compiler\OperatorCollection;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Tag;
+use Minty\Compiler\TemplateCacheInterface;
 use Minty\Compiler\TemplateFunction;
 use Minty\Compiler\Tokenizer;
 use Minty\TemplateLoaders\ChainLoader;
@@ -27,6 +28,11 @@ use Minty\TemplateLoaders\ErrorTemplateLoader;
 
 class Environment
 {
+    /**
+     * @var TemplateCacheInterface
+     */
+    private $templateCache;
+
     /**
      * @var ExpressionTokenizer
      */
@@ -142,8 +148,8 @@ class Environment
             'strict_mode'                 => true,
             'template_base_class'         => 'Minty\\Template'
         ];
-        $this->options   = $options + $default_options;
 
+        $this->options = $options + $default_options;
         $this->options['delimiters'] += $default_options['delimiters'];
 
         if ($loader instanceof EnvironmentAwareInterface) {
@@ -151,6 +157,7 @@ class Environment
         }
         $this->loader          = $loader;
         $this->chainLoaderUsed = $loader instanceof ChainLoader;
+        $this->createTemplateCache($this->options['cache']);
 
         if ($this->options['error_template'] !== '__compile_error_template') {
             //don't load the built-in error template loader
@@ -161,9 +168,32 @@ class Environment
         spl_autoload_register([$this, 'autoloadTemplate'], true, true);
     }
 
+    private function createTemplateCache($cache)
+    {
+        if ($cache) {
+            if($cache instanceof TemplateCacheInterface) {
+                $this->templateCache = $cache;
+            }
+            $this->templateCache = new FileSystemCache($this->options['cache']);
+        }
+    }
+
     public function __destruct()
     {
         spl_autoload_unregister([$this, 'autoloadTemplate']);
+    }
+
+    /**
+     * @throws \BadMethodCallException
+     * @return TemplateCacheInterface
+     */
+    public function getTemplateCache()
+    {
+        if (!isset($this->templateCache)) {
+            throw new \BadMethodCallException('Cache is disabled');
+        }
+
+        return $this->templateCache;
     }
 
     public function addTemplateLoader(TemplateLoaderInterface $loader)
@@ -178,11 +208,6 @@ class Environment
             $this->chainLoaderUsed = true;
         }
         $this->loader->addLoader($loader);
-    }
-
-    public function getCachePath($cacheKey)
-    {
-        return $this->options['cache'] . '/' . $cacheKey . '.php';
     }
 
     public function addGlobalVariable($name, $value)
@@ -423,38 +448,16 @@ class Environment
 
         $template = $this->classMap[$className];
 
-        $cacheEnabled = $this->options['cache'];
-
-        if ($cacheEnabled) {
+        if ($this->options['cache']) {
+            $cacheKey = $this->loader->getCacheKey($template);
             if (!$this->loader->isCacheFresh($template)) {
                 $compiled = $this->compileTemplate($template);
-                $this->saveCompiledTemplate($compiled, $template);
+                $this->templateCache->save($compiled, $cacheKey);
             }
-            includeFile(
-                $this->getCachePath(
-                    $this->loader->getCacheKey($template)
-                )
-            );
+            $this->templateCache->load($cacheKey);
         } else {
             evalCode($this->compileTemplate($template));
         }
-    }
-
-    /**
-     * @param $compiled
-     * @param $templateName
-     */
-    private function saveCompiledTemplate($compiled, $templateName)
-    {
-        $destination = $this->getCachePath(
-            $this->loader->getCacheKey($templateName)
-        );
-
-        $cacheDir = dirname($destination);
-        if (!is_dir($cacheDir)) {
-            mkdir($cacheDir, 0777, true);
-        }
-        file_put_contents($destination, $compiled);
     }
 
     public function findFirstExistingTemplate($templates)
@@ -549,11 +552,6 @@ class Environment
             );
         }
     }
-}
-
-function includeFile($file)
-{
-    include $file;
 }
 
 function evalCode($code)
