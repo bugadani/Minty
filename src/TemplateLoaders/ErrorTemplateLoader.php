@@ -44,7 +44,7 @@ class ErrorTemplateLoader extends StringLoader
     <li>
     {$tagOpen} if \$lineNo = \$highlightedLine {$tagClose}
         <b>{$tagOpen}\$line{$tagClose}</b>
-    {$tagOpen} else }
+    {$tagOpen} else {$tagClose}
         {$tagOpen} \$line {$tagClose}
     {$tagOpen} {$closingTagPrefix}if {$tagClose}
     </li>

@@ -30,8 +30,13 @@ class ClassNode extends Node
         $className = $env->getTemplateClassName($templateName);
 
         $classNameOffset = strrpos($className, '\\');
-        $this->namespace = substr($className, 0, $classNameOffset);
-        $this->className = substr($className, $classNameOffset + 1);
+        if ($classNameOffset === false) {
+            $this->namespace = '';
+            $this->className = $className;
+        } else {
+            $this->namespace = substr($className, 0, $classNameOffset);
+            $this->className = substr($className, $classNameOffset + 1);
+        }
     }
 
     public function setParentTemplate(Node $parentClass)

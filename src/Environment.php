@@ -13,6 +13,7 @@ use Minty\Compiler\Compiler;
 use Minty\Compiler\Exceptions\TemplateNotFoundException;
 use Minty\Compiler\Exceptions\TemplatingException;
 use Minty\Compiler\ExpressionParser;
+use Minty\Compiler\ExpressionTokenizer;
 use Minty\Compiler\FunctionCompiler;
 use Minty\Compiler\NodeTreeTraverser;
 use Minty\Compiler\NodeVisitor;
@@ -26,6 +27,11 @@ use Minty\TemplateLoaders\ErrorTemplateLoader;
 
 class Environment
 {
+    /**
+     * @var ExpressionTokenizer
+     */
+    private $expressionTokenizer;
+
     /**
      * @var Tokenizer
      */
@@ -136,7 +142,9 @@ class Environment
             'strict_mode'                 => true,
             'template_base_class'         => 'Minty\\Template'
         ];
-        $this->options   = array_merge($default_options, $options);
+        $this->options   = $options + $default_options;
+
+        $this->options['delimiters'] += $default_options['delimiters'];
 
         if ($loader instanceof EnvironmentAwareInterface) {
             $loader->setEnvironment($this);
@@ -150,8 +158,12 @@ class Environment
         } else {
             $this->errorTemplateLoaderLoaded = false;
         }
+        spl_autoload_register([$this, 'autoloadTemplate'], true, true);
+    }
 
-        spl_autoload_register([$this, 'autoloadTemplate']);
+    public function __destruct()
+    {
+        spl_autoload_unregister([$this, 'autoloadTemplate']);
     }
 
     public function addTemplateLoader(TemplateLoaderInterface $loader)
@@ -366,10 +378,16 @@ class Environment
             array_map([$this, 'addTag'], $ext->getTags());
         }
 
-        $this->tokenizer         = new Tokenizer($this);
-        $this->parser            = new Parser($this, new ExpressionParser($this));
-        $this->nodeTreeTraverser = new NodeTreeTraverser($this->nodeVisitors);
-        $this->compiler          = new Compiler($this);
+        $this->expressionTokenizer = new ExpressionTokenizer($this);
+        $this->tokenizer           = new Tokenizer($this);
+        $this->parser              = new Parser($this, new ExpressionParser($this));
+        $this->nodeTreeTraverser   = new NodeTreeTraverser($this->nodeVisitors);
+        $this->compiler            = new Compiler($this);
+    }
+
+    public function getExpressionTokenizer()
+    {
+        return $this->expressionTokenizer;
     }
 
     /**
@@ -473,15 +491,20 @@ class Environment
     /**
      * @param $template
      *
+     * @throws \Exception
      * @return Template
      */
     public function load($template)
     {
         $template = $this->findFirstExistingTemplate($template);
         if (!isset($this->loadedTemplates[$template])) {
-            $class = $this->getTemplateClassName($template);
+            try {
+                $class = $this->getTemplateClassName($template);
 
-            $this->loadedTemplates[$template] = new $class($this);
+                $this->loadedTemplates[$template] = new $class($this);
+            } catch (\Exception $e) {
+                throw $e;
+            }
         }
 
         return $this->loadedTemplates[$template];
