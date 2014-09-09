@@ -451,8 +451,10 @@ class Environment
         if ($this->options['cache']) {
             $cacheKey = $this->loader->getCacheKey($template);
             if (!$this->loader->isCacheFresh($template)) {
-                $compiled = $this->compileTemplate($template);
-                $this->templateCache->save($compiled, $cacheKey);
+                $this->templateCache->save(
+                    $cacheKey,
+                    $this->compileTemplate($template)
+                );
             }
             $this->templateCache->load($cacheKey);
         } else {
