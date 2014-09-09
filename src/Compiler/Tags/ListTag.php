@@ -9,7 +9,9 @@
 
 namespace Minty\Compiler\Tags;
 
-use Minty\Compiler\Compiler;
+use Minty\Compiler\Nodes\ArrayNode;
+use Minty\Compiler\Nodes\DataNode;
+use Minty\Compiler\Nodes\RootNode;
 use Minty\Compiler\Nodes\TagNode;
 use Minty\Compiler\Nodes\TempVariableNode;
 use Minty\Compiler\Parser;
@@ -37,46 +39,46 @@ class ListTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $source = $parser->parseExpression($stream);
-        $node   = new TagNode($this);
+        $environment = $parser->getEnvironment();
+
+        $node = new TagNode($environment->getTag('for'), [
+            'save_temp_var' => true,
+            'create_stack'  => true,
+            'variables'     => 1
+        ]);
+
+        $node->addChild($parser->parseExpression($stream), 'source');
+
+        $temp     = $node->addChild(new TempVariableNode('element'), 'loop_variable_0');
+        $loopBody = $node->addChild(new RootNode(), 'loop_body');
 
         if ($stream->current()->test(Token::IDENTIFIER, 'as')) {
-            $node->addData(
-                'key',
-                $stream->expect(Token::VARIABLE)->getValue()
+
+            $arrayNode = new ArrayNode();
+            $arrayNode->add(
+                $temp,
+                new DataNode($stream->expect(Token::VARIABLE)->getValue())
             );
+
+            $setNode = $loopBody->addChild(
+                new TagNode($environment->getTag('set'), [
+                    'variables' => 1
+                ])
+            );
+            $setNode->addChild($temp, 'expression_0');
+            $setNode->addChild($arrayNode, 'value_0');
 
             $stream->next();
         }
         $stream->expectCurrent(Token::IDENTIFIER, 'using');
 
-        $node->addChild(
+        $loopBody->addChild(
             $this->helper->createRenderFunctionNode(
                 $parser->parseExpression($stream),
-                new TempVariableNode('element')
-            ),
-            'expression'
+                $temp
+            )
         );
-        $node->addChild($source, 'source');
 
         return $node;
-    }
-
-    public function compile(Compiler $compiler, TagNode $node)
-    {
-        $compiler
-            ->indented('foreach (')
-            ->compileNode($node->getChild('source'))
-            ->add(' as $element) {')
-            ->indent();
-
-        if ($node->hasData('key')) {
-            $compiler->indented('$element = ["%s" => $element];', $node->getData('key'));
-        }
-
-        $compiler
-            ->compileNode($node->getChild('expression'))
-            ->outdent()
-            ->indented('}');
     }
 }
