@@ -137,9 +137,11 @@ class Environment
             'cache_namespace'             => '',
             'debug'                       => false,
             'default_autofilter_strategy' => 'html',
+            'tag_consumes_newline'        => false,
             'delimiters'                  => [
-                'tag'     => ['{', '}'],
-                'comment' => ['{#', '#}']
+                'tag'                    => ['{', '}'],
+                'comment'                => ['{#', '#}'],
+                'whitespace_control_tag' => ['{-', '-}']
             ],
             'error_template'              => '__compile_error_template',
             'fallback_tag'                => 'print',
@@ -505,7 +507,7 @@ class Environment
             $class = $this->getTemplateClassName($template);
 
             $this->loadedTemplates[$template] = new $class($this);
-            if(!$this->loadedTemplates[$template] instanceof Template) {
+            if (!$this->loadedTemplates[$template] instanceof Template) {
                 throw new TemplatingException("The compiled class for {$template} is invalid");
             }
         }

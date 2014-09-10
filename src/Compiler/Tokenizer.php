@@ -26,7 +26,7 @@ class Tokenizer
     private static $expressionTokenizer;
     private static $closingTags;
     private static $delimiters;
-//    private static $delimiterLengths = [];
+    private static $delimiterPatterns;
     private static $tokenSplitPattern;
     private static $tagEndSearchPattern;
     private static $rawBlockClosingTagPattern;
@@ -49,8 +49,8 @@ class Tokenizer
 
         self::$environment         = $environment;
         self::$fallbackTagName     = $environment->getOption('fallback_tag');
-        self::$delimiters          = $environment->getOption('delimiters');
         self::$expressionTokenizer = $environment->getExpressionTokenizer();
+        self::$delimiters          = $environment->getOption('delimiters');
 
         $blockEndPrefix = $environment->getOption('block_end_prefix');
 
@@ -66,47 +66,69 @@ class Tokenizer
             self::$closingTags[$blockEndPrefix . $name] = 'end' . $name;
         }
 
+        self::$delimiterPatterns         = $this->getDelimiterPatterns();
         self::$tagEndSearchPattern       = $this->getTagEndMatchingPattern();
         self::$rawBlockClosingTagPattern = $this->getRawBlockClosingTagPattern($blockEndPrefix);
         self::$tokenSplitPattern         = $this->getTokenSplitPattern();
     }
 
+    private function getDelimiterPatterns()
+    {
+        $delimiterPatterns = [];
+        foreach (self::$delimiters as $name => $delimiters) {
+            list($start, $end) = $delimiters;
+            $delimiterPatterns[$name] = [
+                preg_quote($start, '/'),
+                preg_quote($end, '/')
+            ];
+        }
+
+        if (self::$environment->getOption('tag_consumes_newline')) {
+            $delimiterPatterns['tag'][1] .= '\n?';
+        }
+
+        return $delimiterPatterns;
+    }
+
     private function getTagEndMatchingPattern()
     {
-        $string              = "'(?:\\\\.|[^'\\\\])*'";
-        $dq_string           = '"(?:\\\\.|[^"\\\\])*"';
-        $tagOpeningDelimiter = preg_quote(self::$delimiters['tag'][1], '/');
+        $string    = "'(?:\\\\.|[^'\\\\])*'";
+        $dq_string = '"(?:\\\\.|[^"\\\\])*"';
 
-        return "/^\\s*((?:{$string}|{$dq_string}|[^\"']+?)+?)\\s*(-?{$tagOpeningDelimiter})/i";
+        $tagEnd = self::$delimiterPatterns['tag'][1];
+        $wctEnd = self::$delimiterPatterns['whitespace_control_tag'][1];
+
+        return "/^\\s*((?:{$string}|{$dq_string}|[^\"']+?)+?)\\s*({$wctEnd}\\s*|{$tagEnd})/i";
     }
 
     private function getRawBlockClosingTagPattern($blockEndPrefix)
     {
-        list($tagStartDelimiter, $tagEndDelimiter) = self::$delimiters['tag'];
+        list($tagStart, $tagEnd) = self::$delimiterPatterns['tag'];
+        list($wctStart, $wctEnd) = self::$delimiterPatterns['whitespace_control_tag'];
+
         $endRaw = preg_quote($blockEndPrefix, '/') . 'raw';
 
-        return "/({$tagStartDelimiter}\\s*{$endRaw}\\s*({$tagEndDelimiter}))/i";
+        return "/((?:\\s*{$wctStart}|{$tagStart})\\s*{$endRaw}\\s*({$wctEnd}\\s*|{$tagEnd}))/i";
     }
 
     private function getTokenSplitPattern()
     {
-        foreach (self::$delimiters as $delimiters) {
-            list($start, $end) = $delimiters;
+        $patternParts = [];
 
-            $patternParts[preg_quote($start, '/')] = strlen($start);
-            $patternParts[preg_quote($end, '/')]   = strlen($end);
-        }
+        list($start, $end) = self::$delimiterPatterns['tag'];
+        $patternParts[$start] = strlen($start);
+        $patternParts[$end]   = strlen($end);
 
-        list($tagStart, $tagEnd) = self::$delimiters['tag'];
+        list($start, $end) = self::$delimiterPatterns['comment'];
+        $patternParts[$start] = strlen($start);
+        $patternParts[$end]   = strlen($end);
 
-        $tagStart = preg_quote($tagStart, '/');
-        $tagEnd   = preg_quote($tagEnd, '/');
+        list($start, $end) = self::$delimiterPatterns['whitespace_control_tag'];
+        $start = '\s*' . $start;
+        $end   = $end . '\s*';
 
-        $whitespaceControlTagStart = "\\s*{$tagStart}-";
-        $whitespaceControlTagEnd   = "-{$tagEnd}\\s*";
-
-        $patternParts[$whitespaceControlTagStart] = strlen($whitespaceControlTagStart);
-        $patternParts[$whitespaceControlTagEnd]   = strlen($whitespaceControlTagEnd);
+        $patternParts[$start] = strlen($start);
+        $patternParts[$end]   = strlen($end);
 
         arsort($patternParts);
         $pattern = implode('|', array_keys($patternParts));
@@ -164,7 +186,7 @@ class Tokenizer
                     break;
 
                 case self::$delimiters['tag'][0]:
-                case self::$delimiters['tag'][0] . '-':
+                case self::$delimiters['whitespace_control_tag'][0]:
                     $this->tokenizeTag();
                     break;
             }

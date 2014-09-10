@@ -1,5 +1,5 @@
 --TEST--
-Test delimiters with the whitespace control mark
+Test the whitespace control delimiters
 --TEMPLATE--
 { :foo -}
   { :bar }

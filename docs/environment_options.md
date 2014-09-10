@@ -15,6 +15,7 @@ These options affect the templates Minty is able to work with.
    **Default value:**
     - tag: `{`, `}`
     - comment: `{#`, `#}`
+    - whitespace control tag: `{-`, `-}`
  * `fallback tag`
    This option specifies which tag should be used when the tagname is not given. By default this option has the
    `print` value so basically every expression will be printed.
@@ -36,3 +37,5 @@ Other options
    [filtering](filtering.md).
  * `strict_mode`
    When true, variables that are not set will use their names as value.
+ * `tag_consumes_newline`
+   Controls whether the first newline after tags should be stripped automatically.

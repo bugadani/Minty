@@ -1,0 +1,6 @@
+--TEST--
+Test raw block with the whitespace control delimiters
+--TEMPLATE--
+{ raw -} should be spaceless    {- /raw }
+--EXPECT--
+should be spaceless

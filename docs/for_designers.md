@@ -117,8 +117,11 @@ By default, Minty does not modify whitespaces in templates. This means that ever
 is preserved outside tags.
 
 In some situations however, you may want to manually tell Minty to remove whitespaces around tags to make the HTML
-output nicer. This can be done by putting a `-` sign after the opening, and/or before the closing delimiter to trim
-whitespaces before and/or after the tag.
+output nicer. This can be done using the whitespace control tag delimiters (`{-` and `-}` by default),
+which trim whitespaces before and/or after the tag.
+
+Also, an environment option is available to control whether Minty should automatically remove the first
+newline character after each tag.
 
 Example:
 
