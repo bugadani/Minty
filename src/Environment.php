@@ -505,6 +505,9 @@ class Environment
             $class = $this->getTemplateClassName($template);
 
             $this->loadedTemplates[$template] = new $class($this);
+            if(!$this->loadedTemplates[$template] instanceof Template) {
+                throw new TemplatingException("The compiled class for {$template} is invalid");
+            }
         }
 
         return $this->loadedTemplates[$template];
