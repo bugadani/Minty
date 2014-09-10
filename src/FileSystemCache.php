@@ -9,8 +9,6 @@
 
 namespace Minty;
 
-use Minty\TemplateCacheInterface;
-
 class FileSystemCache implements TemplateCacheInterface
 {
     private $directory;
