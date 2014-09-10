@@ -9,7 +9,7 @@
 
 namespace Minty;
 
-use Minty\Compiler\TemplateCacheInterface;
+use Minty\TemplateCacheInterface;
 
 class FileSystemCache implements TemplateCacheInterface
 {
