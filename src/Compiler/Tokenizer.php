@@ -26,7 +26,7 @@ class Tokenizer
     private static $expressionTokenizer;
     private static $closingTags;
     private static $delimiters;
-    private static $delimiterLengths = [];
+//    private static $delimiterLengths = [];
     private static $tokenSplitPattern;
     private static $tagEndSearchPattern;
     private static $rawBlockClosingTagPattern;
@@ -77,7 +77,7 @@ class Tokenizer
         $dq_string           = '"(?:\\\\.|[^"\\\\])*"';
         $tagOpeningDelimiter = preg_quote(self::$delimiters['tag'][1], '/');
 
-        return "/^\\s*((?:{$string}|{$dq_string}|[^\"']+?)+?)\\s*({$tagOpeningDelimiter})/i";
+        return "/^\\s*((?:{$string}|{$dq_string}|[^\"']+?)+?)\\s*(-?{$tagOpeningDelimiter})/i";
     }
 
     private function getRawBlockClosingTagPattern($blockEndPrefix)
@@ -91,13 +91,22 @@ class Tokenizer
     private function getTokenSplitPattern()
     {
         foreach (self::$delimiters as $delimiters) {
-            foreach ((array)$delimiters as $delimiter) {
-                $length = strlen($delimiter);
+            list($start, $end) = $delimiters;
 
-                $patternParts[preg_quote($delimiter, '/')] = $length;
-                self::$delimiterLengths[$delimiter]        = $length;
-            }
+            $patternParts[preg_quote($start, '/')] = strlen($start);
+            $patternParts[preg_quote($end, '/')]   = strlen($end);
         }
+
+        list($tagStart, $tagEnd) = self::$delimiters['tag'];
+
+        $tagStart = preg_quote($tagStart, '/');
+        $tagEnd   = preg_quote($tagEnd, '/');
+
+        $whitespaceControlTagStart = "\\s*{$tagStart}-";
+        $whitespaceControlTagEnd   = "-{$tagEnd}\\s*";
+
+        $patternParts[$whitespaceControlTagStart] = strlen($whitespaceControlTagStart);
+        $patternParts[$whitespaceControlTagEnd]   = strlen($whitespaceControlTagEnd);
 
         arsort($patternParts);
         $pattern = implode('|', array_keys($patternParts));
@@ -148,13 +157,14 @@ class Tokenizer
                 $this->pushTextToken($offset - $this->lastOffset);
                 $this->lastOffset = $offset;
             }
-            $this->lastOffset += self::$delimiterLengths[$delimiter];
-            switch ($delimiter) {
+            $this->lastOffset += strlen($delimiter);
+            switch (trim($delimiter)) {
                 case self::$delimiters['comment'][0]:
                     $this->tokenizeComment();
                     break;
 
                 case self::$delimiters['tag'][0]:
+                case self::$delimiters['tag'][0] . '-':
                     $this->tokenizeTag();
                     break;
             }
@@ -204,7 +214,7 @@ class Tokenizer
             }
 
             //increment lastOffset with the delimiters length
-            $this->lastOffset += self::$delimiterLengths[$this->positions[$this->cursor][0]];
+            $this->lastOffset += strlen($this->positions[$this->cursor][0]);
         }
     }
 
@@ -241,7 +251,7 @@ class Tokenizer
                 $length = $offset - $this->lastOffset;
 
                 $this->line += substr_count($this->template, "\n", $this->lastOffset, $length);
-                $this->lastOffset = $offset + self::$delimiterLengths[$commentEndDelimiter];
+                $this->lastOffset = $offset + strlen($commentEndDelimiter);
 
                 return;
             }

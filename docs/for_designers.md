@@ -19,6 +19,23 @@ tag-specific sequence of keywords and parameters. These tags get replaced by som
 the tag itself, for example an `include` tag will be replaced by whatever
 the included template displays.
 
+Whitespace control
+--------
+By default, Minty does not modify whitespaces in templates. This means that every space, tab and newline character
+is preserved outside tags.
+
+In some situations however, you may want to manually tell Minty to remove whitespaces around tags to make the HTML
+output nicer. This can be done by putting a `-` sign after the opening, and/or before the closing delimiter to trim
+whitespaces before and/or after the tag.
+
+Example:
+
+    <li>    {- 'no spaces' -}    </li>
+    {# this will output '<li>no spaces</li>' #}
+
+    <li>    {'no spaces after' -}    </li>
+    {# this will output '<li>    no spaces after</li>' #}
+
 Blocks
 --------
 Blocks are special tags: they have an ending tag that closes the block. Blocks operate on the template that is

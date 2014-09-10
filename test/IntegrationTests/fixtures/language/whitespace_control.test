@@ -1,0 +1,9 @@
+--TEST--
+Test delimiters with the whitespace control mark
+--TEMPLATE--
+{ :foo -}
+  { :bar }
+  {- :foobar -}
+ {- :baz }
+--EXPECT--
+foobarfoobarbaz
