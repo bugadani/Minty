@@ -7,7 +7,7 @@
  * For licensing information see the LICENSE file.
  */
 
-namespace Minty\Compiler;
+namespace Minty;
 
 interface TemplateCacheInterface
 {
