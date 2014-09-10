@@ -20,7 +20,6 @@ use Minty\Compiler\NodeVisitor;
 use Minty\Compiler\OperatorCollection;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Tag;
-use Minty\Compiler\TemplateCacheInterface;
 use Minty\Compiler\TemplateFunction;
 use Minty\Compiler\Tokenizer;
 use Minty\TemplateLoaders\ChainLoader;
