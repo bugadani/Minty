@@ -115,14 +115,7 @@ class UnusedVariableOptimizer extends NodeVisitor implements EnvironmentAwareInt
             return true;
         }
 
-        $callback = $function->getCallback();
-
-        //this is the condition FunctionCompiler uses to check if a function can be directly compiled
-        if (!is_string($callback) || strpos($callback, ':') !== false) {
-            return true;
-        }
-
-        return false;
+        return !is_string($function->getCallback());
     }
 
     private function isBlockRoot(Node $node)

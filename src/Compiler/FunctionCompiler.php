@@ -17,7 +17,7 @@ class FunctionCompiler
         $callback = $function->getCallback();
 
         //simple functions are compiled directly
-        if (is_string($callback) && strpos($callback, ':') === false) {
+        if (is_string($callback)) {
             $compiler->add($callback);
         } else {
             $compiler

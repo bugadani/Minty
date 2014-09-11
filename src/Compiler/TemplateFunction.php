@@ -93,10 +93,6 @@ class TemplateFunction
      */
     public function getCallback()
     {
-        if (!$this->callback) {
-            throw new \BadMethodCallException("Function {$this->name} is compiled, not callable.");
-        }
-
         return $this->callback;
     }
 
