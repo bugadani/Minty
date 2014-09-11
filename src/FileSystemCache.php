@@ -13,27 +13,41 @@ class FileSystemCache implements TemplateCacheInterface
 {
     private $directory;
 
+    /**
+     * @param $cacheDir string The directory where the compiled templates will be saved.
+     */
     public function __construct($cacheDir)
     {
         $this->directory = $cacheDir;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function load($file)
     {
         includeFile($this->getCachePath($file));
     }
 
+    /**
+     * @inheritdoc
+     */
     public function save($file, $compiled)
     {
         $destination = $this->getCachePath($file);
 
         $cacheDir = dirname($destination);
         if (!is_dir($cacheDir)) {
-            mkdir($cacheDir, 0777, true);
+            if (!mkdir($cacheDir, 0777, true)) {
+                throw new \UnexpectedValueException("Could not create {$cacheDir} directory.");
+            }
         }
         file_put_contents($destination, $compiled);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getCreatedTime($file)
     {
         $cachePath = $this->getCachePath($file);
@@ -45,6 +59,9 @@ class FileSystemCache implements TemplateCacheInterface
         return filemtime($cachePath);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function exists($file)
     {
         return is_file($this->getCachePath($file));

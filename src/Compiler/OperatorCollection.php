@@ -34,8 +34,7 @@ class OperatorCollection
      */
     public function addOperator(Operator $operator)
     {
-        $symbol = $operator->operators();
-        foreach ((array)$symbol as $opSymbol) {
+        foreach ((array) $operator->operators() as $opSymbol) {
             $this->operators[$opSymbol] = $operator;
         }
     }

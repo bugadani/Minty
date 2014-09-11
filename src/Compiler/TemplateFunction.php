@@ -43,20 +43,24 @@ class TemplateFunction
     public function __construct($name, $callback = null, array $options = [])
     {
         $this->name = $name;
-        if ($callback === null) {
-            $callback = $name;
+        if (!isset($options['compiler'])) {
+            if ($callback === null) {
+                $callback = $name;
+            }
+            if (!is_callable($callback)) {
+                throw new \InvalidArgumentException("\$callback for function {$name} must be a callable value");
+            }
+            $this->callback = $callback;
         }
-        if (!is_callable($callback) && !isset($options['compiler'])) {
-            throw new \InvalidArgumentException("\$callback for function {$name} must be a callable value");
-        }
-        $this->callback = $callback;
-        $defaults       = [
+
+        $defaults = [
             'is_safe'           => false,
             'compiler'          => __NAMESPACE__ . '\\FunctionCompiler',
             'needs_context'     => false,
             'needs_environment' => false
         ];
-        $this->options  = array_merge($defaults, $options);
+
+        $this->options = $options + $defaults;
     }
 
     public function setExtension(Extension $extension)
@@ -84,10 +88,15 @@ class TemplateFunction
     }
 
     /**
+     * @throws \BadMethodCallException
      * @return callable
      */
     public function getCallback()
     {
+        if (!$this->callback) {
+            throw new \BadMethodCallException("Function {$this->name} is compiled, not callable.");
+        }
+
         return $this->callback;
     }
 

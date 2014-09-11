@@ -98,6 +98,7 @@ class SafeOutputVisitor extends NodeVisitor implements EnvironmentAwareInterface
             return;
         }
         if ($this->isFilterOperator($node)) {
+            /** @var $node OperatorNode */
             $this->isSafe &= $this->isFilterSafe($node);
         } elseif ($node instanceof FunctionNode) {
             $this->isSafe &= $this->isFunctionNodeSafe($node);

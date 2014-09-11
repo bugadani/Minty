@@ -74,7 +74,8 @@ class UnusedVariableOptimizer extends NodeVisitor implements EnvironmentAwareInt
     {
         if ($this->isEnvironmentVariable($node)) {
             return true;
-        } elseif ($node instanceof FunctionNode) {
+        }
+        if ($node instanceof FunctionNode) {
             if ($node->getObject()) {
                 return $this->checkForEnvironmentObject($node->getObject());
             }
@@ -143,8 +144,12 @@ class UnusedVariableOptimizer extends NodeVisitor implements EnvironmentAwareInt
 
     private function checkForEnvironmentObject(Node $node)
     {
-        if ($node instanceof FunctionNode) {
-            return $this->checkForEnvironmentObject($node->getObject());
+        while ($node instanceof FunctionNode) {
+            $node = $node->getObject();
+        }
+
+        if(!$node) {
+            return false;
         }
 
         return $this->isEnvironmentVariable($node);
