@@ -3,6 +3,26 @@ Using Minty
 
 This chapter describes how to use Minty in your projects.
 
+Getting started
+--------
+
+### Installation
+
+Minty can be installed using [Composer](http://getcomposer.org). To get composer, please refer to
+the Composer documentation [here](https://getcomposer.org/doc/00-intro.md).
+
+To install Minty, simply open a command line to the working directory, then execute the following
+command (substitute <version> with an appropriate version number, or `dev-master` for the current developer snapshot):
+
+    composer require bugadani/minty <version>
+
+### Loading Minty
+
+Using the Composer installation method, Minty can be loaded using the Composer class loader.
+To do this, simply add the following to your `index.php` file (or any scripts you want to use Minty in):
+
+    require_once 'vendor/autoload.php';
+
 Setting up the Environment
 --------
 
