@@ -24,6 +24,13 @@ class ChainLoader implements TemplateLoaderInterface
      */
     private $templateMap = [];
 
+    public function __construct()
+    {
+        foreach (func_get_args() as $loader) {
+            $this->addLoader($loader);
+        }
+    }
+
     /**
      * @param TemplateLoaderInterface $loader
      */

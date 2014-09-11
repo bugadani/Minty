@@ -39,17 +39,17 @@ class Tokenizer
     private $template;
     private $length;
 
-    public function __construct(Environment $environment)
+    public function __construct(Environment $environment, ExpressionTokenizer $expressionTokenizer)
     {
+        self::$expressionTokenizer = $expressionTokenizer;
         if (self::$environment === $environment) {
             return;
         }
 
-        self::$environment         = $environment;
-        self::$fallbackTagName     = $environment->getOption('fallback_tag');
-        self::$expressionTokenizer = $environment->getExpressionTokenizer();
-        self::$delimiters          = $environment->getOption('delimiters');
-        self::$closingTags         = [];
+        self::$environment     = $environment;
+        self::$fallbackTagName = $environment->getOption('fallback_tag');
+        self::$delimiters      = $environment->getOption('delimiters');
+        self::$closingTags     = [];
 
         $blockEndPrefix = $environment->getOption('block_end_prefix');
 

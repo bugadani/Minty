@@ -33,11 +33,6 @@ class Environment
     private $templateCache;
 
     /**
-     * @var ExpressionTokenizer
-     */
-    private $expressionTokenizer;
-
-    /**
      * @var Tokenizer
      */
     private $tokenizer;
@@ -115,11 +110,6 @@ class Environment
     /**
      * @var bool
      */
-    private $chainLoaderUsed = false;
-
-    /**
-     * @var bool
-     */
     private $errorTemplateLoaderLoaded;
 
     private $classMap = [];
@@ -156,8 +146,8 @@ class Environment
         if ($loader instanceof EnvironmentAwareInterface) {
             $loader->setEnvironment($this);
         }
-        $this->loader          = $loader;
-        $this->chainLoaderUsed = $loader instanceof ChainLoader;
+        $this->loader = $loader;
+
         $this->createTemplateCache($this->options['cache']);
 
         if ($this->options['error_template'] !== '__compile_error_template') {
@@ -202,13 +192,11 @@ class Environment
         if ($loader instanceof EnvironmentAwareInterface) {
             $loader->setEnvironment($this);
         }
-        if (!$this->chainLoaderUsed) {
-            $chainLoader = new ChainLoader();
-            $chainLoader->addLoader($this->loader);
-            $this->loader          = $chainLoader;
-            $this->chainLoaderUsed = true;
+        if ($this->loader instanceof ChainLoader) {
+            $this->loader->addLoader($loader);
+        } else {
+            $this->loader = new ChainLoader($this->loader, $loader);
         }
-        $this->loader->addLoader($loader);
     }
 
     public function addGlobalVariable($name, $value)
@@ -334,12 +322,16 @@ class Environment
     /**
      * @param string $class
      *
+     * @throws \InvalidArgumentException
      * @return FunctionCompiler
      */
     public function getFunctionCompiler($class)
     {
         if (!isset($this->functionCompilers[$class])) {
             $this->functionCompilers[$class] = new $class;
+            if (!$this->functionCompilers[$class] instanceof FunctionCompiler) {
+                throw new \InvalidArgumentException("Class {$class} is not an instance of FunctionCompiler");
+            }
         }
 
         return $this->functionCompilers[$class];
@@ -404,16 +396,10 @@ class Environment
             array_map([$this, 'addTag'], $ext->getTags());
         }
 
-        $this->expressionTokenizer = new ExpressionTokenizer($this);
-        $this->tokenizer           = new Tokenizer($this);
-        $this->parser              = new Parser($this, new ExpressionParser($this));
-        $this->nodeTreeTraverser   = new NodeTreeTraverser($this->nodeVisitors);
-        $this->compiler            = new Compiler($this);
-    }
-
-    public function getExpressionTokenizer()
-    {
-        return $this->expressionTokenizer;
+        $this->tokenizer         = new Tokenizer($this, new ExpressionTokenizer($this));
+        $this->parser            = new Parser($this, new ExpressionParser($this));
+        $this->nodeTreeTraverser = new NodeTreeTraverser($this->nodeVisitors);
+        $this->compiler          = new Compiler($this);
     }
 
     /**
