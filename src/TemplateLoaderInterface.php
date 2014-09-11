@@ -12,6 +12,7 @@ namespace Minty;
 interface TemplateLoaderInterface
 {
     /**
+     * Returns whether the cached template is up to date.
      * @param $template
      *
      * @return bool
@@ -19,6 +20,7 @@ interface TemplateLoaderInterface
     public function isCacheFresh($template);
 
     /**
+     * Returns whether $template exists.
      * @param $template
      *
      * @return bool
@@ -26,6 +28,7 @@ interface TemplateLoaderInterface
     public function exists($template);
 
     /**
+     * Loads the contents of $template.
      * @param $template
      *
      * @return string
@@ -33,6 +36,7 @@ interface TemplateLoaderInterface
     public function load($template);
 
     /**
+     * Returns with a unique cache key for $template.
      * @param $template
      *
      * @return string
