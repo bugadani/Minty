@@ -45,21 +45,6 @@ class ExpressionParser
     private $stream;
 
     /**
-     * @var callable
-     */
-    private $binaryTest;
-
-    /**
-     * @var callable
-     */
-    private $unaryPostfixTest;
-
-    /**
-     * @var callable
-     */
-    private $unaryPrefixTest;
-
-    /**
      * @var OperatorCollection
      */
     private $binaryOperators;
@@ -84,10 +69,6 @@ class ExpressionParser
         $this->binaryOperators       = $environment->getBinaryOperators();
         $this->unaryPrefixOperators  = $environment->getUnaryPrefixOperators();
         $this->unaryPostfixOperators = $environment->getUnaryPostfixOperators();
-
-        $this->binaryTest       = [$this->binaryOperators, 'isOperator'];
-        $this->unaryPrefixTest  = [$this->unaryPrefixOperators, 'isOperator'];
-        $this->unaryPostfixTest = [$this->unaryPostfixOperators, 'isOperator'];
     }
 
     /**
@@ -155,7 +136,7 @@ class ExpressionParser
     private function parsePostfixOperator()
     {
         $token = $this->stream->next();
-        if ($token->test(Token::OPERATOR, $this->unaryPostfixTest)) {
+        if ($token->test(Token::OPERATOR, [$this->unaryPostfixOperators, 'isOperator'])) {
             $operator = $this->unaryPostfixOperators->getOperator($token->getValue());
             while ($this->compareToStackTop($operator)) {
                 $this->popOperator();
@@ -248,7 +229,10 @@ class ExpressionParser
                     break;
 
                 default:
-                    $this->stream->expectCurrent(Token::OPERATOR, $this->unaryPrefixTest);
+                    $this->stream->expectCurrent(
+                        Token::OPERATOR,
+                        [$this->unaryPrefixOperators, 'isOperator']
+                    );
                     $this->pushOperator(
                         $this->unaryPrefixOperators->getOperator($value)
                     );
@@ -271,7 +255,8 @@ class ExpressionParser
         $this->operatorStack->push(null);
 
         $token = $this->parseToken();
-        while ($token->test(Token::OPERATOR, $this->binaryTest)) {
+
+        while ($token->test(Token::OPERATOR, [$this->binaryOperators, 'isOperator'])) {
             $this->pushOperator(
                 $this->binaryOperators->getOperator($token->getValue())
             );
