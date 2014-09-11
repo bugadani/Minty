@@ -35,7 +35,6 @@ class Tokenizer
     private $line;
     private $tokenBuffer;
     private $positions;
-    private $cursor;
     private $lastOffset;
     private $template;
     private $length;
@@ -137,7 +136,6 @@ class Tokenizer
     public function tokenize($template)
     {
         $this->line       = 1;
-        $this->cursor     = -1;
         $this->lastOffset = 0;
 
         $template       = str_replace(["\r\n", "\n\r", "\r"], "\n", $template);
@@ -145,7 +143,9 @@ class Tokenizer
         $this->length   = strlen($template);
 
         preg_match_all(self::$tokenSplitPattern, $template, $matches, PREG_OFFSET_CAPTURE);
+
         $this->positions = $matches[1];
+        reset($this->positions);
 
         $this->tokenBuffer = [];
 
@@ -165,14 +165,14 @@ class Tokenizer
 
     private function getNextToken()
     {
-        if (!isset($this->positions[++$this->cursor])) {
+        if (!($position = current($this->positions))) {
             if ($this->lastOffset < $this->length) {
                 $this->pushTextToken($this->length - $this->lastOffset);
                 $this->lastOffset = $this->length;
             }
             $this->pushToken(Token::EOF);
         } else {
-            list($delimiter, $offset) = $this->positions[$this->cursor];
+            list($delimiter, $offset) = $position;
             if ($this->lastOffset < $offset) {
                 $this->pushTextToken($offset - $this->lastOffset);
                 $this->lastOffset = $offset;
@@ -188,6 +188,7 @@ class Tokenizer
                     $this->tokenizeTag();
                     break;
             }
+            next($this->positions);
         }
     }
 
@@ -226,15 +227,15 @@ class Tokenizer
 
         if ($this->lastOffset >= $this->length) {
             //not much to do, set the cursor to the last element
-            $this->cursor = count($this->positions) - 1;
+            end($this->positions);
         } else {
             //search for the first element where offset is >= lastOffset
-            while ($this->positions[$this->cursor][1] < $this->lastOffset) {
-                $this->cursor++;
+            while (current($this->positions)[1] < $this->lastOffset) {
+                next($this->positions);
             }
 
             //increment lastOffset with the delimiters length
-            $this->lastOffset += strlen($this->positions[$this->cursor][0]);
+            $this->lastOffset += strlen(current($this->positions)[0]);
         }
     }
 
@@ -265,8 +266,8 @@ class Tokenizer
     private function tokenizeComment()
     {
         $commentEndDelimiter = self::$delimiters['comment'][1];
-        while (isset($this->positions[++$this->cursor])) {
-            list($delimiter, $offset) = $this->positions[$this->cursor];
+        while ($position = next($this->positions)) {
+            list($delimiter, $offset) = $position;
             if ($delimiter === $commentEndDelimiter) {
                 $length = $offset - $this->lastOffset;
 
