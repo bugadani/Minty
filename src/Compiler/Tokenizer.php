@@ -26,7 +26,6 @@ class Tokenizer
     private static $expressionTokenizer;
     private static $closingTags;
     private static $delimiters;
-    private static $delimiterPatterns;
     private static $tokenSplitPattern;
     private static $tagEndSearchPattern;
     private static $rawBlockClosingTagPattern;
@@ -51,6 +50,7 @@ class Tokenizer
         self::$fallbackTagName     = $environment->getOption('fallback_tag');
         self::$expressionTokenizer = $environment->getExpressionTokenizer();
         self::$delimiters          = $environment->getOption('delimiters');
+        self::$closingTags         = [];
 
         $blockEndPrefix = $environment->getOption('block_end_prefix');
 
@@ -61,17 +61,16 @@ class Tokenizer
             }
         );
 
-        self::$closingTags = [];
         foreach ($blockTags as $name => $tag) {
             self::$closingTags[$blockEndPrefix . $name] = 'end' . $name;
         }
 
-        self::$delimiterPatterns         = $this->getDelimiterPatterns();
-        self::$tagEndSearchPattern       = $this->getTagEndMatchingPattern();
-        self::$rawBlockClosingTagPattern = $this->getRawBlockClosingTagPattern($blockEndPrefix);
-        self::$tokenSplitPattern         = $this->getTokenSplitPattern();
+        $this->createPatterns($blockEndPrefix);
     }
 
+    /**
+     * @return array
+     */
     private function getDelimiterPatterns()
     {
         $delimiterPatterns = [];
@@ -87,53 +86,52 @@ class Tokenizer
             $delimiterPatterns['tag'][1] .= '\n?';
         }
 
+        $delimiterPatterns['whitespace_control_tag'][0] = '\s*' . $delimiterPatterns['whitespace_control_tag'][0];
+        $delimiterPatterns['whitespace_control_tag'][1] = $delimiterPatterns['whitespace_control_tag'][1] . '\s*';
+
         return $delimiterPatterns;
     }
 
-    private function getTagEndMatchingPattern()
+    private function createPatterns($blockEndPrefix)
     {
-        $string    = "'(?:\\\\.|[^'\\\\])*'";
-        $dq_string = '"(?:\\\\.|[^"\\\\])*"';
+        $delimiterPatterns = $this->getDelimiterPatterns();
 
-        $tagEnd = self::$delimiterPatterns['tag'][1];
-        $wctEnd = self::$delimiterPatterns['whitespace_control_tag'][1];
+        $tokenPatternParts = [];
+        foreach ($delimiterPatterns as $delimiters) {
+            list($start, $end) = $delimiters;
 
-        return "/^\\s*((?:{$string}|{$dq_string}|[^\"']+?)+?)\\s*({$wctEnd}\\s*|{$tagEnd})/i";
-    }
+            $tokenPatternParts[$start] = strlen($start);
+            $tokenPatternParts[$end]   = strlen($end);
+        }
 
-    private function getRawBlockClosingTagPattern($blockEndPrefix)
-    {
-        list($tagStart, $tagEnd) = self::$delimiterPatterns['tag'];
-        list($wctStart, $wctEnd) = self::$delimiterPatterns['whitespace_control_tag'];
+        list($tagStart, $tagEnd) = $delimiterPatterns['tag'];
+        list($wctStart, $wctEnd) = $delimiterPatterns['whitespace_control_tag'];
 
-        $endRaw = preg_quote($blockEndPrefix, '/') . 'raw';
+        arsort($tokenPatternParts);
+        $tokenSplitPattern = implode('|', array_keys($tokenPatternParts));
+        $blockEndPrefix    = preg_quote($blockEndPrefix, '/');
 
-        return "/((?:\\s*{$wctStart}|{$tagStart})\\s*{$endRaw}\\s*({$wctEnd}\\s*|{$tagEnd}))/i";
-    }
+        self::$tagEndSearchPattern = "/^\\s*
+        (
+            (?:                           # this makes sure we don't match inside strings
+                '(?:\\\\.|[^'\\\\])*'     # single quoted string
+                |\"(?:\\\\.|[^\"\\\\])*\" # doubly quoted string
+                |[^\"']+?                 # other characters
+            )+?
+        )
+        \\s*({$wctEnd}\\s*|{$tagEnd})     # any tag ending delimiter
+        /ix";
 
-    private function getTokenSplitPattern()
-    {
-        $patternParts = [];
+        self::$rawBlockClosingTagPattern = "/
+        (
+            (?:
+                \\s*{$wctStart}|{$tagStart} # any tag opening delimiter
+            )\\s*
+            {$blockEndPrefix}raw            # endraw tagname
+            \\s*({$wctEnd}\\s*|{$tagEnd})   # any tag ending delimiter
+        )/ix";
 
-        list($start, $end) = self::$delimiterPatterns['tag'];
-        $patternParts[$start] = strlen($start);
-        $patternParts[$end]   = strlen($end);
-
-        list($start, $end) = self::$delimiterPatterns['comment'];
-        $patternParts[$start] = strlen($start);
-        $patternParts[$end]   = strlen($end);
-
-        list($start, $end) = self::$delimiterPatterns['whitespace_control_tag'];
-        $start = '\s*' . $start;
-        $end   = $end . '\s*';
-
-        $patternParts[$start] = strlen($start);
-        $patternParts[$end]   = strlen($end);
-
-        arsort($patternParts);
-        $pattern = implode('|', array_keys($patternParts));
-
-        return "/({$pattern})/";
+        self::$tokenSplitPattern = "/({$tokenSplitPattern})/";
     }
 
     public function tokenize($template)
