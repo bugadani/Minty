@@ -508,7 +508,10 @@ class Environment
         }
 
         //Local variables take precedence over globals
-        return new Context($this, $variables + $this->options['global_variables']);
+        return new Context(
+            $this->options['strict_mode'],
+            $variables + $this->options['global_variables']
+        );
     }
 
     public function render($template, $variables = [])

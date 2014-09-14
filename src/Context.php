@@ -14,10 +14,10 @@ class Context
     private $strictMode;
     private $variables;
 
-    public function __construct(Environment $environment, array $variables = [])
+    public function __construct($strictMode, array $variables = [])
     {
         $this->variables  = $variables;
-        $this->strictMode = $environment->getOption('strict_mode');
+        $this->strictMode = (bool) $strictMode;
     }
 
     public function __set($key, $value)
