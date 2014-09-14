@@ -10,6 +10,7 @@
 namespace Minty\Compiler\Tags;
 
 use Minty\Compiler\Nodes\DataNode;
+use Minty\Compiler\Nodes\FunctionNode;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
 use Minty\Compiler\Tag;
@@ -43,7 +44,12 @@ class ParentTag extends Tag
                 $parser
             )
         );
-        $node->getChild('expression')->addArgument(new DataNode(true));
+        $expression = $node->getChild('expression');
+        if(!$expression instanceof FunctionNode) {
+            throw new \UnexpectedValueException("An instance of FunctionNode was expected");
+        }
+
+        $expression->addArgument(new DataNode(true));
 
         return $node;
     }
