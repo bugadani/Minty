@@ -1,0 +1,8 @@
+--TEST--
+Test that getter methods can be called by accessing properties.
+--TEMPLATE--
+{ $object.timestamp }
+--DATA--
+['object' => new \DateTime('2010-01-28T15:00:00+02:00')]
+--EXPECT--
+1264683600
