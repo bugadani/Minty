@@ -14,9 +14,9 @@ class Context
     private $strictMode;
     private $variables;
 
-    public function __construct(Environment $environment, $variables = [])
+    public function __construct(Environment $environment, array $variables = [])
     {
-        $this->variables  = $this->ensureArray($variables);
+        $this->variables  = $variables;
         $this->strictMode = $environment->getOption('strict_mode');
     }
 
@@ -95,28 +95,5 @@ class Context
             return false;
         }
         throw new \UnexpectedValueException('Variable is not an array or an object.');
-    }
-
-    /**
-     * @param $variables
-     *
-     * @return mixed
-     * @throws \InvalidArgumentException
-     */
-    private function ensureArray($variables)
-    {
-        if (is_array($variables)) {
-            //do nothing
-        } elseif ($variables === null) {
-            $variables = [];
-        } elseif (method_exists($variables, 'toArray')) {
-            $variables = $variables->toArray();
-        } elseif ($variables instanceof \Traversable) {
-            $variables = iterator_to_array($variables);
-        } else {
-            throw new \InvalidArgumentException('Context::__construct() expects an array as parameter.');
-        }
-
-        return $variables;
     }
 }
