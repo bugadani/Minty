@@ -12,7 +12,7 @@ namespace Minty\Compiler;
 use Minty\Compiler\Exceptions\SyntaxException;
 use Minty\Environment;
 
-class Tokenizer
+class Tokenizer implements TokenizerInterface
 {
     //Environment options
     /**
@@ -21,7 +21,7 @@ class Tokenizer
     private static $environment;
 
     /**
-     * @var ExpressionTokenizer
+     * @var TokenizerInterface
      */
     private static $expressionTokenizer;
     private static $closingTags;
@@ -254,12 +254,15 @@ class Tokenizer
         }
 
         $this->pushToken(Token::TAG_START, $tagName);
+
         self::$expressionTokenizer->setLine($this->line);
-        $this->tokenBuffer = array_merge(
-            $this->tokenBuffer,
-            self::$expressionTokenizer->tokenize($expression)
-        );
-        $this->line += substr_count($expression, "\n");
+        $stream = self::$expressionTokenizer->tokenize($expression);
+
+        while(!$stream->next()->test(Token::EOF))
+        {
+            $this->tokenBuffer[] = $stream->current();
+        }
+        $this->line = $stream->current()->getLine();
         $this->pushToken(Token::TAG_END, $tagName);
     }
 

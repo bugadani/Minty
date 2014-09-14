@@ -14,7 +14,7 @@ use Minty\Compiler\Exceptions\SyntaxException;
 class Stream
 {
     /**
-     * @var Tokenizer
+     * @var TokenizerInterface
      */
     private $tokenizer;
 
@@ -28,7 +28,7 @@ class Stream
      */
     private $next;
 
-    public function __construct(Tokenizer $tokenizer)
+    public function __construct(TokenizerInterface $tokenizer)
     {
         $this->tokenizer = $tokenizer;
         $this->next();

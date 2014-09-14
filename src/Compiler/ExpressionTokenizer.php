@@ -11,7 +11,7 @@ namespace Minty\Compiler;
 
 use Minty\Environment;
 
-class ExpressionTokenizer
+class ExpressionTokenizer implements TokenizerInterface
 {
     //Constants
     private static $punctuation = [
@@ -34,7 +34,11 @@ class ExpressionTokenizer
     private static $operators;
 
     private $line = 0;
-    private $tokenBuffer;
+
+    /**
+     * @var \Iterator
+     */
+    private $iterator;
 
     public function __construct(Environment $environment)
     {
@@ -104,11 +108,9 @@ class ExpressionTokenizer
      */
     public function tokenize($expression)
     {
-        $this->tokenBuffer = [];
-
         if ($expression !== '') {
-            $flags    = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
-            $iterator = new \CallbackFilterIterator(
+            $flags          = PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY;
+            $this->iterator = new \CallbackFilterIterator(
                 new \ArrayIterator(
                     preg_split(self::$expressionPartsPattern, $expression, 0, $flags)
                 ),
@@ -128,71 +130,85 @@ class ExpressionTokenizer
                     return true;
                 }
             );
-            foreach ($iterator as $part) {
-                $this->tokenizeExpressionPart($part);
-            }
+            $this->iterator->rewind();
+        } else {
+            $this->iterator = new \EmptyIterator();
         }
-        $this->line = 0;
 
-        return $this->tokenBuffer;
+        return new Stream($this);
+    }
+
+    public function nextToken()
+    {
+        if ($this->iterator->valid()) {
+            $token = $this->tokenizeExpressionPart($this->iterator->current());
+            $this->iterator->next();
+        } else {
+            $token = $this->token(Token::EOF);
+            $this->line = 0;
+        }
+
+        return $token;
     }
 
     private function tokenizeExpressionPart($part)
     {
         if (isset(self::$punctuation[$part])) {
-            $this->pushToken(Token::PUNCTUATION, $part);
+            $token = $this->token(Token::PUNCTUATION, $part);
         } elseif (isset(self::$operators[$part])) {
-            $this->pushToken(Token::OPERATOR, $part);
+            $token = $this->token(Token::OPERATOR, $part);
         } elseif (is_numeric($part)) {
-            $number = (float)$part;
+            $number = (float) $part;
             //check whether the number can be represented as an integer
             if (ctype_digit($part) && $number <= PHP_INT_MAX) {
-                $number = (int)$part;
+                $number = (int) $part;
             }
-            $this->pushToken(Token::LITERAL, $number);
+            $token = $this->token(Token::LITERAL, $number);
         } else {
             switch ($part[0]) {
                 case '"':
                 case "'":
                     //strip backslashes from double-slashes and escaped string delimiters
-                    $part = strtr($part, ['\\' . $part[0] => $part[0], '\\\\' => '\\']);
-                    $this->pushToken(Token::STRING, substr($part, 1, -1));
+                    $part  = strtr($part, ['\\' . $part[0] => $part[0], '\\\\' => '\\']);
+                    $token = $this->token(Token::STRING, substr($part, 1, -1));
                     $this->line += substr_count($part, "\n");
                     break;
 
                 case ':':
-                    $this->pushToken(Token::STRING, substr($part, 1));
+                    $token = $this->token(Token::STRING, substr($part, 1));
                     break;
 
                 case '$':
-                    $this->pushToken(Token::VARIABLE, substr($part, 1));
+                    $token = $this->token(Token::VARIABLE, substr($part, 1));
                     break;
 
                 default:
                     switch (strtolower($part)) {
                         case 'null':
-                            $this->pushToken(Token::LITERAL, null);
+                            $token = $this->token(Token::LITERAL, null);
                             break;
 
                         case 'true':
-                            $this->pushToken(Token::LITERAL, true);
+                            $token = $this->token(Token::LITERAL, true);
                             break;
 
                         case 'false':
-                            $this->pushToken(Token::LITERAL, false);
+                            $token = $this->token(Token::LITERAL, false);
                             break;
 
                         default:
-                            $this->pushToken(Token::IDENTIFIER, $part);
+                            $token = $this->token(Token::IDENTIFIER, $part);
                             break;
                     }
                     break;
             }
         }
+
+        return $token;
     }
 
-    private function pushToken($type, $value = null)
+    private function token($type, $value = null)
     {
-        $this->tokenBuffer[] = new Token($type, $value, $this->line);
+        return new Token($type, $value, $this->line);
     }
 }
