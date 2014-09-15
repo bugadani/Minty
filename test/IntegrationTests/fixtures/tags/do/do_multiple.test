@@ -1,0 +1,8 @@
+--TEST--
+Test Do tag with multiple expressions
+--TEMPLATE--
+{ do $foo++, $foo++ }{ $foo }
+--DATA--
+array('foo' => 1)
+--EXPECT--
+3
