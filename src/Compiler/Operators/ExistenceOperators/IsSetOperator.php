@@ -27,7 +27,7 @@ class IsSetOperator extends Operator
     {
         $operand = $node->getChild(OperatorNode::OPERAND_LEFT);
         if ($this->isPropertyAccessOperator($operand)) {
-            $operand->addData('existence', true);
+            $operand->addData('mode', 'has');
             $operand->compile($compiler);
         } else {
             $compiler

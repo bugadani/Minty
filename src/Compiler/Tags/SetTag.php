@@ -9,8 +9,11 @@
 
 namespace Minty\Compiler\Tags;
 
-use Minty\Compiler\Compiler;
-use Minty\Compiler\Nodes\TagNode;
+use Minty\Compiler\Node;
+use Minty\Compiler\Nodes\ExpressionNode;
+use Minty\Compiler\Nodes\OperatorNode;
+use Minty\Compiler\Nodes\RootNode;
+use Minty\Compiler\Operators\PropertyAccessOperator;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
 use Minty\Compiler\Tag;
@@ -26,32 +29,41 @@ class SetTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $node      = new TagNode($this);
-        $variables = 0;
+        $node = new RootNode();
 
         do {
-            $node->addChild($parser->parseExpression($stream), 'expression_' . $variables);
+            $left = $parser->parseExpression($stream);
             $stream->expectCurrent(Token::PUNCTUATION, ':');
-            $node->addChild($parser->parseExpression($stream), 'value_' . $variables);
+            $right = $parser->parseExpression($stream);
 
-            $variables++;
+            if ($this->isPropertyAccessOperator($left)) {
+                $left->addData('mode', 'set');
+                $left->addChild($right);
+                $varNode = $left;
+            } else {
+                $varNode = new OperatorNode(
+                    $parser->getEnvironment()->getBinaryOperators()->getOperator(':')
+                );
+                $varNode->addChild($left, OperatorNode::OPERAND_LEFT);
+                $varNode->addChild($right, OperatorNode::OPERAND_RIGHT);
+            }
+            $node->addChild(new ExpressionNode($varNode));
         } while ($stream->current()->test(Token::PUNCTUATION, ','));
-
-        $node->addData('variables', $variables);
 
         return $node;
     }
 
-    public function compile(Compiler $compiler, TagNode $node)
+    /**
+     * @param Node $operand
+     *
+     * @return bool
+     */
+    private function isPropertyAccessOperator(Node $operand)
     {
-        $varNum = $node->getData('variables');
-        for ($i = 0; $i < $varNum; ++$i) {
-            $compiler
-                ->indented('')
-                ->compileNode($node->getChild('expression_' . $i))
-                ->add(' = ')
-                ->compileNode($node->getChild('value_' . $i))
-                ->add(';');
+        if (!$operand instanceof OperatorNode) {
+            return false;
         }
+
+        return $operand->getOperator() instanceof PropertyAccessOperator;
     }
 }

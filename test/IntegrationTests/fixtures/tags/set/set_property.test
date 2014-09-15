@@ -1,0 +1,9 @@
+--TEST--
+Test that a variable can be set using the set tag
+--TEMPLATE--
+{ set $foo.timestamp: 123456 -}
+{ $foo.timestamp }
+--DATA--
+['foo' => new \DateTime('2010-01-28T15:00:00+02:00')]
+--EXPECT--
+123456

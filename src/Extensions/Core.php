@@ -43,6 +43,7 @@ use Minty\Compiler\Operators\LogicOperators\OrOperator;
 use Minty\Compiler\Operators\LogicOperators\XorOperator;
 use Minty\Compiler\Operators\PropertyAccessOperator;
 use Minty\Compiler\Operators\RangeOperator;
+use Minty\Compiler\Operators\SetOperator;
 use Minty\Compiler\Operators\TestOperators\ContainsOperator;
 use Minty\Compiler\Operators\TestOperators\DivisibleByOperator;
 use Minty\Compiler\Operators\TestOperators\EndsOperator;
@@ -146,6 +147,7 @@ class Core extends Extension
             new FilterOperator(11),
             new RangeOperator(9),
             new ExclusiveRangeOperator(9),
+            new SetOperator(0)
         ];
     }
 

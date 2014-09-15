@@ -17,7 +17,7 @@ class Context
     public function __construct($strictMode, array $variables = [])
     {
         $this->variables  = $variables;
-        $this->strictMode = (bool) $strictMode;
+        $this->strictMode = (bool)$strictMode;
     }
 
     public function __set($key, $value)
@@ -95,5 +95,21 @@ class Context
             return false;
         }
         throw new \UnexpectedValueException('Variable is not an array or an object.');
+    }
+
+    public function setProperty($structure, $key, $value)
+    {
+        if (is_array($structure) || $structure instanceof \ArrayAccess) {
+            $structure[$key] = $value;
+        } elseif (is_object($structure)) {
+            $methodName = 'set' . ucfirst($key);
+            if (method_exists($structure, $methodName)) {
+                $structure->$methodName($value);
+            } else {
+                $structure->$key = $value;
+            }
+        } else {
+            throw new \UnexpectedValueException("Property {$key} is not set.");
+        }
     }
 }

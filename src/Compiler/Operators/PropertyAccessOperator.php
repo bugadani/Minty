@@ -23,12 +23,12 @@ class PropertyAccessOperator extends Operator
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
+        $args = $node->getChildren();
+        ksort($args);
+
         $compiler
-            ->add('$context->' . $this->getMethodName($node) . '(')
-            ->compileNode($node->getChild(OperatorNode::OPERAND_LEFT))
-            ->add(', ')
-            ->compileNode($node->getChild(OperatorNode::OPERAND_RIGHT))
-            ->add(')');
+            ->add('$context->' . $this->getMethodName($node))
+            ->compileArgumentList($args);
     }
 
     /**
@@ -38,10 +38,22 @@ class PropertyAccessOperator extends Operator
      */
     private function getMethodName(OperatorNode $node)
     {
-        if ($node->hasData('existence') && $node->getData('existence') === true) {
-            return 'hasProperty';
+        if ($node->hasData('mode')) {
+            $mode = $node->getData('mode');
+        } else {
+            $mode = 'get';
         }
 
-        return 'getProperty';
+        switch ($mode) {
+            case 'has':
+                return 'hasProperty';
+
+            default:
+            case 'get':
+                return 'getProperty';
+
+            case 'set':
+                return 'setProperty';
+        }
     }
 }
