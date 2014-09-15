@@ -142,13 +142,13 @@ class ExpressionParser
                 $this->popOperator();
             }
 
-            $node = new OperatorNode($operator);
-            $node->addChild(
-                $this->operandStack->pop(),
-                OperatorNode::OPERAND_LEFT
+            $this->operandStack->push(
+                $operator->createNode(
+                    [
+                        OperatorNode::OPERAND_LEFT => $this->operandStack->pop()
+                    ]
+                )
             );
-
-            $this->operandStack->push($node);
             $token = $this->stream->next();
         }
 
@@ -286,44 +286,32 @@ class ExpressionParser
         if (!isset($this->conditionalOperator)) {
             $this->conditionalOperator = new ConditionalOperator();
         }
-        $node = new OperatorNode($this->conditionalOperator);
-        $node->addChild(
-            $this->operandStack->pop(),
-            OperatorNode::OPERAND_LEFT
-        );
+        $operands = [OperatorNode::OPERAND_LEFT => $this->operandStack->pop()];
 
         // Check whether the current expression is a simplified conditional expression (expr1 ?: expr3)
         if (!$this->stream->nextTokenIf(Token::PUNCTUATION, ':')) {
-            $node->addChild(
-                $this->parseExpression(true),
-                OperatorNode::OPERAND_MIDDLE
-            );
+            $operands[OperatorNode::OPERAND_MIDDLE] = $this->parseExpression(true);
             $this->stream->expectCurrent(Token::PUNCTUATION, ':');
         }
 
-        $node->addChild(
-            $this->parseExpression(true),
-            OperatorNode::OPERAND_RIGHT
-        );
+        $operands[OperatorNode::OPERAND_RIGHT] = $this->parseExpression(true);
 
-        $this->operandStack->push($node);
+        $this->operandStack->push(
+            $this->conditionalOperator->createNode($operands)
+        );
     }
 
     private function popOperator()
     {
         $operator = $this->operatorStack->pop();
-        $node     = new OperatorNode($operator);
-        $node->addChild(
-            $this->operandStack->pop(),
-            OperatorNode::OPERAND_RIGHT
-        );
+
+        $operands = [OperatorNode::OPERAND_RIGHT => $this->operandStack->pop()];
         if ($this->binaryOperators->exists($operator)) {
-            $node->addChild(
-                $this->operandStack->pop(),
-                OperatorNode::OPERAND_LEFT
-            );
+            $operands[OperatorNode::OPERAND_LEFT] = $this->operandStack->pop();
         }
-        $this->operandStack->push($node);
+        $this->operandStack->push(
+            $operator->createNode($operands)
+        );
     }
 
     private function pushOperator(Operator $operator)

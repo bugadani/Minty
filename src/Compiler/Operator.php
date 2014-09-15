@@ -13,9 +13,9 @@ use Minty\Compiler\Nodes\OperatorNode;
 
 abstract class Operator
 {
-    const LEFT  = 0;
+    const LEFT = 0;
     const RIGHT = 1;
-    const NONE  = 2;
+    const NONE = 2;
 
     private $precedence;
     private $associativity;
@@ -34,6 +34,16 @@ abstract class Operator
     public function isAssociativity($associativity)
     {
         return $this->associativity === $associativity;
+    }
+
+    public function createNode(array $operands)
+    {
+        $node = new OperatorNode($this);
+        foreach ($operands as $key => $operand) {
+            $node->addChild($operand, $key);
+        }
+
+        return $node;
     }
 
     abstract public function operators();
