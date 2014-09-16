@@ -22,7 +22,7 @@ abstract class FunctionOperator extends Operator
         $compiler->compileNode(
             new FunctionNode(
                 $this->getFunctionName(),
-                array_reverse($node->getChildren())
+                $node->getChildren()
             )
         );
     }

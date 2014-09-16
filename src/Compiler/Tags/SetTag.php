@@ -10,7 +10,6 @@
 namespace Minty\Compiler\Tags;
 
 use Minty\Compiler\Nodes\ExpressionNode;
-use Minty\Compiler\Nodes\OperatorNode;
 use Minty\Compiler\Nodes\RootNode;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
@@ -35,12 +34,7 @@ class SetTag extends Tag
             $right = $parser->parseExpression($stream);
 
             $setOperator = $parser->getEnvironment()->getBinaryOperators()->getOperator(':');
-            $varNode     = $setOperator->createNode(
-                [
-                    OperatorNode::OPERAND_LEFT  => $left,
-                    OperatorNode::OPERAND_RIGHT => $right
-                ]
-            );
+            $varNode     = $setOperator->createNode($left, $right);
 
             $node->addChild(new ExpressionNode($varNode));
         } while ($stream->current()->test(Token::PUNCTUATION, ','));

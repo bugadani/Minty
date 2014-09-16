@@ -36,11 +36,17 @@ abstract class Operator
         return $this->associativity === $associativity;
     }
 
-    public function createNode(array $operands)
+    public function createNode(Node $left = null, Node $right = null, Node $middle = null)
     {
         $node = new OperatorNode($this);
-        foreach ($operands as $key => $operand) {
-            $node->addChild($operand, $key);
+        if($left) {
+            $node->addChild($left, OperatorNode::OPERAND_LEFT);
+        }
+        if($middle) {
+            $node->addChild($middle, OperatorNode::OPERAND_MIDDLE);
+        }
+        if($right) {
+            $node->addChild($right, OperatorNode::OPERAND_RIGHT);
         }
 
         return $node;

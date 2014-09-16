@@ -21,17 +21,16 @@ class SetOperator extends Operator
         return ':';
     }
 
-    public function createNode(array $operands)
+    public function createNode(Node $left = null, Node $right = null, Node $middle = null)
     {
-        if ($this->isPropertyAccessOperator($operands[OperatorNode::OPERAND_LEFT])) {
-            $left = $operands[OperatorNode::OPERAND_LEFT];
+        if ($this->isPropertyAccessOperator($left)) {
             $left->addData('mode', 'set');
-            $left->addChild($operands[OperatorNode::OPERAND_RIGHT]);
+            $left->addChild($right);
 
             return $left;
-        } else {
-            return parent::createNode($operands);
         }
+
+        return parent::createNode($left, $right, $middle);
     }
 
 

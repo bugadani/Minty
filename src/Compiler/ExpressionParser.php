@@ -16,7 +16,6 @@ use Minty\Compiler\Nodes\ArrayNode;
 use Minty\Compiler\Nodes\DataNode;
 use Minty\Compiler\Nodes\FunctionNode;
 use Minty\Compiler\Nodes\IdentifierNode;
-use Minty\Compiler\Nodes\OperatorNode;
 use Minty\Compiler\Nodes\VariableNode;
 use Minty\Compiler\Operators\ConditionalOperator;
 use Minty\Compiler\Operators\PropertyAccessOperator;
@@ -144,9 +143,7 @@ class ExpressionParser
 
             $this->operandStack->push(
                 $operator->createNode(
-                    [
-                        OperatorNode::OPERAND_LEFT => $this->operandStack->pop()
-                    ]
+                    $this->operandStack->pop()
                 )
             );
             $token = $this->stream->next();
@@ -286,32 +283,39 @@ class ExpressionParser
         if (!isset($this->conditionalOperator)) {
             $this->conditionalOperator = new ConditionalOperator();
         }
-        $operands = [OperatorNode::OPERAND_LEFT => $this->operandStack->pop()];
+        $left = $this->operandStack->pop();
 
         // Check whether the current expression is a simplified conditional expression (expr1 ?: expr3)
         if (!$this->stream->nextTokenIf(Token::PUNCTUATION, ':')) {
-            $operands[OperatorNode::OPERAND_MIDDLE] = $this->parseExpression(true);
+            $middle = $this->parseExpression(true);
             $this->stream->expectCurrent(Token::PUNCTUATION, ':');
+        } else {
+            $middle = null;
         }
 
-        $operands[OperatorNode::OPERAND_RIGHT] = $this->parseExpression(true);
+        $right = $this->parseExpression(true);
 
         $this->operandStack->push(
-            $this->conditionalOperator->createNode($operands)
+            $this->conditionalOperator->createNode($left, $right, $middle)
         );
     }
 
     private function popOperator()
     {
         $operator = $this->operatorStack->pop();
-
-        $operands = [OperatorNode::OPERAND_RIGHT => $this->operandStack->pop()];
+        $right = $this->operandStack->pop();
         if ($this->binaryOperators->exists($operator)) {
-            $operands[OperatorNode::OPERAND_LEFT] = $this->operandStack->pop();
+            $operatorNode = $operator->createNode(
+                $this->operandStack->pop(),
+                $right
+            );
+        } else {
+            $operatorNode = $operator->createNode(
+                null,
+                $right
+            );
         }
-        $this->operandStack->push(
-            $operator->createNode($operands)
-        );
+        $this->operandStack->push($operatorNode);
     }
 
     private function pushOperator(Operator $operator)

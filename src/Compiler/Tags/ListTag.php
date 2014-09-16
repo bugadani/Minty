@@ -12,7 +12,6 @@ namespace Minty\Compiler\Tags;
 use Minty\Compiler\Nodes\ArrayNode;
 use Minty\Compiler\Nodes\DataNode;
 use Minty\Compiler\Nodes\ExpressionNode;
-use Minty\Compiler\Nodes\OperatorNode;
 use Minty\Compiler\Nodes\RootNode;
 use Minty\Compiler\Nodes\TagNode;
 use Minty\Compiler\Nodes\TempVariableNode;
@@ -65,12 +64,7 @@ class ListTag extends Tag
             );
 
             $setOperator = $parser->getEnvironment()->getBinaryOperators()->getOperator(':');
-            $varNode     = $setOperator->createNode(
-                [
-                    OperatorNode::OPERAND_LEFT  => $temp,
-                    OperatorNode::OPERAND_RIGHT => $arrayNode
-                ]
-            );
+            $varNode     = $setOperator->createNode($temp,$arrayNode);
 
             $loopBody->addChild(new ExpressionNode($varNode));
 

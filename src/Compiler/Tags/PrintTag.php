@@ -11,7 +11,6 @@ namespace Minty\Compiler\Tags;
 
 use Minty\Compiler\Compiler;
 use Minty\Compiler\Nodes\ExpressionNode;
-use Minty\Compiler\Nodes\OperatorNode;
 use Minty\Compiler\Nodes\TagNode;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
@@ -33,10 +32,8 @@ class PrintTag extends Tag
 
             $setOperator = $parser->getEnvironment()->getBinaryOperators()->getOperator(':');
             $varNode     = $setOperator->createNode(
-                [
-                    OperatorNode::OPERAND_LEFT  => $expression,
-                    OperatorNode::OPERAND_RIGHT => $parser->parseExpression($stream)
-                ]
+                $expression,
+                $parser->parseExpression($stream)
             );
 
             $node = new ExpressionNode($varNode);
