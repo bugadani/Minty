@@ -43,11 +43,13 @@ class ListTag extends Tag
     {
         $environment = $parser->getEnvironment();
 
-        $node = new TagNode($environment->getTag('for'), [
-            'save_temp_var' => true,
-            'create_stack'  => true,
-            'variables'     => 1
-        ]);
+        $node = new TagNode(
+            $environment->getTag('for'), [
+                'save_temp_var' => true,
+                'create_stack'  => true,
+                'variables'     => 1
+            ]
+        );
 
         $node->addChild($parser->parseExpression($stream), 'source');
 
@@ -62,13 +64,15 @@ class ListTag extends Tag
                 new DataNode($stream->expect(Token::VARIABLE)->getValue())
             );
 
-            $setNode = new OperatorNode(
-                $parser->getEnvironment()->getBinaryOperators()->getOperator(':')
+            $setOperator = $parser->getEnvironment()->getBinaryOperators()->getOperator(':');
+            $varNode     = $setOperator->createNode(
+                [
+                    OperatorNode::OPERAND_LEFT  => $temp,
+                    OperatorNode::OPERAND_RIGHT => $arrayNode
+                ]
             );
-            $setNode->addChild($temp, OperatorNode::OPERAND_LEFT);
-            $setNode->addChild($arrayNode, OperatorNode::OPERAND_RIGHT);
 
-            $loopBody->addChild(new ExpressionNode($setNode));
+            $loopBody->addChild(new ExpressionNode($varNode));
 
             $stream->next();
         }

@@ -31,11 +31,13 @@ class PrintTag extends Tag
         $expression = $parser->parseExpression($stream);
         if ($stream->current()->test(Token::PUNCTUATION, ':')) {
 
-            $varNode = new OperatorNode(
-                $parser->getEnvironment()->getBinaryOperators()->getOperator(':')
+            $setOperator = $parser->getEnvironment()->getBinaryOperators()->getOperator(':');
+            $varNode     = $setOperator->createNode(
+                [
+                    OperatorNode::OPERAND_LEFT  => $expression,
+                    OperatorNode::OPERAND_RIGHT => $parser->parseExpression($stream)
+                ]
             );
-            $varNode->addChild($expression, OperatorNode::OPERAND_LEFT);
-            $varNode->addChild($parser->parseExpression($stream), OperatorNode::OPERAND_RIGHT);
 
             $node = new ExpressionNode($varNode);
         } else {
