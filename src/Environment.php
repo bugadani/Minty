@@ -164,8 +164,9 @@ class Environment
         if ($cache) {
             if ($cache instanceof TemplateCacheInterface) {
                 $this->templateCache = $cache;
+            } else {
+                $this->templateCache = new FileSystemCache($this->options['cache']);
             }
-            $this->templateCache = new FileSystemCache($this->options['cache']);
         }
     }
 
