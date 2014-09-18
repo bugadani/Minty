@@ -70,7 +70,7 @@ class Context
         if (!$this->strictMode) {
             return $key;
         }
-        throw new \UnexpectedValueException("Property {$key} is not set.");
+        throw new \OutOfBoundsException("Property {$key} is not set.");
     }
 
     public function hasProperty($structure, $key)
@@ -109,7 +109,7 @@ class Context
                 $structure->$key = $value;
             }
         } else {
-            throw new \UnexpectedValueException("Property {$key} is not set.");
+            throw new \UnexpectedValueException("Property {$key} can not be set.");
         }
     }
 }

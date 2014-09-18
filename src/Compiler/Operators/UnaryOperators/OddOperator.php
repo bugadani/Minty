@@ -26,6 +26,6 @@ class OddOperator extends Operator
         $compiler
             ->add('(')
             ->compileNode($node->getChild(OperatorNode::OPERAND_LEFT))
-            ->add(' % 2 == 1)');
+            ->add(' % 2 != 0)');
     }
 }
