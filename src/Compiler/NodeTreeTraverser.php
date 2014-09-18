@@ -29,10 +29,10 @@ class NodeTreeTraverser
     public function addVisitor(NodeVisitor $visitor)
     {
         $priority = $visitor->getPriority();
-        if (!isset($this->visitors[$priority])) {
-            $this->visitors[$priority] = [];
+        if (!isset($this->visitors[ $priority ])) {
+            $this->visitors[ $priority ] = [];
         }
-        $this->visitors[$priority][] = $visitor;
+        $this->visitors[ $priority ][] = $visitor;
     }
 
     public function traverse(Node $node)

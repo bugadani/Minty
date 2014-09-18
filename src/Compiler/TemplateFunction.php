@@ -48,7 +48,9 @@ class TemplateFunction
                 $callback = $name;
             }
             if (!is_callable($callback)) {
-                throw new \InvalidArgumentException("\$callback for function {$name} must be a callable value");
+                throw new \InvalidArgumentException(
+                    "\$callback for function {$name} must be a callable value"
+                );
             }
             $this->callback = $callback;
         }
@@ -75,11 +77,11 @@ class TemplateFunction
 
     public function getOption($key)
     {
-        if (!isset($this->options[$key])) {
+        if (!isset($this->options[ $key ])) {
             throw new \OutOfBoundsException("Option {$key} is not set.");
         }
 
-        return $this->options[$key];
+        return $this->options[ $key ];
     }
 
     public function getFunctionName()
@@ -88,7 +90,6 @@ class TemplateFunction
     }
 
     /**
-     * @throws \BadMethodCallException
      * @return callable
      */
     public function getCallback()

@@ -37,7 +37,7 @@ abstract class Node
         if ($key === null) {
             $this->children[] = $node;
         } else {
-            $this->children[$key] = $node;
+            $this->children[ $key ] = $node;
         }
 
         return $node;
@@ -53,17 +53,17 @@ abstract class Node
 
     public function hasChild($key)
     {
-        return isset($this->children[$key]);
+        return isset($this->children[ $key ]);
     }
 
     public function getChild($key)
     {
-        return $this->children[$key];
+        return $this->children[ $key ];
     }
 
     public function removeChild($key)
     {
-        unset($this->children[$key]);
+        unset($this->children[ $key ]);
     }
 
     abstract public function compile(Compiler $compiler);
@@ -75,16 +75,16 @@ abstract class Node
 
     public function addData($key, $value)
     {
-        $this->data[$key] = $value;
+        $this->data[ $key ] = $value;
     }
 
     public function getData($key)
     {
-        return $this->data[$key];
+        return $this->data[ $key ];
     }
 
     public function hasData($key)
     {
-        return isset($this->data[$key]);
+        return isset($this->data[ $key ]);
     }
 }

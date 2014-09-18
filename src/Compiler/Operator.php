@@ -39,13 +39,13 @@ abstract class Operator
     public function createNode(Node $left = null, Node $right = null, Node $middle = null)
     {
         $node = new OperatorNode($this);
-        if($left) {
+        if ($left) {
             $node->addChild($left, OperatorNode::OPERAND_LEFT);
         }
-        if($middle) {
+        if ($middle) {
             $node->addChild($middle, OperatorNode::OPERAND_MIDDLE);
         }
-        if($right) {
+        if ($right) {
             $node->addChild($right, OperatorNode::OPERAND_RIGHT);
         }
 

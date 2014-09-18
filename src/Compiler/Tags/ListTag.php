@@ -64,7 +64,7 @@ class ListTag extends Tag
             );
 
             $setOperator = $parser->getEnvironment()->getBinaryOperators()->getOperator(':');
-            $varNode     = $setOperator->createNode($temp,$arrayNode);
+            $varNode     = $setOperator->createNode($temp, $arrayNode);
 
             $loopBody->addChild(new ExpressionNode($varNode));
 

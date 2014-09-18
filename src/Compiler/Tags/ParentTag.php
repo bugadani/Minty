@@ -36,7 +36,7 @@ class ParentTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $node = $this->helper->createRenderBlockNode(
+        $node       = $this->helper->createRenderBlockNode(
             $parser->getCurrentBlock(),
             $this->helper->createContext(
                 $stream->next()->test(Token::IDENTIFIER, 'using'),
@@ -45,7 +45,7 @@ class ParentTag extends Tag
             )
         );
         $expression = $node->getChild('expression');
-        if(!$expression instanceof FunctionNode) {
+        if (!$expression instanceof FunctionNode) {
             throw new \UnexpectedValueException("An instance of FunctionNode was expected");
         }
 

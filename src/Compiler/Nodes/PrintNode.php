@@ -14,12 +14,19 @@ use Minty\Compiler\Node;
 
 class PrintNode extends Node
 {
+    public function __construct($expression)
+    {
+        if (!$expression instanceof Node) {
+            $expression = new DataNode($expression);
+        }
+        $this->addChild($expression, 'expression');
+    }
 
     public function compile(Compiler $compiler)
     {
         $compiler
             ->indented('echo ')
-            ->compileString($this->getData('data'))
+            ->compileNode($this->getChild('expression'))
             ->add(';');
     }
 }

@@ -141,7 +141,7 @@ class UnusedVariableOptimizer extends NodeVisitor implements EnvironmentAwareInt
             $node = $node->getObject();
         }
 
-        if(!$node) {
+        if (!$node) {
             return false;
         }
 

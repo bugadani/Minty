@@ -63,19 +63,19 @@ class Parser
         switch ($token->getType()) {
             case Token::TEXT:
                 $root->addChild(
-                    new PrintNode(['data' => $value])
+                    new PrintNode($value)
                 );
                 break;
 
             case Token::TAG_START:
                 try {
                     $node = $this->environment->getTag($value)->parse($this, $stream);
+                    if ($node instanceof Node) {
+                        $node->addData('line', $token->getLine());
+                        $root->addChild($node);
+                    }
                 } catch (\OutOfBoundsException $e) {
                     throw new ParseException("Unknown {$value} tag", $token->getLine(), $e);
-                }
-                if ($node instanceof Node) {
-                    $node->addData('line', $token->getLine());
-                    $root->addChild($node);
                 }
 
                 break;

@@ -85,7 +85,7 @@ class ExpressionTokenizer implements TokenizerInterface
                 } else {
                     $symbol = preg_quote($symbol, '/');
                 }
-                $patterns[$symbol] = $length;
+                $patterns[ $symbol ] = $length;
             }
         }
         arsort($patterns);
@@ -144,7 +144,7 @@ class ExpressionTokenizer implements TokenizerInterface
             $token = $this->tokenizeExpressionPart($this->iterator->current());
             $this->iterator->next();
         } else {
-            $token = $this->token(Token::EOF);
+            $token      = $this->token(Token::EOF);
             $this->line = 0;
         }
 
@@ -153,15 +153,15 @@ class ExpressionTokenizer implements TokenizerInterface
 
     private function tokenizeExpressionPart($part)
     {
-        if (isset(self::$punctuation[$part])) {
+        if (isset(self::$punctuation[ $part ])) {
             $token = $this->token(Token::PUNCTUATION, $part);
-        } elseif (isset(self::$operators[$part])) {
+        } elseif (isset(self::$operators[ $part ])) {
             $token = $this->token(Token::OPERATOR, $part);
         } elseif (is_numeric($part)) {
-            $number = (float) $part;
+            $number = (float)$part;
             //check whether the number can be represented as an integer
             if (ctype_digit($part) && $number <= PHP_INT_MAX) {
-                $number = (int) $part;
+                $number = (int)$part;
             }
             $token = $this->token(Token::LITERAL, $number);
         } else {

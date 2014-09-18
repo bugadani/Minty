@@ -34,8 +34,8 @@ class OperatorCollection
      */
     public function addOperator(Operator $operator)
     {
-        foreach ((array) $operator->operators() as $opSymbol) {
-            $this->operators[$opSymbol] = $operator;
+        foreach ((array)$operator->operators() as $opSymbol) {
+            $this->operators[ $opSymbol ] = $operator;
         }
     }
 
@@ -48,12 +48,12 @@ class OperatorCollection
      */
     public function isOperator($operator)
     {
-        return isset($this->operators[$operator]);
+        return isset($this->operators[ $operator ]);
     }
 
     public function getOperator($sign)
     {
-        return $this->operators[$sign];
+        return $this->operators[ $sign ];
     }
 
     public function getSymbols()

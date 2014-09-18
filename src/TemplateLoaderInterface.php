@@ -13,6 +13,7 @@ interface TemplateLoaderInterface
 {
     /**
      * Returns whether the cached template is up to date.
+     *
      * @param $template
      *
      * @return bool
@@ -21,6 +22,7 @@ interface TemplateLoaderInterface
 
     /**
      * Returns whether $template exists.
+     *
      * @param $template
      *
      * @return bool
@@ -29,6 +31,7 @@ interface TemplateLoaderInterface
 
     /**
      * Loads the contents of $template.
+     *
      * @param $template
      *
      * @return string
@@ -37,6 +40,7 @@ interface TemplateLoaderInterface
 
     /**
      * Returns with a unique cache key for $template.
+     *
      * @param $template
      *
      * @return string

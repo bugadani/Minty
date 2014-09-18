@@ -80,7 +80,7 @@ class IfTag extends Tag
             $body = $parser->parseBlock($stream, ['else', 'elseif', 'endif']);
             $branchNode->addChild($body, 'body');
 
-            $token = $stream->current();
+            $token   = $stream->current();
             $tagName = $token->getValue();
             if ($tagName === 'else') {
                 if ($hasElse) {
@@ -90,7 +90,7 @@ class IfTag extends Tag
                     );
                 }
                 $condition = null;
-                $hasElse = true;
+                $hasElse   = true;
                 $stream->expect(Token::TAG_END);
             } elseif ($tagName === 'elseif') {
                 $condition = $parser->parseExpression($stream);

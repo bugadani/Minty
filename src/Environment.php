@@ -202,7 +202,7 @@ class Environment
 
     public function addGlobalVariable($name, $value)
     {
-        $this->options['global_variables'][$name] = $value;
+        $this->options['global_variables'][ $name ] = $value;
     }
 
     /**
@@ -213,11 +213,11 @@ class Environment
      */
     public function getOption($key)
     {
-        if (!isset($this->options[$key])) {
+        if (!isset($this->options[ $key ])) {
             throw new \OutOfBoundsException("Option {$key} is not set.");
         }
 
-        return $this->options[$key];
+        return $this->options[ $key ];
     }
 
     /**
@@ -225,7 +225,7 @@ class Environment
      */
     public function addExtension(Extension $extension)
     {
-        $this->extensions[$extension->getExtensionName()] = $extension;
+        $this->extensions[ $extension->getExtensionName() ] = $extension;
         array_map(
             function (TemplateFunction $function) use ($extension) {
                 $function->setExtension($extension);
@@ -243,15 +243,15 @@ class Environment
     public function addFunction(TemplateFunction $function)
     {
         $functionName = $function->getFunctionName();
-        if (isset($this->functions[$functionName])) {
-            $extension = $this->functions[$functionName]->getExtension()->getExtensionName();
+        if (isset($this->functions[ $functionName ])) {
+            $extension = $this->functions[ $functionName ]->getExtension()->getExtensionName();
             $message   = "Function {$functionName} is already registered";
             if ($extension) {
                 $message .= " in extension '{$extension}'";
             }
             throw new \InvalidArgumentException($message);
         }
-        $this->functions[$functionName] = $function;
+        $this->functions[ $functionName ] = $function;
     }
 
     /**
@@ -262,11 +262,11 @@ class Environment
      */
     public function getFunction($name)
     {
-        if (!isset($this->functions[$name])) {
+        if (!isset($this->functions[ $name ])) {
             throw new \RuntimeException("Function not found: {$name}");
         }
 
-        return $this->functions[$name];
+        return $this->functions[ $name ];
     }
 
     /**
@@ -276,7 +276,7 @@ class Environment
      */
     public function hasFunction($name)
     {
-        return isset($this->functions[$name]);
+        return isset($this->functions[ $name ]);
     }
 
     /**
@@ -284,7 +284,7 @@ class Environment
      */
     public function addTag(Tag $tag)
     {
-        $this->tags[$tag->getTag()] = $tag;
+        $this->tags[ $tag->getTag() ] = $tag;
     }
 
     /**
@@ -295,11 +295,11 @@ class Environment
      */
     public function getTag($tag)
     {
-        if (!isset($this->tags[$tag])) {
+        if (!isset($this->tags[ $tag ])) {
             throw new \OutOfBoundsException("Tag {$tag} does not exist.");
         }
 
-        return $this->tags[$tag];
+        return $this->tags[ $tag ];
     }
 
     /**
@@ -309,7 +309,7 @@ class Environment
      */
     public function hasTag($tag)
     {
-        return isset($this->tags[$tag]);
+        return isset($this->tags[ $tag ]);
     }
 
     /**
@@ -328,14 +328,16 @@ class Environment
      */
     public function getFunctionCompiler($class)
     {
-        if (!isset($this->functionCompilers[$class])) {
-            $this->functionCompilers[$class] = new $class;
-            if (!$this->functionCompilers[$class] instanceof FunctionCompiler) {
-                throw new \InvalidArgumentException("Class {$class} is not an instance of FunctionCompiler");
+        if (!isset($this->functionCompilers[ $class ])) {
+            $this->functionCompilers[ $class ] = new $class;
+            if (!$this->functionCompilers[ $class ] instanceof FunctionCompiler) {
+                throw new \InvalidArgumentException(
+                    "Class {$class} is not an instance of FunctionCompiler"
+                );
             }
         }
 
-        return $this->functionCompilers[$class];
+        return $this->functionCompilers[ $class ];
     }
 
     public function addNodeVisitor(NodeVisitor $visitor)
@@ -430,11 +432,11 @@ class Environment
 
     private function autoloadTemplate($className)
     {
-        if (!isset($this->classMap[$className])) {
+        if (!isset($this->classMap[ $className ])) {
             return;
         }
 
-        $template = $this->classMap[$className];
+        $template = $this->classMap[ $className ];
 
         if ($this->options['cache']) {
             $cacheKey = $this->loader->getCacheKey($template);
@@ -476,7 +478,7 @@ class Environment
         if (!empty($cacheNamespace)) {
             $className = $cacheNamespace . '\\' . $className;
         }
-        $this->classMap[$className] = $template;
+        $this->classMap[ $className ] = $template;
 
         return $className;
     }
@@ -490,16 +492,16 @@ class Environment
     public function load($template)
     {
         $template = $this->findFirstExistingTemplate($template);
-        if (!isset($this->loadedTemplates[$template])) {
+        if (!isset($this->loadedTemplates[ $template ])) {
             $class = $this->getTemplateClassName($template);
 
-            $this->loadedTemplates[$template] = new $class($this);
-            if (!$this->loadedTemplates[$template] instanceof Template) {
+            $this->loadedTemplates[ $template ] = new $class($this);
+            if (!$this->loadedTemplates[ $template ] instanceof Template) {
                 throw new TemplatingException("The compiled class for {$template} is invalid");
             }
         }
 
-        return $this->loadedTemplates[$template];
+        return $this->loadedTemplates[ $template ];
     }
 
     public function createContext($variables = [])

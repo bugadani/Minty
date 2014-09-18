@@ -20,6 +20,7 @@ interface TemplateCacheInterface
 
     /**
      * Saves $compiled to $file.
+     *
      * @param $file     string The file name in cache.
      * @param $compiled string The cache content.
      *
@@ -29,6 +30,7 @@ interface TemplateCacheInterface
 
     /**
      * Returns whether $file exists in cache.
+     *
      * @param $file
      *
      * @return bool
@@ -37,6 +39,7 @@ interface TemplateCacheInterface
 
     /**
      * Returns the time $file was last saved to.
+     *
      * @param $file
      *
      * @return int

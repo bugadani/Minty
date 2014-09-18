@@ -65,9 +65,11 @@ class EmbedTag extends Tag
             $parser
         );
 
-        $node = new TagNode($this, [
-            'template' => $this->parseClass($parser, $stream, $parentTemplate)
-        ]);
+        $node = new TagNode(
+            $this, [
+                'template' => $this->parseClass($parser, $stream, $parentTemplate)
+            ]
+        );
 
         $node->addChild($environmentNode, 'environment');
         $node->addChild($contextNode, 'context');

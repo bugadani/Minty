@@ -48,7 +48,7 @@ class ChainLoader implements TemplateLoaderInterface
             throw new TemplateNotFoundException($template);
         }
 
-        return $this->templateMap[$template]->isCacheFresh($template);
+        return $this->templateMap[ $template ]->isCacheFresh($template);
     }
 
     /**
@@ -56,13 +56,13 @@ class ChainLoader implements TemplateLoaderInterface
      */
     public function exists($template)
     {
-        if (isset($this->templateMap[$template])) {
+        if (isset($this->templateMap[ $template ])) {
             return true;
         }
 
         foreach ($this->loaders as $loader) {
             if ($loader->exists($template)) {
-                $this->templateMap[$template] = $loader;
+                $this->templateMap[ $template ] = $loader;
 
                 return true;
             }
@@ -80,7 +80,7 @@ class ChainLoader implements TemplateLoaderInterface
             throw new TemplateNotFoundException($template);
         }
 
-        return $this->templateMap[$template]->load($template);
+        return $this->templateMap[ $template ]->load($template);
     }
 
     /**
@@ -92,6 +92,6 @@ class ChainLoader implements TemplateLoaderInterface
             throw new TemplateNotFoundException($template);
         }
 
-        return $this->templateMap[$template]->getCacheKey($template);
+        return $this->templateMap[ $template ]->getCacheKey($template);
     }
 }

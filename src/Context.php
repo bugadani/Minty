@@ -22,18 +22,18 @@ class Context
 
     public function __set($key, $value)
     {
-        $this->variables[$key] = $value;
+        $this->variables[ $key ] = $value;
     }
 
     public function __unset($key)
     {
-        unset($this->variables[$key]);
+        unset($this->variables[ $key ]);
     }
 
     public function &__get($key)
     {
-        if (isset($this->variables[$key])) {
-            return $this->variables[$key];
+        if (isset($this->variables[ $key ])) {
+            return $this->variables[ $key ];
         }
         if (!$this->strictMode) {
             return $key;
@@ -43,7 +43,7 @@ class Context
 
     public function __isset($key)
     {
-        return isset($this->variables[$key]);
+        return isset($this->variables[ $key ]);
     }
 
     public function toArray()
@@ -54,8 +54,8 @@ class Context
     public function getProperty($structure, $key)
     {
         if (is_array($structure) || $structure instanceof \ArrayAccess) {
-            if (isset($structure[$key])) {
-                return $structure[$key];
+            if (isset($structure[ $key ])) {
+                return $structure[ $key ];
             }
         }
         if (is_object($structure)) {
@@ -76,10 +76,10 @@ class Context
     public function hasProperty($structure, $key)
     {
         if (is_array($structure)) {
-            return isset($structure[$key]);
+            return isset($structure[ $key ]);
         }
         if ($structure instanceof \ArrayAccess) {
-            if (isset($structure[$key])) {
+            if (isset($structure[ $key ])) {
                 return true;
             }
         }
@@ -100,7 +100,7 @@ class Context
     public function setProperty($structure, $key, $value)
     {
         if (is_array($structure) || $structure instanceof \ArrayAccess) {
-            $structure[$key] = $value;
+            $structure[ $key ] = $value;
         } elseif (is_object($structure)) {
             $methodName = 'set' . ucfirst($key);
             if (method_exists($structure, $methodName)) {

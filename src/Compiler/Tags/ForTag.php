@@ -120,10 +120,12 @@ class ForTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $node = new TagNode($this, [
-            'save_temp_var' => true,
-            'create_stack'  => true
-        ]);
+        $node = new TagNode(
+            $this, [
+                'save_temp_var' => true,
+                'create_stack'  => true
+            ]
+        );
 
         $loopVar = $this->parseVariableNode($stream);
         if ($stream->nextTokenIf(Token::PUNCTUATION, [':', '=>'])) {

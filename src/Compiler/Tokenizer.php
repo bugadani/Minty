@@ -61,7 +61,7 @@ class Tokenizer implements TokenizerInterface
         );
 
         foreach ($blockTags as $name => $tag) {
-            self::$closingTags[$blockEndPrefix . $name] = 'end' . $name;
+            self::$closingTags[ $blockEndPrefix . $name ] = 'end' . $name;
         }
 
         $this->createPatterns($blockEndPrefix);
@@ -75,7 +75,7 @@ class Tokenizer implements TokenizerInterface
         $delimiterPatterns = [];
         foreach (self::$delimiters as $name => $delimiters) {
             list($start, $end) = $delimiters;
-            $delimiterPatterns[$name] = [
+            $delimiterPatterns[ $name ] = [
                 preg_quote($start, '/'),
                 preg_quote($end, '/')
             ];
@@ -99,8 +99,8 @@ class Tokenizer implements TokenizerInterface
         foreach ($delimiterPatterns as $delimiters) {
             list($start, $end) = $delimiters;
 
-            $tokenPatternParts[$start] = strlen($start);
-            $tokenPatternParts[$end]   = strlen($end);
+            $tokenPatternParts[ $start ] = strlen($start);
+            $tokenPatternParts[ $end ]   = strlen($end);
         }
 
         list($tagStart, $tagEnd) = $delimiterPatterns['tag'];
@@ -246,8 +246,8 @@ class Tokenizer implements TokenizerInterface
         list(, $tagName, $expression) = $parts;
 
         //If the tag name is unknown, try to use the fallback
-        if (isset(self::$closingTags[$tagName])) {
-            $tagName = self::$closingTags[$tagName];
+        if (isset(self::$closingTags[ $tagName ])) {
+            $tagName = self::$closingTags[ $tagName ];
         } elseif (!self::$environment->hasTag($tagName)) {
             $tagName    = self::$fallbackTagName;
             $expression = $tag;
@@ -258,8 +258,7 @@ class Tokenizer implements TokenizerInterface
         self::$expressionTokenizer->setLine($this->line);
         $stream = self::$expressionTokenizer->tokenize($expression);
 
-        while(!$stream->next()->test(Token::EOF))
-        {
+        while (!$stream->next()->test(Token::EOF)) {
             $this->tokenBuffer[] = $stream->current();
         }
         $this->line = $stream->current()->getLine();

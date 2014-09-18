@@ -62,9 +62,11 @@ class SwitchTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $node = new TagNode($this, [
-            'tested' => $parser->parseExpression($stream)
-        ]);
+        $node = new TagNode(
+            $this, [
+                'tested' => $parser->parseExpression($stream)
+            ]
+        );
 
         try {
             $stream->nextTokenIf(Token::TEXT, 'ctype_space');

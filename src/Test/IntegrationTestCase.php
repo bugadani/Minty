@@ -7,7 +7,7 @@ use Minty\TemplateLoaders\StringLoader;
 
 abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
 {
-    const TEST_FOR_RESULT    = 1;
+    const TEST_FOR_RESULT = 1;
     const TEST_FOR_EXCEPTION = 2;
 
     private static $counter = 0;
@@ -103,7 +103,7 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
             if ($match[1] === '') {
                 $match[1] = 'index';
             }
-            $templates[$match[1]] = $match[2];
+            $templates[ $match[1] ] = $match[2];
         }
 
         return $templates;

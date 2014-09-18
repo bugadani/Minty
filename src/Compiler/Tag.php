@@ -15,12 +15,14 @@ abstract class Tag
 {
     /**
      * Returns the tag name.
+     *
      * @return string
      */
     abstract public function getTag();
 
     /**
      * Returns whether the tag has a corresponding ending tag, i.e. is a block tag.
+     *
      * @return bool
      */
     public function hasEndingTag()

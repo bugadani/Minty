@@ -52,7 +52,7 @@ abstract class Template
         $this->extension = $dot ? substr($template, $dot + 1) : '';
 
         foreach ($blocks as $block) {
-            $this->blocks[$block] = [$this, 'block_' . $block];
+            $this->blocks[ $block ] = [$this, 'block_' . $block];
         }
     }
 
@@ -64,13 +64,17 @@ abstract class Template
         }
         foreach ((array)$blocks as $name => $block) {
             $targetBlockName = is_int($name) ? $block : $name;
-            if (!isset($sourceTemplate->blocks[$targetBlockName])) {
-                throw new TemplatingException("Block {$targetBlockName} is not found in template {$source}");
+            if (!isset($sourceTemplate->blocks[ $targetBlockName ])) {
+                throw new TemplatingException(
+                    "Block {$targetBlockName} is not found in template {$source}"
+                );
             }
-            if (isset($this->blocks[$block])) {
-                throw new TemplatingException("Block {$block} is already present in template {$this->templateName}");
+            if (isset($this->blocks[ $block ])) {
+                throw new TemplatingException(
+                    "Block {$block} is already present in template {$this->templateName}"
+                );
             }
-            $this->blocks[$block] = [$sourceTemplate, 'block_' . $targetBlockName];
+            $this->blocks[ $block ] = [$sourceTemplate, 'block_' . $targetBlockName];
         }
     }
 
@@ -79,18 +83,17 @@ abstract class Template
         switch ($key) {
             case 'template':
                 return $this->templateName;
+
             case 'extension':
                 return $this->extension;
+
             case 'parent':
-                if (!isset($this->parentTemplate)) {
-                    throw new \OutOfBoundsException("Property {$key} is not set.");
+                if (!empty($this->parentTemplate)) {
+                    return $this->environment->load($this->parentTemplate);
                 }
-
-                return $this->environment->load($this->parentTemplate);
-
-            default:
-                throw new \OutOfBoundsException("Property {$key} is not set.");
+                break;
         }
+        throw new \OutOfBoundsException("Property {$key} is not set.");
     }
 
     public function __isset($key)
@@ -99,8 +102,10 @@ abstract class Template
             case 'template':
             case 'extension':
                 return true;
+
             case 'parent':
-                return isset($this->parentTemplate);
+                return !empty($this->parentTemplate);
+
             default:
                 return false;
         }
@@ -124,7 +129,7 @@ abstract class Template
                 $base = $base->parentOf;
             }
         }
-        $blockPresent = isset($base->blocks[$blockName]);
+        $blockPresent = isset($base->blocks[ $blockName ]);
         if ($parentBlock || !$blockPresent) {
             $this->renderParentBlock($base, $blockName, $context);
         } else {
@@ -156,8 +161,8 @@ abstract class Template
     {
         while ($parent->parentTemplate) {
             $parent = $this->environment->load($parent->parentTemplate);
-            if (isset($parent->blocks[$blockName])) {
-                call_user_func($parent->blocks[$blockName], $context);
+            if (isset($parent->blocks[ $blockName ])) {
+                $parent->blocks[$blockName]($context);
 
                 return;
             }

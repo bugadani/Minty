@@ -303,7 +303,7 @@ class ExpressionParser
     private function popOperator()
     {
         $operator = $this->operatorStack->pop();
-        $right = $this->operandStack->pop();
+        $right    = $this->operandStack->pop();
         if ($this->binaryOperators->exists($operator)) {
             $operatorNode = $operator->createNode(
                 $this->operandStack->pop(),

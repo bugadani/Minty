@@ -1,0 +1,7 @@
+--TEST--
+Test that accessing $_self.parent throws exception when a template does not extend an other.
+--TEMPLATE--
+{ $_self.parent }
+--EXCEPTION--
+OutOfBoundsException
+Property parent is not set.

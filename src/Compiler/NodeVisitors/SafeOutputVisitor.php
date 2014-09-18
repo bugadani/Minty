@@ -13,12 +13,12 @@ use Minty\Compiler\Node;
 use Minty\Compiler\Nodes\ClassNode;
 use Minty\Compiler\Nodes\FunctionNode;
 use Minty\Compiler\Nodes\OperatorNode;
+use Minty\Compiler\Nodes\PrintNode;
 use Minty\Compiler\Nodes\TagNode;
 use Minty\Compiler\Nodes\VariableNode;
 use Minty\Compiler\NodeVisitor;
 use Minty\Compiler\Operators\FilterOperator;
 use Minty\Compiler\Tags\AutofilterTag;
-use Minty\Compiler\Tags\PrintTag;
 use Minty\Environment;
 use Minty\EnvironmentAwareInterface;
 
@@ -54,7 +54,7 @@ class SafeOutputVisitor extends NodeVisitor implements EnvironmentAwareInterface
             $this->setupTemplateDefaults($node);
         } elseif ($this->inTag) {
             $this->checkForUnsafeAccess($node);
-        } elseif ($this->isPrintNode($node)) {
+        } elseif ($node instanceof PrintNode) {
             $this->inTag  = true;
             $this->isSafe = true;
         } elseif ($this->isAutofilterTag($node)) {
@@ -169,11 +169,6 @@ class SafeOutputVisitor extends NodeVisitor implements EnvironmentAwareInterface
         return $node instanceof VariableNode && $node->getData('name') !== '_self';
     }
 
-    private function isPrintNode(Node $node)
-    {
-        return $node instanceof TagNode && $node->getTag() instanceof PrintTag;
-    }
-
     private function isAutofilterTag(Node $node)
     {
         return $node instanceof TagNode && $node->getTag() instanceof AutofilterTag;
@@ -192,7 +187,7 @@ class SafeOutputVisitor extends NodeVisitor implements EnvironmentAwareInterface
     public function leaveNode(Node $node)
     {
         if ($this->inTag) {
-            if ($this->isPrintNode($node)) {
+            if ($node instanceof PrintNode) {
                 if ($this->autofilter && !$this->isSafe) {
                     $this->addFilterNode($node, $this->autofilter);
                 }
@@ -217,9 +212,11 @@ class SafeOutputVisitor extends NodeVisitor implements EnvironmentAwareInterface
             $for = $this->defaultAutofilterStrategy;
         }
         $node->addChild(
-            new FunctionNode('filter_' . $for, [
-                $node->getChild('expression')
-            ]),
+            new FunctionNode(
+                'filter_' . $for, [
+                    $node->getChild('expression')
+                ]
+            ),
             'expression'
         );
     }

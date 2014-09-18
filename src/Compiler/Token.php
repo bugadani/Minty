@@ -11,16 +11,16 @@ namespace Minty\Compiler;
 
 class Token
 {
-    const TAG_START   = 0;
-    const TAG_END     = 1;
-    const LITERAL     = 2;
-    const STRING      = 3;
-    const IDENTIFIER  = 4;
-    const OPERATOR    = 5;
+    const TAG_START = 0;
+    const TAG_END = 1;
+    const LITERAL = 2;
+    const STRING = 3;
+    const IDENTIFIER = 4;
+    const OPERATOR = 5;
     const PUNCTUATION = 6;
-    const TEXT        = 7;
-    const VARIABLE    = 8;
-    const EOF         = 9;
+    const TEXT = 7;
+    const VARIABLE = 8;
+    const EOF = 9;
 
     private static $strings = [
         self::TAG_START   => 'TAG START',
@@ -80,8 +80,8 @@ class Token
 
     public function getTypeString()
     {
-        if (isset(self::$strings[$this->type])) {
-            return self::$strings[$this->type];
+        if (isset(self::$strings[ $this->type ])) {
+            return self::$strings[ $this->type ];
         }
 
         return "UNKNOWN {$this->type}";

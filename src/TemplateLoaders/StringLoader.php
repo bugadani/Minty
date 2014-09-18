@@ -35,7 +35,7 @@ class StringLoader implements TemplateLoaderInterface, EnvironmentAwareInterface
 
     public function addTemplate($name, $template)
     {
-        $this->templates[$name] = $template;
+        $this->templates[ $name ] = $template;
     }
 
     /**
@@ -53,7 +53,7 @@ class StringLoader implements TemplateLoaderInterface, EnvironmentAwareInterface
      */
     public function exists($template)
     {
-        return isset($this->templates[$template]);
+        return isset($this->templates[ $template ]);
     }
 
     /**
@@ -61,7 +61,7 @@ class StringLoader implements TemplateLoaderInterface, EnvironmentAwareInterface
      */
     public function load($template)
     {
-        return $this->templates[$template];
+        return $this->templates[ $template ];
     }
 
     /**
@@ -71,8 +71,8 @@ class StringLoader implements TemplateLoaderInterface, EnvironmentAwareInterface
     {
         //embedded templates are not present in the loader so they can't have a hashed suffix
         //they also don't need one because they get recompiled with the template that uses them
-        if (isset($this->templates[$template])) {
-            $template = $template . '_' . md5($this->templates[$template]);
+        if (isset($this->templates[ $template ])) {
+            $template = $template . '_' . md5($this->templates[ $template ]);
         }
 
         return $template;
