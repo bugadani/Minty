@@ -12,13 +12,13 @@ Arithmetic (maths) operators
  * `$a / $b` divides `$a` by `$b`
  * `-$a` results in the opposite of `$a`
 
-The exponential operators (^, **)
+The exponential operators (`^`, `**`)
 --------
 
 `$a ^ $b` raises `$a` to the power of `$b`, i.e. `2^3` results in 8. The operator is right
 associative, meaning that `$a ^ $b ^ $c` is equal to `$a ^ ($b ^ $c)`.
 
-The remainder (%) and modulo (mod) operators
+The remainder (`%`) and modulo (`mod`) operators
 --------
 
 The `%` operator divides two numbers and returns the remainder. The remainder has the same sign as the
