@@ -1,10 +1,14 @@
 --TEST--
-Remainder (modulo) operator (%)
+Remainder operator (%)
 --TEMPLATE--
-{ 3%2 }
+{ 3 % 2 }
 { $foo % 2 }
+{ 6 % 2 }
+{ -6 % 2 }
 --DATA--
 array('foo' => 3)
 --EXPECT--
 1
 1
+0
+0

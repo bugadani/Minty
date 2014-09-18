@@ -1,0 +1,16 @@
+--TEST--
+Modulo operator (mod)
+--TEMPLATE--
+{ 5 mod 3 }
+{ 5 mod -3 }
+{ 6 mod 3 }
+{ -5 mod 3 }
+{ -5 mod -3 }
+{ -6 mod -3 }
+--EXPECT--
+2
+-1
+0
+1
+-2
+0

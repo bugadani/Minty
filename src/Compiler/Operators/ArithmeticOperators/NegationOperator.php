@@ -7,24 +7,24 @@
  * For licensing information see the LICENSE file.
  */
 
-namespace Minty\Compiler\Operators\UnaryOperators;
+namespace Minty\Compiler\Operators\ArithmeticOperators;
 
 use Minty\Compiler\Compiler;
 use Minty\Compiler\Nodes\OperatorNode;
 use Minty\Compiler\Operator;
 
-class PlusOperator extends Operator
+class NegationOperator extends Operator
 {
 
     public function operators()
     {
-        return '+';
+        return '-';
     }
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
         $compiler
-            ->add('(+')
+            ->add('(-')
             ->compileNode($node->getChild(OperatorNode::OPERAND_RIGHT))
             ->add(')');
     }

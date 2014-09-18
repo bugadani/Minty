@@ -14,7 +14,9 @@ use Minty\Compiler\Operator;
 use Minty\Compiler\Operators\ArithmeticOperators\AdditionOperator;
 use Minty\Compiler\Operators\ArithmeticOperators\DivisionOperator;
 use Minty\Compiler\Operators\ArithmeticOperators\ExponentialOperator;
+use Minty\Compiler\Operators\ArithmeticOperators\ModuloOperator;
 use Minty\Compiler\Operators\ArithmeticOperators\MultiplicationOperator;
+use Minty\Compiler\Operators\ArithmeticOperators\NegationOperator;
 use Minty\Compiler\Operators\ArithmeticOperators\RemainderOperator;
 use Minty\Compiler\Operators\ArithmeticOperators\SubtractionOperator;
 use Minty\Compiler\Operators\BitwiseOperators\BitwiseAndOperator;
@@ -56,10 +58,8 @@ use Minty\Compiler\Operators\TestOperators\NotStartsOperator;
 use Minty\Compiler\Operators\TestOperators\StartsOperator;
 use Minty\Compiler\Operators\UnaryOperators\EmptyOperator;
 use Minty\Compiler\Operators\UnaryOperators\EvenOperator;
-use Minty\Compiler\Operators\UnaryOperators\MinusOperator;
 use Minty\Compiler\Operators\UnaryOperators\NotEmptyOperator;
 use Minty\Compiler\Operators\UnaryOperators\OddOperator;
-use Minty\Compiler\Operators\UnaryOperators\PlusOperator;
 use Minty\Compiler\Operators\UnaryOperators\PostDecrementOperator;
 use Minty\Compiler\Operators\UnaryOperators\PostIncrementOperator;
 use Minty\Compiler\Operators\UnaryOperators\PreDecrementOperator;
@@ -108,6 +108,7 @@ class Core extends Extension
             new MultiplicationOperator(11),
             new DivisionOperator(11),
             new RemainderOperator(11),
+            new ModuloOperator(11),
             new ExponentialOperator(14, Operator::RIGHT),
             //comparison
             new EqualsOperator(7),
@@ -157,8 +158,7 @@ class Core extends Extension
             new PreDecrementOperator(13, Operator::RIGHT),
             new PreIncrementOperator(13, Operator::RIGHT),
             new BitwiseNotOperator(13, Operator::RIGHT),
-            new MinusOperator(13, Operator::RIGHT),
-            new PlusOperator(13, Operator::RIGHT),
+            new NegationOperator(13, Operator::RIGHT),
             new NotOperator(12, Operator::RIGHT)
         ];
     }
@@ -219,37 +219,59 @@ class Core extends Extension
 
         return [
             new TemplateFunction('abs'),
-            new TemplateFunction('attributes', $namespace . '\template_function_attributes', [
-                'is_safe' => ['html', 'xml']
-            ]),
+            new TemplateFunction(
+                'attributes', $namespace . '\template_function_attributes', [
+                    'is_safe' => ['html', 'xml']
+                ]
+            ),
             new TemplateFunction('batch', $namespace . '\template_function_batch'),
             new TemplateFunction('capitalize', 'ucfirst'),
-            new TemplateFunction('count', null, [
-                'is_safe' => true
-            ]),
+            new TemplateFunction(
+                'count', null, [
+                    'is_safe' => true
+                ]
+            ),
             new TemplateFunction('cycle', $namespace . '\template_function_cycle'),
             new TemplateFunction('date_format', $namespace . '\template_function_dateFormat'),
-            new TemplateFunction('default', null, ['compiler' => '\Minty\Extensions\Compilers\DefaultCompiler']),
+            new TemplateFunction(
+                'default',
+                null,
+                ['compiler' => '\Minty\Extensions\Compilers\DefaultCompiler']
+            ),
             new TemplateFunction('divisible', $namespace . '\template_function_divisible'),
-            new TemplateFunction('extract', $namespace . '\template_function_extract', ['needs_context' => true]),
+            new TemplateFunction(
+                'extract',
+                $namespace . '\template_function_extract',
+                ['needs_context' => true]
+            ),
             new TemplateFunction('empty', $namespace . '\template_function_empty'),
             new TemplateFunction('ends', $namespace . '\template_function_ends'),
-            new TemplateFunction('filter', $namespace . '\template_function_filter', [
-                'is_safe'           => true,
-                'needs_environment' => true
-            ]),
-            new TemplateFunction('filter_html', 'htmlspecialchars', [
-                'is_safe' => ['xml', 'html']
-            ]),
-            new TemplateFunction('filter_xml', 'htmlspecialchars', [
-                'is_safe' => ['xml', 'html']
-            ]),
-            new TemplateFunction('filter_js', 'json_encode', [
-                'is_safe' => ['js', 'json']
-            ]),
-            new TemplateFunction('filter_json', 'json_encode', [
-                'is_safe' => ['js', 'json']
-            ]),
+            new TemplateFunction(
+                'filter', $namespace . '\template_function_filter', [
+                    'is_safe'           => true,
+                    'needs_environment' => true
+                ]
+            ),
+            new TemplateFunction(
+                'filter_html', 'htmlspecialchars', [
+                    'is_safe' => ['xml', 'html']
+                ]
+            ),
+            new TemplateFunction(
+                'filter_xml', 'htmlspecialchars', [
+                    'is_safe' => ['xml', 'html']
+                ]
+            ),
+            new TemplateFunction(
+                'filter_js', 'json_encode', [
+                    'is_safe' => ['js', 'json']
+                ]
+            ),
+            new TemplateFunction(
+                'filter_json', 'json_encode', [
+                    'is_safe' => ['js', 'json']
+                ]
+            ),
             new TemplateFunction('first', $namespace . '\template_function_first'),
             new TemplateFunction('format', 'sprintf'),
             new TemplateFunction('in', $namespace . '\template_function_in'),
@@ -260,35 +282,49 @@ class Core extends Extension
             new TemplateFunction('json_encode'),
             new TemplateFunction('keys', 'array_keys'),
             new TemplateFunction('last', $namespace . '\template_function_last'),
-            new TemplateFunction('length', $namespace . '\template_function_length', [
-                'is_safe' => true
-            ]),
-            new TemplateFunction('link_to', $namespace . '\template_function_linkTo', [
-                'is_safe' => ['html', 'xml']
-            ]),
+            new TemplateFunction(
+                'length', $namespace . '\template_function_length', [
+                    'is_safe' => true
+                ]
+            ),
+            new TemplateFunction(
+                'link_to', $namespace . '\template_function_linkTo', [
+                    'is_safe' => ['html', 'xml']
+                ]
+            ),
             new TemplateFunction('lower', 'strtolower'),
             new TemplateFunction('ltrim'),
             new TemplateFunction('match', $namespace . '\template_function_match'),
             new TemplateFunction('max'),
             new TemplateFunction('merge', 'array_merge'),
             new TemplateFunction('min'),
-            new TemplateFunction('nl2br', null, [
-                'is_safe' => 'html'
-            ]),
-            new TemplateFunction('number_format', null, [
-                'is_safe' => true
-            ]),
+            new TemplateFunction(
+                'nl2br', null, [
+                    'is_safe' => 'html'
+                ]
+            ),
+            new TemplateFunction(
+                'number_format', null, [
+                    'is_safe' => true
+                ]
+            ),
             new TemplateFunction('pluck', $namespace . '\template_function_pluck'),
-            new TemplateFunction('pow', null, [
-                'is_safe' => true
-            ]),
+            new TemplateFunction(
+                'pow', null, [
+                    'is_safe' => true
+                ]
+            ),
             new TemplateFunction('random', $namespace . '\template_function_random'),
-            new TemplateFunction('range', null, [
-                'is_safe' => true
-            ]),
-            new TemplateFunction('raw', $namespace . '\template_function_raw', [
-                'is_safe' => true
-            ]),
+            new TemplateFunction(
+                'range', null, [
+                    'is_safe' => true
+                ]
+            ),
+            new TemplateFunction(
+                'raw', $namespace . '\template_function_raw', [
+                    'is_safe' => true
+                ]
+            ),
             new TemplateFunction('regexp_replace', $namespace . '\template_function_regexpReplace'),
             new TemplateFunction('replace', $namespace . '\template_function_replace'),
             new TemplateFunction('reverse', $namespace . '\template_function_reverse'),
@@ -296,15 +332,19 @@ class Core extends Extension
             new TemplateFunction('shuffle', $namespace . '\template_function_shuffle'),
             new TemplateFunction('slice', $namespace . '\template_function_slice'),
             new TemplateFunction('sort', $namespace . '\template_function_sort'),
-            new TemplateFunction('source', $namespace . '\template_function_source', [
-                'needs_environment' => true
-            ]),
+            new TemplateFunction(
+                'source', $namespace . '\template_function_source', [
+                    'needs_environment' => true
+                ]
+            ),
             new TemplateFunction('spacify', $namespace . '\template_function_spacify'),
             new TemplateFunction('split', $namespace . '\template_function_split'),
             new TemplateFunction('starts', $namespace . '\template_function_starts'),
-            new TemplateFunction('striptags', 'strip_tags', [
-                'is_safe' => true
-            ]),
+            new TemplateFunction(
+                'striptags', 'strip_tags', [
+                    'is_safe' => true
+                ]
+            ),
             new TemplateFunction('title_case', 'ucwords'),
             new TemplateFunction('trim'),
             new TemplateFunction('truncate', $namespace . '\template_function_truncate'),
@@ -361,8 +401,8 @@ function template_function_batch($data, $size, $preserveKeys = true, $noItem = n
     if ($noItem == null) {
         return $result;
     }
-    $last          = count($result) - 1;
-    $result[$last] = array_pad($result[$last], $size, $noItem);
+    $last            = count($result) - 1;
+    $result[ $last ] = array_pad($result[ $last ], $size, $noItem);
 
     return $result;
 }
@@ -458,7 +498,9 @@ function template_function_length($data)
     if (is_array($data) || $data instanceof \Countable) {
         return count($data);
     }
-    throw new \InvalidArgumentException('Reverse expects an array, a string or a Countable instance');
+    throw new \InvalidArgumentException(
+        'Reverse expects an array, a string or a Countable instance'
+    );
 }
 
 function template_function_linkTo($label, $url, array $attrs = [])
@@ -485,8 +527,8 @@ function template_function_pluck($array, $key)
 
     foreach ($array as $element) {
         if (is_array($element) || $element instanceof \ArrayAccess) {
-            if (isset($element[$key])) {
-                $return[] = $element[$key];
+            if (isset($element[ $key ])) {
+                $return[] = $element[ $key ];
             }
         }
     }
@@ -508,7 +550,7 @@ function template_function_random($data = null)
         $data = traversableToArray($data);
     }
 
-    return $data[array_rand($data)];
+    return $data[ array_rand($data) ];
 }
 
 function template_function_raw($data)
@@ -595,7 +637,7 @@ function template_function_split($string, $delimiter = '', $limit = null)
         throw new \InvalidArgumentException('Split expects a string');
     }
     if ($delimiter === '') {
-        return str_split($string, $limit ? : 1);
+        return str_split($string, $limit ?: 1);
     }
     if ($limit === null) {
         return explode($delimiter, $string);
