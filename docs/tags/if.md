@@ -18,3 +18,7 @@ Minty supports both `elseif` and `else` tags to indicate alternative and default
 
 Note: both `elseif` and `else` branches are optional.
 Also, while any number of `elseif` branches may be present, only one `else` tag is accepted.
+
+See also:
+
+ * [switch](tags/switch.md)

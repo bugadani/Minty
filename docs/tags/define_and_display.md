@@ -22,3 +22,7 @@ The used variables can come from the current context
 Or the used variables can be fed with the `using` keyword and an array
 
     {display button using [title: 'Button title']}
+
+See also:
+
+ * [block](tags/block.md)
