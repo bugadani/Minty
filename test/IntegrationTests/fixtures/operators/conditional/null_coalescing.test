@@ -1,0 +1,20 @@
+--TEST--
+This test covers the basic use cases of the ?? operator.
+--TEMPLATE--
+{ $foo ?? :ok }
+{ :ok ?? :ko }
+{ $bar ?? :ok }
+{ ($baz ?? true) ? :ko : :ok }{# $baz ?? true is false #}
+{ $variable[:index][:key] ?? :ok }
+{ $variable.field.otherField ?? :ok }
+{ $foobar[:bar][:baz] ?? :ko}
+--DATA--
+['bar' => null, 'baz' => false, 'foobar' => ['bar' => ['baz' => 'ok']]]
+--EXPECT--
+ok
+ok
+ok
+ok
+ok
+ok
+ok

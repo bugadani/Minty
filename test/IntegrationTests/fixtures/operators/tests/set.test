@@ -6,9 +6,16 @@ Test that the 'is set' test works as intended
 { $foobar.baz is set ? 'ok' : 'not ok' }
 { $std.foo is set ? 'not ok' : 'ok' }
 { $std.bar is set ? 'ok' : 'not ok' }
+{ $foo.bar.baz is set ? 'not ok' : 'ok' }
+{ $foo[:bar][:baz] is set ? 'not ok' : 'ok' }
+{ $foo[:bar].baz is set ? 'not ok' : 'ok' }
 --DATA--
-array('foo' => true, 'foobar' => array('baz' => true), 'std' => new \stdClass());$data['std']->bar = 'something';
+array('foo' => true, 'foobar' => array('baz' => true), 'std' => new \stdClass());
+$data['std']->bar = 'something';
 --EXPECT--
+ok
+ok
+ok
 ok
 ok
 ok

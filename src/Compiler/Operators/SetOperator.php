@@ -25,7 +25,7 @@ class SetOperator extends Operator
     {
         if ($this->isPropertyAccessOperator($left)) {
             $left->addData('mode', 'set');
-            $left->addChild($right);
+            $left->addChild($right, OperatorNode::OPERAND_MIDDLE);
 
             return $left;
         }

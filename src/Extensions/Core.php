@@ -37,12 +37,12 @@ use Minty\Compiler\Operators\ConcatenationOperator;
 use Minty\Compiler\Operators\ExclusiveRangeOperator;
 use Minty\Compiler\Operators\ExistenceOperators\IsNotSetOperator;
 use Minty\Compiler\Operators\ExistenceOperators\IsSetOperator;
-use Minty\Compiler\Operators\FalseCoalescingOperator;
 use Minty\Compiler\Operators\FilterOperator;
 use Minty\Compiler\Operators\LogicOperators\AndOperator;
 use Minty\Compiler\Operators\LogicOperators\NotOperator;
 use Minty\Compiler\Operators\LogicOperators\OrOperator;
 use Minty\Compiler\Operators\LogicOperators\XorOperator;
+use Minty\Compiler\Operators\NullCoalescingOperator;
 use Minty\Compiler\Operators\PropertyAccessOperator;
 use Minty\Compiler\Operators\RangeOperator;
 use Minty\Compiler\Operators\SetOperator;
@@ -142,7 +142,7 @@ class Core extends Extension
             new DivisibleByOperator(8, Operator::NONE),
             new NotDivisibleByOperator(8, Operator::NONE),
             //other
-            new FalseCoalescingOperator(1),
+            new NullCoalescingOperator(1),
             new ConcatenationOperator(10),
             new PropertyAccessOperator(16),
             new FilterOperator(11),
@@ -443,7 +443,7 @@ function template_function_ends($data, $str)
 function template_function_extract(Context $context, $source, $keys)
 {
     foreach ((array)$keys as $key) {
-        $context->$key = $context->getProperty($source, $key);
+        $context->$key = $context->getProperty($source, (array)$key);
     }
 }
 

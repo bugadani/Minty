@@ -3,6 +3,18 @@ This test covers the basic use cases of the ?: operator.
 --TEMPLATE--
 { true ? :ok : :ko }
 { false ? :ko : :ok }
+{ $foo ? :ko : :ok }
+{ $bar ? :ko : :ok }
+{ $bar ?: :ok }
+{ $foobar[:bar][:baz] ?: :ko}
+{ $variable.field.otherField ?: :ok }
+--DATA--
+['bar' => false, 'foobar' => ['bar' => ['baz' => 'ok']]]
 --EXPECT--
+ok
+ok
+ok
+ok
+ok
 ok
 ok

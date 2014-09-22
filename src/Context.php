@@ -51,65 +51,96 @@ class Context
         return $this->variables;
     }
 
-    public function getProperty($structure, $key)
+    public function getProperty($structure, array $keys)
     {
-        if (is_array($structure) || $structure instanceof \ArrayAccess) {
-            if (isset($structure[ $key ])) {
-                return $structure[ $key ];
+        foreach ($keys as $key) {
+            if (is_array($structure) || $structure instanceof \ArrayAccess) {
+                if (isset($structure[ $key ])) {
+                    $structure = $structure[ $key ];
+                    continue;
+                }
             }
-        }
-        if (is_object($structure)) {
-            if (isset($structure->$key)) {
-                return $structure->$key;
+            if (is_object($structure)) {
+                if (isset($structure->$key)) {
+                    $structure = $structure->$key;
+                    continue;
+                }
+                $methodName = 'get' . ucfirst($key);
+                if (method_exists($structure, $methodName)) {
+                    $structure = $structure->$methodName();
+                    continue;
+                }
             }
-            $methodName = 'get' . ucfirst($key);
-            if (method_exists($structure, $methodName)) {
-                return $structure->$methodName();
+            if (!$this->strictMode) {
+                return $key;
             }
+            throw new \OutOfBoundsException("Property {$key} is not set.");
         }
-        if (!$this->strictMode) {
-            return $key;
-        }
-        throw new \OutOfBoundsException("Property {$key} is not set.");
+
+        return $structure;
     }
 
-    public function hasProperty($structure, $key)
+    public function hasProperty($structure, array $keys)
     {
-        if (is_array($structure)) {
-            return isset($structure[ $key ]);
-        }
-        if ($structure instanceof \ArrayAccess) {
-            if (isset($structure[ $key ])) {
-                return true;
+        foreach ($keys as $key) {
+            if (is_array($structure)) {
+                if (!isset($structure[ $key ])) {
+                    return false;
+                }
+                $structure = $structure[ $key ];
+            } elseif (is_object($structure)) {
+                if ($structure instanceof \ArrayAccess && isset($structure[ $key ])) {
+                    $structure = $structure[ $key ];
+                    continue;
+                }
+                if (isset($structure->$key)) {
+                    $structure = $structure->$key;
+                } else {
+                    $methodName = ucfirst($key);
+                    if (
+                        !method_exists($structure, 'has' . $methodName)
+                        || !$structure->{'has' . $methodName}
+                    ) {
+                        return false;
+                    }
+                    $structure = $structure->{'get' . $methodName}();
+                }
+            } else {
+                return false;
             }
         }
-        if (is_object($structure)) {
-            if (isset($structure->$key)) {
-                return true;
-            }
-            $methodName = 'has' . ucfirst($key);
-            if (method_exists($structure, $methodName)) {
-                return $structure->$methodName();
-            }
 
-            return false;
-        }
-        throw new \UnexpectedValueException('Variable is not an array or an object.');
+        return true;
     }
 
-    public function setProperty($structure, $key, $value)
+    public function setProperty($structure, array $keys, $value)
     {
+        $lastKey = array_pop($keys);
+        foreach ($keys as $key) {
+            if (is_array($structure) || $structure instanceof \ArrayAccess) {
+                $structure =& $structure[ $key ];
+            } elseif (is_object($structure)) {
+                $methodName = 'get' . ucfirst($key);
+                if (method_exists($structure, $methodName)) {
+                    $structure =& $structure->$methodName();
+                } else {
+                    $structure =& $structure->$key;
+                }
+            } else {
+                throw new \UnexpectedValueException("Property {$key} can not be set.");
+            }
+        }
         if (is_array($structure) || $structure instanceof \ArrayAccess) {
-            $structure[ $key ] = $value;
+            $structure[ $lastKey ] = $value;
         } elseif (is_object($structure)) {
-            $methodName = 'set' . ucfirst($key);
+            $methodName = 'set' . ucfirst($lastKey);
             if (method_exists($structure, $methodName)) {
                 $structure->$methodName($value);
             } else {
-                $structure->$key = $value;
+                $structure->$lastKey = $value;
             }
         } else {
-            throw new \UnexpectedValueException("Property {$key} can not be set.");
+            throw new \UnexpectedValueException("Property {$lastKey} can not be set.");
         }
     }
 }

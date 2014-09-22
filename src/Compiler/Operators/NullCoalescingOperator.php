@@ -16,17 +16,12 @@ use Minty\Compiler\Nodes\OperatorNode;
 use Minty\Compiler\Nodes\VariableNode;
 use Minty\Compiler\Operator;
 
-class ConditionalOperator extends Operator
+class NullCoalescingOperator extends Operator
 {
-
-    public function __construct()
-    {
-
-    }
 
     public function operators()
     {
-        throw new \BadMethodCallException('Conditional operator is handled differently.');
+        return '??';
     }
 
     public function compile(Compiler $compiler, OperatorNode $node)
@@ -47,15 +42,18 @@ class ConditionalOperator extends Operator
             }
             $left->addData('mode', 'has');
             $left->compile($compiler);
-            $compiler->add(' && ');
             $left->addData('mode', 'get');
-            $left->compile($compiler);
+            $compiler
+                ->add(') ? (')
+                ->compileNode($left)
+                ->add(')');
         } elseif ($left instanceof VariableNode) {
             $compiler
                 ->add('isset(')
                 ->compileNode($left)
-                ->add(') && ')
-                ->compileNode($left);
+                ->add(')) ? (')
+                ->compileNode($left)
+                ->add(')');
         } elseif ($left instanceof ArrayIndexNode) {
             $variable = $left->getChild('identifier');
             $keys    = [$left->getChild('key')];
@@ -70,20 +68,16 @@ class ConditionalOperator extends Operator
                 ->compileNode($variable)
                 ->add(') && $context->hasProperty')
                 ->compileArgumentList($arguments)
-                ->add(' && $context->getProperty')
-                ->compileArgumentList($arguments);
+                ->add(') ? (')
+                ->compileNode($left)
+                ->add(')');
         } else {
-            $compiler->compileNode($left);
-        }
-        $compiler->add(') ? (');
-
-        if ($node->hasChild(OperatorNode::OPERAND_MIDDLE)) {
-            $compiler->compileNode($node->getChild(OperatorNode::OPERAND_MIDDLE));
-        } else {
-            $compiler->compileNode($node->getChild(OperatorNode::OPERAND_LEFT));
+            $compiler
+                ->compileNode($left)
+                ->add(') ?');
         }
 
-        $compiler->add(') : (')
+        $compiler->add(' : (')
             ->compileNode($node->getChild(OperatorNode::OPERAND_RIGHT))
             ->add(')');
     }

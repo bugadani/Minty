@@ -10,6 +10,7 @@
 namespace Minty\Compiler\Operators;
 
 use Minty\Compiler\Compiler;
+use Minty\Compiler\Node;
 use Minty\Compiler\Nodes\OperatorNode;
 use Minty\Compiler\Operator;
 
@@ -23,12 +24,22 @@ class PropertyAccessOperator extends Operator
 
     public function compile(Compiler $compiler, OperatorNode $node)
     {
-        $args = $node->getChildren();
-        ksort($args);
+        $left = $node->getChild(OperatorNode::OPERAND_LEFT);
+        $keys = [$node->getChild(OperatorNode::OPERAND_RIGHT)];
 
+        while ($this->isPropertyAccessOperator($left)) {
+            /** @var $left OperatorNode */
+            $keys[] = $left->getChild(OperatorNode::OPERAND_RIGHT);
+            $left   = $left->getChild(OperatorNode::OPERAND_LEFT);
+        }
+        $arguments = [$left, array_reverse($keys)];
+
+        if ($node->hasChild(OperatorNode::OPERAND_MIDDLE)) {
+            $arguments[] = $node->getChild(OperatorNode::OPERAND_MIDDLE);
+        }
         $compiler
             ->add('$context->' . $this->getMethodName($node))
-            ->compileArgumentList($args);
+            ->compileArgumentList($arguments);
     }
 
     /**
@@ -55,5 +66,19 @@ class PropertyAccessOperator extends Operator
             case 'set':
                 return 'setProperty';
         }
+    }
+
+    /**
+     * @param Node $operand
+     *
+     * @return bool
+     */
+    private function isPropertyAccessOperator(Node $operand)
+    {
+        if (!$operand instanceof OperatorNode) {
+            return false;
+        }
+
+        return $operand->getOperator() instanceof PropertyAccessOperator;
     }
 }

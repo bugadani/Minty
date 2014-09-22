@@ -1,8 +1,0 @@
---TEST--
-This test covers the basic use cases of the ?? operator.
---TEMPLATE--
-{ $foo ?? :ok }
-{ :ok ?? :ko }
---EXPECT--
-ok
-ok
