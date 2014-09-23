@@ -36,6 +36,7 @@ Other options
    works as if files without extension had the extension set by this option. For more information, see
    [filtering](filtering.md).
  * `strict_mode`
-   When true, variables that are not set will use their names as value.
+   When set to `true`, accessing variables that are not present in the current context will result in an error.
+   When disabled, accessing an unset variable will return its name. Note: functionality that checks if a variable is set is not affected by this option.
  * `tag_consumes_newline`
    Controls whether the first newline after tags should be stripped automatically.
