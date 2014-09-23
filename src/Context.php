@@ -11,13 +11,11 @@ namespace Minty;
 
 class Context
 {
-    private $strictMode;
     private $variables;
 
-    public function __construct($strictMode, array $variables = [])
+    public function __construct(array $variables = [])
     {
         $this->variables  = $variables;
-        $this->strictMode = (bool)$strictMode;
     }
 
     public function __set($key, $value)
@@ -34,9 +32,6 @@ class Context
     {
         if (isset($this->variables[ $key ])) {
             return $this->variables[ $key ];
-        }
-        if (!$this->strictMode) {
-            return $key;
         }
         throw new \OutOfBoundsException("Variable {$key} is not set.");
     }
@@ -70,9 +65,6 @@ class Context
                     $structure = $structure->$methodName();
                     continue;
                 }
-            }
-            if (!$this->strictMode) {
-                return $key;
             }
             throw new \OutOfBoundsException("Property {$key} is not set.");
         }

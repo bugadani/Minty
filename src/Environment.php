@@ -136,7 +136,6 @@ class Environment
             'error_template'              => '__compile_error_template',
             'fallback_tag'                => 'print',
             'global_variables'            => [],
-            'strict_mode'                 => true,
             'template_base_class'         => 'Minty\\Template'
         ];
 
@@ -512,7 +511,6 @@ class Environment
 
         //Local variables take precedence over globals
         return new Context(
-            $this->options['strict_mode'],
             $variables + $this->options['global_variables']
         );
     }

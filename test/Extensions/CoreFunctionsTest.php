@@ -345,7 +345,7 @@ class CoreFunctionsTest extends \PHPUnit_Framework_TestCase
     public function testExtract()
     {
         $array   = ['foo' => 'bar', 'bar' => 'baz'];
-        $context = new Context($this->env);
+        $context = new Context();
         template_function_extract($context, $array, 'foo');
 
         $this->assertEquals('bar', $context->foo);
