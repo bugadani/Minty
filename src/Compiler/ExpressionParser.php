@@ -285,7 +285,8 @@ class ExpressionParser
         }
         $left = $this->operandStack->pop();
 
-        // Check whether the current expression is a simplified conditional expression (expr1 ?: expr3)
+        // Check whether the current expression is a simplified conditional
+        // expression (expr1 ?: expr3)
         if (!$this->stream->nextTokenIf(Token::PUNCTUATION, ':')) {
             $middle = $this->parseExpression(true);
             $this->stream->expectCurrent(Token::PUNCTUATION, ':');

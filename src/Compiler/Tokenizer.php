@@ -85,8 +85,10 @@ class Tokenizer implements TokenizerInterface
             $delimiterPatterns['tag'][1] .= '\n?';
         }
 
-        $delimiterPatterns['whitespace_control_tag'][0] = '\s*' . $delimiterPatterns['whitespace_control_tag'][0];
-        $delimiterPatterns['whitespace_control_tag'][1] = $delimiterPatterns['whitespace_control_tag'][1] . '\s*';
+        $delimiterPatterns['whitespace_control_tag'] = [
+            '\s*' . $delimiterPatterns['whitespace_control_tag'][0],
+            $delimiterPatterns['whitespace_control_tag'][1] . '\s*'
+        ];
 
         return $delimiterPatterns;
     }

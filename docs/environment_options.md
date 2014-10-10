@@ -16,7 +16,7 @@ These options affect the templates Minty is able to work with.
    **Default value:**
     - tag: `{`, `}`
     - comment: `{#`, `#}`
-    - whitespace control tag: `{-`, `-}`
+    - whitespace controlling tag: `{-`, `-}`
  * `fallback tag`
    This option specifies which tag should be used when the tag name is not explicitly written down.
    The default value is `print`, so basically every expression will be printed.
