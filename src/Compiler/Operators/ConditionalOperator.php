@@ -36,10 +36,10 @@ class ConditionalOperator extends Operator
         $compiler->add('(');
         if ($this->isPropertyAccessOperator($left)) {
             $root = $left;
-            while($this->isPropertyAccessOperator($root)) {
+            while ($this->isPropertyAccessOperator($root)) {
                 $root = $root->getChild(OperatorNode::OPERAND_LEFT);
             }
-            if($root instanceof VariableNode) {
+            if ($root instanceof VariableNode) {
                 $compiler
                     ->add('isset(')
                     ->compileNode($root)
@@ -58,11 +58,11 @@ class ConditionalOperator extends Operator
                 ->compileNode($left);
         } elseif ($left instanceof ArrayIndexNode) {
             $variable = $left->getChild('identifier');
-            $keys    = [$left->getChild('key')];
+            $keys = [$left->getChild('key')];
             while ($variable instanceof ArrayIndexNode) {
                 /** @var $right OperatorNode */
-                $keys[] = $variable->getChild('key');
-                $variable  = $variable->getChild('identifier');
+                $keys[]   = $variable->getChild('key');
+                $variable = $variable->getChild('identifier');
             }
             $arguments = [$variable, array_reverse($keys)];
             $compiler

@@ -15,7 +15,7 @@ class Context
 
     public function __construct(array $variables = [])
     {
-        $this->variables  = $variables;
+        $this->variables = $variables;
     }
 
     public function __set($key, $value)

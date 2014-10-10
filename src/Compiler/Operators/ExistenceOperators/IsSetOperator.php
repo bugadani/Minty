@@ -31,10 +31,10 @@ class IsSetOperator extends Operator
 
         if ($this->isPropertyAccessOperator($operand)) {
             $root = $operand;
-            while($this->isPropertyAccessOperator($root)) {
+            while ($this->isPropertyAccessOperator($root)) {
                 $root = $root->getChild(OperatorNode::OPERAND_LEFT);
             }
-            if($root instanceof VariableNode) {
+            if ($root instanceof VariableNode) {
                 $compiler
                     ->add('isset(')
                     ->compileNode($root)
@@ -44,11 +44,11 @@ class IsSetOperator extends Operator
             $operand->compile($compiler);
         } elseif ($operand instanceof ArrayIndexNode) {
             $variable = $operand->getChild('identifier');
-            $keys    = [$operand->getChild('key')];
+            $keys = [$operand->getChild('key')];
             while ($variable instanceof ArrayIndexNode) {
                 /** @var $right OperatorNode */
-                $keys[] = $variable->getChild('key');
-                $variable  = $variable->getChild('identifier');
+                $keys[]   = $variable->getChild('key');
+                $variable = $variable->getChild('identifier');
             }
             $arguments = [$variable, array_reverse($keys)];
             $compiler
