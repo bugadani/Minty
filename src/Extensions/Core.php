@@ -398,7 +398,7 @@ function template_function_batch($data, $size, $preserveKeys = true, $noItem = n
 {
     $data   = traversableToArray($data);
     $result = array_chunk($data, abs($size), $preserveKeys);
-    if ($noItem == null) {
+    if ($noItem === null) {
         return $result;
     }
     $last            = count($result) - 1;
