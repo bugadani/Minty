@@ -598,7 +598,19 @@ function template_function_slice($data, $start, $length = null, $preserveKeys = 
 
         return substr($data, $start, $length);
     }
-    $data = traversableToArray($data);
+    if ($data instanceof \Traversable) {
+        if ($data instanceof \IteratorAggregate) {
+            $data = $data->getIterator();
+        }
+
+        if ($start >= 0 && $length >= 0) {
+            return iterator_to_array(
+                new \LimitIterator($data, $start, $length === null ? -1 : $length),
+                $preserveKeys
+            );
+        }
+        $data = traversableToArray($data);
+    }
 
     return array_slice($data, $start, $length, $preserveKeys);
 }
