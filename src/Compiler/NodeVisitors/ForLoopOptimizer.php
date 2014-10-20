@@ -36,8 +36,7 @@ class ForLoopOptimizer extends NodeVisitor
         if (!empty($this->stack)) {
             $node->addData('create_stack', false);
         }
-        ++$this->counter;
-        $this->counterStack[] = $this->counter;
+        $this->counterStack[] = ++$this->counter;
         $this->stack[]        = $node;
     }
 

@@ -32,23 +32,24 @@ class ForTag extends Tag
 
     public function compile(Compiler $compiler, TagNode $node)
     {
-        if ($node->getData('save_temp_var')) {
-            $compiler
-                ->indented('if (isset($temp))')
-                ->add(' {')
-                ->indent();
+        if ($node->hasChild('else')) {
+            if ($node->getData('save_temp_var')) {
+                $compiler
+                    ->indented('if (isset($temp))')
+                    ->add(' {')
+                    ->indent();
 
-            if ($node->getData('create_stack')) {
-                $compiler->indented('$stack = [];');
+                if ($node->getData('create_stack')) {
+                    $compiler->indented('$stack = [$temp];');
+                } else {
+                    $compiler->indented('$stack[] = $temp;');
+                }
+
+                $compiler
+                    ->outdent()
+                    ->indented('}');
             }
 
-            $compiler
-                ->indented('$stack[] = $temp;')
-                ->outdent()
-                ->indented('}');
-        }
-
-        if ($node->hasChild('else')) {
             $compiler
                 ->indented('$temp = ')
                 ->compileNode($node->getChild('source'))
@@ -101,20 +102,20 @@ class ForTag extends Tag
             ->indented('}');
 
         if ($node->hasChild('else')) {
+            if ($node->getData('save_temp_var')) {
+                $compiler->indented('if(isset($stack)) {');
+                $compiler->indent();
+                $compiler->indented('$temp = array_pop($stack);');
+                if ($node->getData('create_stack')) {
+                    $compiler->indented('unset($stack);');
+                }
+                $compiler->outdent();
+                $compiler->indented('}');
+            }
             //bracket opened after if-empty check
             $compiler
                 ->outdent()
                 ->indented('}');
-        }
-        if ($node->getData('save_temp_var')) {
-            $compiler->indented('if(isset($stack)) {');
-            $compiler->indent();
-            $compiler->indented('$temp = array_pop($stack);');
-            if ($node->getData('create_stack')) {
-                $compiler->indented('unset($stack);');
-            }
-            $compiler->outdent();
-            $compiler->indented('}');
         }
     }
 
