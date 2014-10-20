@@ -27,11 +27,6 @@ abstract class IntegrationTestCase extends \PHPUnit_Framework_TestCase
      */
     private $optionsProperty;
 
-    public static function setUpBeforeClass()
-    {
-        date_default_timezone_set('UTC');
-    }
-
     public function setUp()
     {
         $this->stringLoader = new StringLoader();
