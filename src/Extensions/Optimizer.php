@@ -9,7 +9,6 @@
 
 namespace Minty\Extensions;
 
-use Minty\Compiler\NodeVisitors\ForLoopOptimizer;
 use Minty\Compiler\NodeVisitors\UnusedVariableOptimizer;
 use Minty\Extension;
 
@@ -24,7 +23,6 @@ class Optimizer extends Extension
     public function getNodeVisitors()
     {
         return [
-            new ForLoopOptimizer(),
             new UnusedVariableOptimizer()
         ];
     }

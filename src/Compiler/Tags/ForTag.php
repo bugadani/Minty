@@ -11,6 +11,7 @@ namespace Minty\Compiler\Tags;
 
 use Minty\Compiler\Compiler;
 use Minty\Compiler\Nodes\TagNode;
+use Minty\Compiler\Nodes\TempVariableNode;
 use Minty\Compiler\Nodes\VariableNode;
 use Minty\Compiler\Parser;
 use Minty\Compiler\Stream;
@@ -33,44 +34,30 @@ class ForTag extends Tag
     public function compile(Compiler $compiler, TagNode $node)
     {
         if ($node->hasChild('else')) {
-            if ($node->getData('save_temp_var')) {
-                $compiler
-                    ->indented('if (isset($temp))')
-                    ->add(' {')
-                    ->indent();
-
-                if ($node->getData('create_stack')) {
-                    $compiler->indented('$stack = [$temp];');
-                } else {
-                    $compiler->indented('$stack[] = $temp;');
-                }
-
-                $compiler
-                    ->outdent()
-                    ->indented('}');
-            }
-
+            //extract data to be traversed
             $compiler
                 ->indented('$temp = ')
                 ->compileNode($node->getChild('source'))
-                ->add(';')
-                ->indented('if(empty($temp))')
-                ->add(' {')
+                ->add(';');
+
+            //generate check and code for the 'else' branch
+            $compiler
+                ->indented('if(empty($temp)) {')
                 ->indent()
                 ->compileNode($node->getChild('else'))
                 ->outdent()
-                ->indented('}')
-                ->add(' else')
-                ->add(' {')
-                ->indent()
-                ->indented('foreach($temp');
+                ->indented('} else {')
+                ->indent();
+
+            $source = new TempVariableNode('temp');
         } else {
-            $compiler
-                ->indented('foreach(')
-                ->compileNode($node->getChild('source'));
+            $source = $node->getChild('source');
         }
 
-        $compiler->add(' as ');
+        $compiler
+            ->indented('foreach(')
+            ->compileNode($source)
+            ->add(' as ');
 
         if ($node->hasChild('loop_key')) {
             $compiler
@@ -102,16 +89,6 @@ class ForTag extends Tag
             ->indented('}');
 
         if ($node->hasChild('else')) {
-            if ($node->getData('save_temp_var')) {
-                $compiler->indented('if(isset($stack)) {');
-                $compiler->indent();
-                $compiler->indented('$temp = array_pop($stack);');
-                if ($node->getData('create_stack')) {
-                    $compiler->indented('unset($stack);');
-                }
-                $compiler->outdent();
-                $compiler->indented('}');
-            }
             //bracket opened after if-empty check
             $compiler
                 ->outdent()
@@ -121,12 +98,7 @@ class ForTag extends Tag
 
     public function parse(Parser $parser, Stream $stream)
     {
-        $node = new TagNode(
-            $this, [
-                'save_temp_var' => true,
-                'create_stack'  => true
-            ]
-        );
+        $node = new TagNode($this);
 
         $loopVar = $this->parseVariableNode($stream);
         if ($stream->nextTokenIf(Token::PUNCTUATION, [':', '=>'])) {

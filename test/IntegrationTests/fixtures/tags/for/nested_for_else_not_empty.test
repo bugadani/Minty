@@ -2,8 +2,8 @@
 This test covers for block with a non-empty list and else clause
 --TEMPLATE--
 { for $i in 1..5 -}
-    { for $j in 1..$i }
-        {- $j -}
+    { for $i in 1..$i }
+        {- $i -}
     {else}
         inner empty
     { /for }
