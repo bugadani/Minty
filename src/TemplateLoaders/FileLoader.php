@@ -24,7 +24,7 @@ class FileLoader implements TemplateLoaderInterface, EnvironmentAwareInterface
 
     public function __construct($root, $extension)
     {
-        $this->root      = realpath($root);
+        $this->root = realpath($root);
         $this->extension = $extension;
     }
 
@@ -74,6 +74,11 @@ class FileLoader implements TemplateLoaderInterface, EnvironmentAwareInterface
      */
     public function getCacheKey($template)
     {
-        return dirname($template) . '/template_' . basename($template);
+        $dirname = dirname($template);
+        if ($dirname == '.') {
+            return 'template_' . basename($template);
+        } else {
+            return $dirname . '/template_' . basename($template);
+        }
     }
 }
