@@ -16,7 +16,7 @@ class LessThanOrEqualsOperator extends SimpleBinaryOperator
 
     public function operators()
     {
-        return ['<=', 'is less than or equals'];
+        return ['<=', 'is less than or equals', 'is at most'];
     }
 
     public function compileOperator()

@@ -16,7 +16,7 @@ class GreaterThanOrEqualsOperator extends SimpleBinaryOperator
 
     public function operators()
     {
-        return ['>=', 'is greater than or equals'];
+        return ['>=', 'is greater than or equals', 'is at least'];
     }
 
     public function compileOperator()

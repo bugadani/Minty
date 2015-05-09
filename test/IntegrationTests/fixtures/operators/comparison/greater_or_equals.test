@@ -1,8 +1,22 @@
 --TEST--
 Test the greater than or equals operator
 --TEMPLATE--
+{ 4 >= 5 ? 'not ok' : 'ok' }
 { 5 >= 5 ? 'ok' : 'not ok' }
+{ 6 >= 5 ? 'ok' : 'not ok' }
+{ 4 is greater than or equals 5 ? 'not ok' : 'ok' }
 { 5 is greater than or equals 5 ? 'ok' : 'not ok' }
+{ 6 is greater than or equals 5 ? 'ok' : 'not ok' }
+{ 4 is at least 5 ? 'not ok' : 'ok' }
+{ 5 is at least 5 ? 'ok' : 'not ok' }
+{ 6 is at least 5 ? 'ok' : 'not ok' }
 --EXPECT--
+ok
+ok
+ok
+ok
+ok
+ok
+ok
 ok
 ok

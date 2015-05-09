@@ -4,9 +4,9 @@ Comparison operators
 The following comparison operators are available:
 
  * `<` or `is less than`
- * `<=` or `is less than or equals`
+ * `<=` , `at most` or `is less than or equals`
  * `>` or `is greater than`
- * `>=` or `is greater than or equals`
+ * `>=`, `at least` or `is greater than or equals`
  * `=` or `equals`
  * `==`, `is same as` or `is identical`
 
