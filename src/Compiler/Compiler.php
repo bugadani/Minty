@@ -90,18 +90,21 @@ class Compiler
      */
     private function internalCompileList(array $array, $writeKeys = false)
     {
-        $first = true;
-        foreach ($array as $key => $value) {
-            if (!$first) {
-                $this->add(', ');
-            } else {
-                $first = false;
-            }
-            if ($writeKeys) {
+        $separator = '';
+        if ($writeKeys) {
+            foreach ($array as $key => $value) {
+                $this->add($separator);
+                $separator = ', ';
                 $this->compileData($key);
                 $this->add(' => ');
+                $this->compileData($value);
             }
-            $this->compileData($value);
+        } else {
+            foreach ($array as $key => $value) {
+                $this->add($separator);
+                $separator = ', ';
+                $this->compileData($value);
+            }
         }
     }
 

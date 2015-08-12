@@ -48,6 +48,8 @@ class NodeTreeTraverser
     /**
      * @param Node        $node
      * @param NodeVisitor $visitor
+     *
+     * @return bool
      */
     private function visitNode(Node $node, NodeVisitor $visitor)
     {

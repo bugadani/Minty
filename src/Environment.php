@@ -149,12 +149,10 @@ class Environment
 
         $this->createTemplateCache($this->options['cache']);
 
-        if ($this->options['error_template'] !== '__compile_error_template') {
-            //don't load the built-in error template loader
-            $this->errorTemplateLoaderLoaded = true;
-        } else {
-            $this->errorTemplateLoaderLoaded = false;
-        }
+        $useDefaultErrorTemplate = ($this->options['error_template'] === '__compile_error_template');
+        //don't load the built-in error template loader if a custom template is used
+        $this->errorTemplateLoaderLoaded = !$useDefaultErrorTemplate;
+
         spl_autoload_register([$this, 'autoloadTemplate'], true, true);
     }
 

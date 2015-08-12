@@ -46,7 +46,7 @@ class Context
         return $this->variables;
     }
 
-    public function getProperty($structure, array $keys)
+    private function &findProperty($structure, array $keys)
     {
         foreach ($keys as $key) {
             if (is_array($structure) || $structure instanceof \ArrayAccess) {
@@ -72,56 +72,25 @@ class Context
         return $structure;
     }
 
+    public function getProperty($structure, array $keys)
+    {
+        return $this->findProperty($structure, $keys);
+    }
+
     public function hasProperty($structure, array $keys)
     {
-        foreach ($keys as $key) {
-            if (is_array($structure)) {
-                if (!isset($structure[ $key ])) {
-                    return false;
-                }
-                $structure = $structure[ $key ];
-            } elseif (is_object($structure)) {
-                if ($structure instanceof \ArrayAccess && isset($structure[ $key ])) {
-                    $structure = $structure[ $key ];
-                    continue;
-                }
-                if (isset($structure->$key)) {
-                    $structure = $structure->$key;
-                } else {
-                    $methodName = ucfirst($key);
-                    if (
-                        !method_exists($structure, 'has' . $methodName)
-                        || !$structure->{'has' . $methodName}
-                    ) {
-                        return false;
-                    }
-                    $structure = $structure->{'get' . $methodName}();
-                }
-            } else {
-                return false;
-            }
+        try {
+            $this->findProperty($structure, $keys);
+            return true;
+        } catch (\OutOfBoundsException $e) {
+            return false;
         }
-
-        return true;
     }
 
     public function setProperty($structure, array $keys, $value)
     {
-        $lastKey = array_pop($keys);
-        foreach ($keys as $key) {
-            if (is_array($structure) || $structure instanceof \ArrayAccess) {
-                $structure =& $structure[ $key ];
-            } elseif (is_object($structure)) {
-                $methodName = 'get' . ucfirst($key);
-                if (method_exists($structure, $methodName)) {
-                    $structure =& $structure->$methodName();
-                } else {
-                    $structure =& $structure->$key;
-                }
-            } else {
-                throw new \UnexpectedValueException("Property {$key} can not be set.");
-            }
-        }
+        $lastKey   = array_pop($keys);
+        $structure = $this->findProperty($structure, $keys);
         if (is_array($structure) || $structure instanceof \ArrayAccess) {
             $structure[ $lastKey ] = $value;
         } elseif (is_object($structure)) {
