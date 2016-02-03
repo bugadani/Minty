@@ -7,9 +7,6 @@
     "require": {
         "php": ">=5.4"
     },
-    "require-dev": {
-        "satooshi/php-coveralls": "dev-master"
-    },
     "authors": [
         {
             "name": "Dániel Buga",
